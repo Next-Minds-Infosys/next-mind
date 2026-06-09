@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Next Minds - Coming Soon</title>
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: "Segoe UI", sans-serif;
+    }
+
+    body {
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: radial-gradient(circle at top, #1a1a2e, #0f0f1a 60%);
+        color: #fff;
+        overflow: hidden;
+    }
+
+    .container {
+        text-align: center;
+        max-width: 900px;
+        padding: 40px;
+    }
+
+    .logo {
+        font-size: 28px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-bottom: 10px;
+        color: #7c5cff;
+    }
+
+    .coming {
+        font-size: 14px;
+        letter-spacing: 4px;
+        opacity: 0.7;
+        margin-bottom: 20px;
+        text-transform: uppercase;
+    }
+
+    h1 {
+        font-size: 42px;
+        margin-bottom: 15px;
+    }
+
+    p {
+        font-size: 16px;
+        opacity: 0.75;
+        margin-bottom: 40px;
+        line-height: 1.6;
+    }
+
+    .countdown {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .box {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 20px;
+        border-radius: 12px;
+        min-width: 100px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .box h2 {
+        font-size: 32px;
+        color: #7c5cff;
+    }
+
+    .box span {
+        font-size: 12px;
+        letter-spacing: 2px;
+        opacity: 0.7;
+    }
+
+    .footer {
+        margin-top: 40px;
+        font-size: 12px;
+        opacity: 0.5;
+    }
+
+    /* floating glow */
+    .glow {
+        position: absolute;
+        width: 400px;
+        height: 400px;
+        background: #7c5cff;
+        filter: blur(150px);
+        opacity: 0.2;
+        border-radius: 50%;
+        top: -100px;
+        left: -100px;
+        z-index: -1;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="glow"></div>
+
+<div class="container">
+
+    <div class="logo">Next Minds</div>
+    <div class="coming">Coming Soon</div>
+
+    <h1>We're building something extraordinary</h1>
+    <p>
+        A modern learning platform at the intersection of innovation, creativity,
+        and real-world skills. Launching very soon.
+    </p>
+
+    <div class="countdown">
+        <div class="box">
+            <h2 id="days">00</h2>
+            <span>DAYS</span>
+        </div>
+
+        <div class="box">
+            <h2 id="hours">00</h2>
+            <span>HOURS</span>
+        </div>
+
+        <div class="box">
+            <h2 id="minutes">00</h2>
+            <span>MINUTES</span>
+        </div>
+
+        <div class="box">
+            <h2 id="seconds">00</h2>
+            <span>SECONDS</span>
+        </div>
+    </div>
+
+    <div class="footer">
+        © 2026 Next Minds • All rights reserved
+    </div>
+</div>
+
+<script>
+    // Set launch date (11 days from now)
+    const launchDate = new Date();
+    launchDate.setDate(launchDate.getDate() + 11);
+
+    function updateCountdown() {
+        const now = new Date().getTime();
+        const distance = launchDate - now;
+
+        const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+        document.getElementById("days").innerText = days.toString().padStart(2, '0');
+        document.getElementById("hours").innerText = hours.toString().padStart(2, '0');
+        document.getElementById("minutes").innerText = minutes.toString().padStart(2, '0');
+        document.getElementById("seconds").innerText = seconds.toString().padStart(2, '0');
+
+        if (distance < 0) {
+            clearInterval(timer);
+            document.querySelector(".countdown").innerHTML = "<h2>We are Live!</h2>";
+        }
+    }
+
+    updateCountdown();
+    const timer = setInterval(updateCountdown, 1000);
+</script>
+
+</body>
+</html>
