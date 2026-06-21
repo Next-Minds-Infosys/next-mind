@@ -38,11 +38,27 @@ export default function EnrollModal({
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("Enrollment submitted:", form);
-    alert("Thank you for enrolling! We will contact you shortly.");
-    onClose();
+    setSubmitting(true);
+    setError(false);
+    try {
+      const res = await fetch("/api/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setSubmitted(true);
+    } catch {
+      setError(true);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -97,6 +113,14 @@ export default function EnrollModal({
 
         {/* form */}
         <div className="bg-white px-8 py-8 rounded-b-3xl">
+          {submitted ? (
+            <div className="py-10 text-center">
+              <div className="text-5xl mb-4">🚀</div>
+              <p className="text-xl font-bold text-gray-800 mb-2">You&apos;re enrolled!</p>
+              <p className="text-sm text-gray-500 mb-6">We&apos;ll contact you shortly with next steps.</p>
+              <Button onClick={onClose}>Close</Button>
+            </div>
+          ) : (
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Full Name</label>
@@ -180,10 +204,12 @@ export default function EnrollModal({
               </div>
             </div>
 
-            <Button type="submit" size="lg" className="w-full mt-2">
-              Let&apos;s Go! 🚀
+            {error && <p className="text-sm text-red-500">Something went wrong. Please try again.</p>}
+            <Button type="submit" size="lg" className="w-full mt-2" disabled={submitting}>
+              {submitting ? "Submitting…" : "Let's Go! 🚀"}
             </Button>
           </form>
+          )}
         </div>
       </motion.div>
     </motion.div>

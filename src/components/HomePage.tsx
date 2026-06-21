@@ -120,6 +120,73 @@ function StatCounter({ target, suffix = "" }: { target: number; suffix?: string 
   );
 }
 
+function ContactForm() {
+  const [form, setForm] = useState({ name: "", email: "", phone: "", courseInterest: "", message: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setStatus("sent");
+      setForm({ name: "", email: "", phone: "", courseInterest: "", message: "" });
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  const inputClass = "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
+
+  return (
+    <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+      <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+      <CardHeader>
+        <CardTitle className="text-2xl">Send us a Message</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {status === "sent" ? (
+          <div className="py-10 text-center">
+            <div className="text-4xl mb-3">✉️</div>
+            <p className="text-lg font-semibold text-gray-800 mb-1">Message sent!</p>
+            <p className="text-sm text-gray-500">We&apos;ll get back to you shortly.</p>
+            <Button className="mt-6" onClick={() => setStatus("idle")}>Send another</Button>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <input name="name" type="text" value={form.name} onChange={handleChange} placeholder="Your Name" required className={inputClass} />
+            <input name="email" type="email" value={form.email} onChange={handleChange} placeholder="Your Email" required className={inputClass} />
+            <input name="phone" type="tel" value={form.phone} onChange={handleChange} placeholder="Your Phone" className={inputClass} />
+            <select name="courseInterest" value={form.courseInterest} onChange={handleChange} className={`${inputClass} text-gray-500`}>
+              <option value="">Select Course Interest</option>
+              <option>MERN Stack Development</option>
+              <option>Python &amp; Django</option>
+              <option>UI/UX Design</option>
+              <option>Flutter Development</option>
+              <option>Digital Marketing</option>
+              <option>Data Science &amp; AI</option>
+            </select>
+            <textarea name="message" value={form.message} onChange={handleChange} placeholder="Your Message" rows={4} required className={`${inputClass} resize-none`} />
+            {status === "error" && <p className="text-sm text-red-500">Something went wrong. Please try again.</p>}
+            <Button type="submit" size="lg" className="w-full" disabled={status === "sending"}>
+              {status === "sending" ? "Sending…" : "Send Message"}
+            </Button>
+          </form>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export default function HomePage() {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const heroRef = useRef(null);
@@ -432,43 +499,7 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
-                <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
-                <CardHeader>
-                  <CardTitle className="text-2xl">Send us a Message</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <form className="space-y-4">
-                    {[
-                      { type: "text", placeholder: "Your Name" },
-                      { type: "email", placeholder: "Your Email" },
-                      { type: "tel", placeholder: "Your Phone" },
-                    ].map((field) => (
-                      <input
-                        key={field.placeholder}
-                        type={field.type}
-                        placeholder={field.placeholder}
-                        className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow"
-                      />
-                    ))}
-                    <select className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow">
-                      <option>Select Course Interest</option>
-                      <option>MERN Stack Development</option>
-                      <option>Python & Django</option>
-                      <option>UI/UX Design</option>
-                      <option>Flutter Development</option>
-                      <option>Digital Marketing</option>
-                      <option>Data Science & AI</option>
-                    </select>
-                    <textarea
-                      placeholder="Your Message"
-                      rows={4}
-                      className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow resize-none"
-                    />
-                    <Button size="lg" className="w-full">Send Message</Button>
-                  </form>
-                </CardContent>
-              </Card>
+              <ContactForm />
             </motion.div>
           </AnimatedSection>
         </div>

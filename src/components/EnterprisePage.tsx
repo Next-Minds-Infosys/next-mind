@@ -15,7 +15,7 @@ import {
   Zap,
 } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EnrollModal from "./EnrollModal";
@@ -109,6 +109,124 @@ const partnerBenefits = [
   { icon: Shield, title: "Flexible Delivery", description: "On-site, online, or hybrid training options to suit your schedule" },
   { icon: Zap, title: "Ongoing Support", description: "Post-training support and consultation to ensure continued success" },
 ];
+
+function EnterpriseContactForm() {
+  const [form, setForm] = useState({ name: "", orgName: "", email: "", phone: "", orgType: "", teamSize: "", trainingInterests: "" });
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch("/api/enterprise-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      if (!res.ok) throw new Error("Failed");
+      setStatus("sent");
+    } catch {
+      setStatus("error");
+    }
+  };
+
+  const inputClass = "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
+
+  if (status === "sent") {
+    return (
+      <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+        <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+        <CardContent className="p-8 md:p-12 text-center py-16">
+          <div className="text-5xl mb-4">🎉</div>
+          <p className="text-2xl font-bold text-gray-800 mb-2">Request received!</p>
+          <p className="text-gray-500">Our enterprise team will reach out within 24 hours.</p>
+          <Button className="mt-8" onClick={() => setStatus("idle")}>Submit another request</Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+      <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+      <CardContent className="p-8 md:p-12">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Name *</label>
+              <input name="name" type="text" value={form.name} onChange={handleChange} required placeholder="John Doe" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Name *</label>
+              <input name="orgName" type="text" value={form.orgName} onChange={handleChange} required placeholder="Your Company" className={inputClass} />
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
+              <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="you@company.com" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone *</label>
+              <input name="phone" type="tel" value={form.phone} onChange={handleChange} required placeholder="+977-9XXXXXXXXX" className={inputClass} />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Type *</label>
+            <select name="orgType" value={form.orgType} onChange={handleChange} required className={`${inputClass} text-gray-500`}>
+              <option value="">Select type</option>
+              <option>College/University</option>
+              <option>Corporate/Private Company</option>
+              <option>Government Agency</option>
+              <option>NGO/Foundation</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Team Size</label>
+            <select name="teamSize" value={form.teamSize} onChange={handleChange} className={`${inputClass} text-gray-500`}>
+              <option value="">Select team size</option>
+              <option>10–25 people</option>
+              <option>25–50 people</option>
+              <option>50–100 people</option>
+              <option>100+ people</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Training Interests</label>
+            <textarea name="trainingInterests" value={form.trainingInterests} onChange={handleChange} rows={4} placeholder="Tell us about your training needs, goals, and areas of interest..."
+              className={`${inputClass} resize-none`} />
+          </div>
+          {status === "error" && <p className="text-sm text-red-500">Something went wrong. Please try again.</p>}
+          <Button type="submit" size="lg" className="w-full" disabled={status === "sending"}>
+            {status === "sending" ? "Sending…" : "Request a Consultation"}
+          </Button>
+
+          <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-6">
+            {[
+              { icon: Phone, label: "Enterprise Hotline", value: "+977-9XXXXXXXXX" },
+              { icon: Mail, label: "Email Us", value: "enterprise@nextminds.edu.np" },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-teal-200/40">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">{label}</div>
+                  <div className="text-sm font-medium text-gray-700">{value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
 
 export default function EnterprisePage() {
   const [enrollOpen, setEnrollOpen] = useState(false);
@@ -430,81 +548,7 @@ export default function EnterprisePage() {
             </motion.div>
 
             <motion.div variants={fadeUp}>
-              <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
-                <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
-                <CardContent className="p-8 md:p-12">
-                  <form className="space-y-5">
-                    <div className="grid md:grid-cols-2 gap-5">
-                      {[
-                        { label: "Your Name *", type: "text", placeholder: "John Doe" },
-                        { label: "Organization Name *", type: "text", placeholder: "Your Company" },
-                      ].map((field) => (
-                        <div key={field.label}>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
-                          <input type={field.type} required placeholder={field.placeholder}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow" />
-                        </div>
-                      ))}
-                    </div>
-                    <div className="grid md:grid-cols-2 gap-5">
-                      {[
-                        { label: "Email *", type: "email", placeholder: "you@company.com" },
-                        { label: "Phone *", type: "tel", placeholder: "+977-9XXXXXXXXX" },
-                      ].map((field) => (
-                        <div key={field.label}>
-                          <label className="block text-sm font-medium text-gray-700 mb-1.5">{field.label}</label>
-                          <input type={field.type} required placeholder={field.placeholder}
-                            className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow" />
-                        </div>
-                      ))}
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Type *</label>
-                      <select required className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow">
-                        <option value="">Select type</option>
-                        <option>College/University</option>
-                        <option>Corporate/Private Company</option>
-                        <option>Government Agency</option>
-                        <option>NGO/Foundation</option>
-                        <option>Other</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Team Size</label>
-                      <select className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm text-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow">
-                        <option value="">Select team size</option>
-                        <option>10–25 people</option>
-                        <option>25–50 people</option>
-                        <option>50–100 people</option>
-                        <option>100+ people</option>
-                      </select>
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1.5">Training Interests</label>
-                      <textarea rows={4} placeholder="Tell us about your training needs, goals, and areas of interest..."
-                        className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow resize-none" />
-                    </div>
-                    <Button size="lg" className="w-full">Request a Consultation</Button>
-                  </form>
-
-                  <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-6">
-                    {[
-                      { icon: Phone, label: "Enterprise Hotline", value: "+977-9XXXXXXXXX" },
-                      { icon: Mail, label: "Email Us", value: "enterprise@nextminds.edu.np" },
-                    ].map(({ icon: Icon, label, value }) => (
-                      <div key={label} className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-teal-200/40">
-                          <Icon size={18} />
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-400">{label}</div>
-                          <div className="text-sm font-medium text-gray-700">{value}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              <EnterpriseContactForm />
             </motion.div>
           </AnimatedSection>
         </div>
