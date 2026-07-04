@@ -35,12 +35,11 @@ export default function EnrollModal({
     learningFormat: "Physical",
     hasLaptop: "Yes",
   });
-
-  if (!isOpen) return null;
-
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState(false);
+
+  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
