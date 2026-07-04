@@ -46,3 +46,7 @@ CLAUDE.md
 AGENTS.md
 skills-lock.json
 skill.md
+
+/src/generated/prisma
+
+.next
