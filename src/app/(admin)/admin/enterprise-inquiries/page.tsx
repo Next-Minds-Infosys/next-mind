@@ -1,16 +1,19 @@
-import { prisma } from "@/lib/db";
+import { EnterpriseInquiry } from "@/db/models";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
 import { updateEnterpriseInquiryStatus } from "./actions";
 
 export default async function AdminEnterpriseInquiriesPage() {
-  const inquiries = await prisma.enterpriseInquiry.findMany({
-    orderBy: { createdAt: "desc" },
+  const inquiries = await EnterpriseInquiry.findAll({
+    order: [["createdAt", "DESC"]],
   });
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Enterprise Inquiries</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Enterprise Inquiries</h1>
+        <p className="text-sm text-gray-500 mt-1">Corporate training requests from the enterprise page</p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>

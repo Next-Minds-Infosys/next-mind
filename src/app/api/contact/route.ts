@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { sendMail } from "@/lib/mailer";
+import { ContactSubmission } from "@/db/models";
+import { createId } from "@/db/id";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -8,6 +10,16 @@ export async function POST(request: NextRequest) {
   if (!name || !email || !message) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  await ContactSubmission.create({
+    id: createId(),
+    name,
+    email,
+    phone: phone || null,
+    courseInterest: courseInterest || null,
+    message,
+    createdAt: new Date(),
+  });
 
   await sendMail({
     subject: `Contact Form: ${name}`,

@@ -1,16 +1,19 @@
-import { prisma } from "@/lib/db";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
 import { updateContactStatus } from "./actions";
+import { ContactSubmission } from "@/db/models";
 
 export default async function AdminContactsPage() {
-  const contacts = await prisma.contactSubmission.findMany({
-    orderBy: { createdAt: "desc" },
+  const contacts = await ContactSubmission.findAll({
+    order: [["createdAt", "DESC"]],
   });
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Contact Submissions</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Contact Submissions</h1>
+        <p className="text-sm text-gray-500 mt-1">Free counselling and contact form messages</p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>

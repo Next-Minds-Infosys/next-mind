@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { SubmissionStatus } from "@/generated/prisma/enums";
+import { SubmissionStatus } from "@/lib/types";
 import { STATUS_CONFIG } from "./status-badge";
 
 const STATUS_OPTIONS = Object.values(SubmissionStatus);

@@ -1,16 +1,19 @@
-import { prisma } from "@/lib/db";
+import { Course, Enrollment } from "@/db";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { PublishToggle } from "./publish-toggle";
 
 export default async function AdminCoursesPage() {
-  const courses = await prisma.course.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { _count: { select: { enrollments: true } } },
+  const courses = await Course.findAll({
+    order: [["createdAt", "DESC"]],
+    include: [{ model: Enrollment, as: "enrollments", attributes: ["id"] }],
   });
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Courses</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Courses</h1>
+        <p className="text-sm text-gray-500 mt-1">Industry-aligned programs from Next Minds</p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -29,7 +32,7 @@ export default async function AdminCoursesPage() {
               <TableCell>{course.category}</TableCell>
               <TableCell>{course.level}</TableCell>
               <TableCell>{course.price}</TableCell>
-              <TableCell>{course._count.enrollments}</TableCell>
+              <TableCell>{course.enrollments?.length ?? 0}</TableCell>
               <TableCell>
                 <PublishToggle id={course.id} published={course.published} />
               </TableCell>

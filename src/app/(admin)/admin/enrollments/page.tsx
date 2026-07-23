@@ -1,17 +1,20 @@
-import { prisma } from "@/lib/db";
+import { Course, Enrollment } from "@/db";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
 import { updateEnrollmentStatus } from "./actions";
 
 export default async function AdminEnrollmentsPage() {
-  const enrollments = await prisma.enrollment.findMany({
-    orderBy: { createdAt: "desc" },
-    include: { course: { select: { title: true } } },
+  const enrollments = await Enrollment.findAll({
+    order: [["createdAt", "DESC"]],
+    include: [{ model: Course, as: "course", attributes: ["title"] }],
   });
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold text-gray-900">Enrollments</h1>
+      <div>
+        <h1 className="text-2xl font-semibold text-gray-900">Enrollments</h1>
+        <p className="text-sm text-gray-500 mt-1">Student applications from Enroll Now</p>
+      </div>
       <Table>
         <TableHeader>
           <TableRow>
@@ -31,7 +34,7 @@ export default async function AdminEnrollmentsPage() {
                 <p className="font-medium text-gray-900">{enrollment.fullName}</p>
                 <p className="text-xs text-gray-400">{enrollment.email}</p>
               </TableCell>
-              <TableCell>{enrollment.course.title}</TableCell>
+              <TableCell>{enrollment.course?.title ?? "—"}</TableCell>
               <TableCell>{enrollment.phone}</TableCell>
               <TableCell>{enrollment.learningFormat}</TableCell>
               <TableCell>{enrollment.hasLaptop}</TableCell>

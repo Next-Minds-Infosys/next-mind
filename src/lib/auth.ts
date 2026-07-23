@@ -1,9 +1,20 @@
 import { betterAuth } from "better-auth";
-import { prismaAdapter } from "@better-auth/prisma-adapter";
-import { prisma } from "@/lib/db";
+import { Pool } from "pg";
+
+const globalForPool = globalThis as unknown as { authPool?: Pool };
+
+const pool =
+  globalForPool.authPool ??
+  new Pool({
+    connectionString: "postgresql://nextmind:nextmind@127.0.0.1:5432/nextminds",
+  });
+
+if (process.env.NODE_ENV !== "production") {
+  globalForPool.authPool = pool;
+}
 
 export const auth = betterAuth({
-  database: prismaAdapter(prisma, { provider: "postgresql" }),
+  database: pool,
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL,
   emailAndPassword: {
@@ -15,7 +26,9 @@ export const auth = betterAuth({
       clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
     },
   },
+  // Map to existing Prisma PascalCase tables
   user: {
+    modelName: "User",
     additionalFields: {
       role: {
         type: "string",
@@ -23,5 +36,14 @@ export const auth = betterAuth({
         input: false,
       },
     },
+  },
+  session: {
+    modelName: "Session",
+  },
+  account: {
+    modelName: "Account",
+  },
+  verification: {
+    modelName: "Verification",
   },
 });

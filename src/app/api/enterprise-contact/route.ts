@@ -1,5 +1,8 @@
 import { NextRequest } from "next/server";
 import { sendMail } from "@/lib/mailer";
+import { createId } from "@/db/id";
+import { EnterpriseInquiry } from "@/db/models/entrise-query";
+// import { EnterpriseInquiry, createId } from "@/db";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -8,6 +11,18 @@ export async function POST(request: NextRequest) {
   if (!name || !email || !orgName) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
   }
+
+  await EnterpriseInquiry.create({
+    id: createId(),
+    name,
+    orgName,
+    email,
+    phone: phone || null,
+    orgType: orgType || null,
+    teamSize: teamSize || null,
+    trainingInterests: trainingInterests || null,
+    createdAt: new Date(),
+  });
 
   await sendMail({
     subject: `Enterprise Inquiry: ${orgName}`,

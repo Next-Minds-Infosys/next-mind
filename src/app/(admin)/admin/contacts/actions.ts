@@ -3,8 +3,8 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { SubmissionStatus } from "@/generated/prisma/client";
+import type { SubmissionStatus } from "@/lib/types";
+import { ContactSubmission } from "@/db/models/contact-submission";
 
 export async function updateContactStatus(
   id: string,
@@ -13,7 +13,8 @@ export async function updateContactStatus(
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
-  await prisma.contactSubmission.update({ where: { id }, data: { status } });
+  await ContactSubmission.update({ status }, { where: { id } });
   revalidatePath("/admin/contacts");
+  revalidatePath("/admin");
   return { success: true };
 }

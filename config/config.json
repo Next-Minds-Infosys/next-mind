@@ -1,0 +1,23 @@
+{
+  "development": {
+    "username": "nextmind",
+    "password": "nextmind",
+    "database": "nextminds",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "root",
+    "password": "7227",
+    "database": "nextminds",
+    "host": "127.0.0.1",
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "root",
+    "password": "7227",
+    "database": "",
+    "host": "127.0.0.1",
+    "dialect": "mysql"
+  }
+}

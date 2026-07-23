@@ -3,8 +3,8 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-import { SubmissionStatus } from "@/generated/prisma/client";
+import { Enrollment } from "@/db";
+import type { SubmissionStatus } from "@/lib/types";
 
 export async function updateEnrollmentStatus(
   id: string,
@@ -13,7 +13,8 @@ export async function updateEnrollmentStatus(
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
-  await prisma.enrollment.update({ where: { id }, data: { status } });
+  await Enrollment.update({ status }, { where: { id } });
   revalidatePath("/admin/enrollments");
+  revalidatePath("/admin");
   return { success: true };
 }

@@ -1,4 +1,4 @@
-import { SubmissionStatus } from "@/generated/prisma/enums";
+import { SubmissionStatus } from "@/lib/types";
 import { Badge, type BadgeProps } from "@/components/ui/badge";
 
 const STATUS_CONFIG: Record<SubmissionStatus, { label: string; variant: BadgeProps["variant"] }> = {
