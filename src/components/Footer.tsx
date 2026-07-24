@@ -31,11 +31,12 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
           <div className="lg:col-span-2">
             <Image
-              src="/assets/FULL-NEXT-MINDS.jpg"
+              src="/assets/logo-horizontal.png"
               alt="Next Minds Infosys"
-              width={240}
-              height={48}
-              className="h-12 w-auto object-contain mb-5"
+              width={1963}
+              height={359}
+              sizes="240px"
+              className="h-11 w-auto object-contain mb-5"
             />
             <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: colors.muted }}>
               Empowering Nepal&apos;s future tech leaders with world-class IT

@@ -71,12 +71,13 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center flex-shrink-0">
           <Image
-            src="/assets/FULL-NEXT-MINDS.jpg"
+            src="/assets/logo-horizontal.png"
             alt="Next Minds Infosys"
-            width={200}
-            height={40}
+            width={1963}
+            height={359}
+            sizes="200px"
             priority
-            className="h-10 w-auto object-contain"
+            className="h-9 w-auto object-contain"
           />
         </Link>
 
