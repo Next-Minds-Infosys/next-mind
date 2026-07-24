@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Roshan Maharjan",
+    "role": "Full Stack Developer at CloudFactory",
+    "emoji": "👨‍💻",
+    "course": "Full Stack Development",
+    "quote": "The hands-on projects at Next Minds got me job-ready in 6 months. The mentors genuinely care about your progress."
+  },
+  {
+    "name": "Sushila Tamang",
+    "role": "Digital Marketing Manager at Daraz",
+    "emoji": "👩‍💼",
+    "course": "Digital Marketing",
+    "quote": "I went from zero marketing knowledge to managing a Rs.50L campaign budget. Unmatched practical approach in Nepal."
+  },
+  {
+    "name": "Bibek Rai",
+    "role": "DevOps Engineer at Leapfrog",
+    "emoji": "👨‍🔧",
+    "course": "DevOps Engineering",
+    "quote": "Best investment I ever made. Placed at Leapfrog within 3 weeks of completing the course. Placement support is exceptional."
+  },
+  {
+    "name": "Priya Shrestha",
+    "role": "Cyber Security Analyst at NIC Asia Bank",
+    "emoji": "👩‍💻",
+    "course": "Cyber Security",
+    "quote": "The curriculum is constantly updated with real-world scenarios. I felt fully prepared from day one at the bank."
+  },
+  {
+    "name": "Anil Gurung",
+    "role": "QA Lead at Deerwalk",
+    "emoji": "👨‍🏫",
+    "course": "QA Engineering",
+    "quote": "From a non-technical background to QA lead at Deerwalk — Next Minds made it possible with structured mentorship."
+  },
+  {
+    "name": "Manisha KC",
+    "role": "UI/UX Designer at Fusemachines",
+    "emoji": "👩‍🎨",
+    "course": "UI/UX Design",
+    "quote": "Figma skills alone doubled my freelance rates within 2 months of completing the course."
+  }
+]

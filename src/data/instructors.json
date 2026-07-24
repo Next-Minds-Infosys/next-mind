@@ -1,0 +1,58 @@
+{
+  "full-stack-development": {
+    "name": "Samrita KC",
+    "role": "Full Stack Mentor",
+    "emoji": "👩‍💻",
+    "photo": null,
+    "bio": "Meet Samrita KC, Full Stack mentor at Next Minds. They guide learners through React, Node.js, and database design, turning first lines of code into deployed, production-ready web applications."
+  },
+  "digital-marketing": {
+    "name": "Pratik Sharma",
+    "role": "Digital Marketing Mentor",
+    "emoji": "👨‍💼",
+    "photo": null,
+    "bio": "Meet Pratik Sharma, Digital Marketing mentor at Next Minds. They guide learners through paid campaigns, funnel strategy, and analytics, turning marketing theory into measurable business growth."
+  },
+  "advanced-seo": {
+    "name": "Ujjwal Thapa",
+    "role": "SEO Mentor",
+    "emoji": "🧑‍💻",
+    "photo": null,
+    "bio": "Meet Ujjwal Thapa, SEO mentor at Next Minds. They guide learners through technical audits, link building, and search data analysis, turning ranking theory into pages that actually reach page one."
+  },
+  "qa-engineering": {
+    "name": "Nabin Shrestha",
+    "role": "QA Engineering Mentor",
+    "emoji": "🧑‍🔬",
+    "photo": null,
+    "bio": "Meet Nabin Shrestha, QA Engineering mentor at Next Minds. They guide learners through test design, automation frameworks, and release workflows, turning careful thinking into software that ships without surprises."
+  },
+  "cyber-security": {
+    "name": "Suman Adhikari",
+    "role": "Cyber Security Mentor",
+    "emoji": "👨‍💻",
+    "photo": null,
+    "bio": "Meet Suman Adhikari, Cyber Security mentor at Next Minds. They guide learners through ethical hacking concepts, security practices, and hands-on cybersecurity techniques to turn curiosity into practical digital defense skills."
+  },
+  "devops-engineering": {
+    "name": "Roshan Bhattarai",
+    "role": "DevOps Mentor",
+    "emoji": "⚙️",
+    "photo": null,
+    "bio": "Meet Roshan Bhattarai, DevOps mentor at Next Minds. They guide learners through containers, CI/CD pipelines, and cloud infrastructure, turning manual deployments into automated, reliable delivery."
+  },
+  "ui-ux-design": {
+    "name": "Alina Shakya",
+    "role": "UI/UX Design Mentor",
+    "emoji": "👩‍🎨",
+    "photo": null,
+    "bio": "Meet Alina Shakya, UI/UX Design mentor at Next Minds. They guide learners through research, wireframing, and design systems, turning rough ideas into interfaces people genuinely enjoy using."
+  },
+  "data-science-ai": {
+    "name": "Anita Maharjan",
+    "role": "Data Science & AI Mentor",
+    "emoji": "👩‍🔬",
+    "photo": null,
+    "bio": "Meet Anita Maharjan, Data Science & AI mentor at Next Minds. They guide learners through Python, machine learning, and model deployment, turning raw datasets into insights and working AI solutions."
+  }
+}

@@ -1,22 +1,32 @@
 "use client";
 
-import { useState } from "react";
-import { Rocket, X } from "lucide-react";
-
-const courseOptions = [
-  "MERN Stack Development",
-  "Python & Django",
-  "UI/UX Design",
-  "Flutter Development",
-  "Digital Marketing",
-  "Data Science & AI",
-];
+import { useEffect, useState } from "react";
+import { courses } from "@/data/courses";
+import { colors, gradient } from "@/lib/theme";
 
 interface EnrollModalProps {
   isOpen: boolean;
   onClose: () => void;
   preSelectedCourse?: string;
 }
+
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "10px 14px",
+  borderRadius: "10px",
+  border: `1.5px solid ${colors.border}`,
+  backgroundColor: colors.surface,
+  color: colors.navy,
+  fontSize: "14px",
+  outline: "none",
+  transition: "border-color 0.2s",
+};
+
+const selectStyle: React.CSSProperties = {
+  ...inputStyle,
+  appearance: "none",
+  cursor: "pointer",
+};
 
 export default function EnrollModal({
   isOpen,
@@ -29,176 +39,269 @@ export default function EnrollModal({
     phone: "",
     address: "",
     course: preSelectedCourse,
-    educationLevel: "",
-    learningFormat: "Physical",
-    hasLaptop: "Yes",
+    education: "",
+    format: "Physical",
+    laptop: "Yes",
   });
+  const [submitted, setSubmitted] = useState(false);
+  const [prevOpen, setPrevOpen] = useState(isOpen);
+
+  if (isOpen !== prevOpen) {
+    setPrevOpen(isOpen);
+    if (isOpen) {
+      setSubmitted(false);
+      setForm((f) => ({ ...f, course: preSelectedCourse || f.course }));
+    }
+  }
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Enrollment submitted:", form);
-    alert("Thank you for enrolling! We will contact you shortly.");
-    onClose();
+  const onChange =
+    (key: keyof typeof form) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
+      setForm((f) => ({ ...f, [key]: e.target.value }));
+
+  const focus = (e: React.FocusEvent<HTMLElement>) => {
+    e.currentTarget.style.borderColor = colors.teal;
+  };
+  const blur = (e: React.FocusEvent<HTMLElement>) => {
+    e.currentTarget.style.borderColor = colors.border;
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
+  const labelClass = "block text-xs font-semibold mb-1.5 uppercase tracking-wider";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-      <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-gradient-to-br from-teal-500 to-blue-600 rounded-3xl shadow-2xl">
-        <div className="sticky top-0 bg-gradient-to-br from-teal-500 to-blue-600 px-8 pt-8 pb-6 rounded-t-3xl">
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+      style={{ backgroundColor: "rgba(13,45,82,0.55)", backdropFilter: "blur(4px)" }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
+        style={{ backgroundColor: colors.card, maxHeight: "90vh", overflowY: "auto" }}
+      >
+        <div className="p-6 text-white" style={{ background: gradient }}>
           <button
+            type="button"
             onClick={onClose}
-            className="absolute top-4 right-4 w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-white transition-colors"
+            aria-label="Close"
+            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 transition-all"
           >
-            <X size={24} />
+            ✕
           </button>
-          <div className="flex items-center gap-2 mb-3">
-            <h2 className="text-4xl text-white">Start Your Journey!</h2>
-            <Rocket className="text-white" size={32} />
-          </div>
-          <p className="text-white/90 text-lg">
-            Transform your future with cutting-edge IT skills. Whether you&apos;re a
-            beginner or looking to level up, we&apos;ve got the perfect course for you!
+          <div className="text-2xl mb-1">🚀</div>
+          <h2 className="font-display font-bold text-xl">Start Your Journey!</h2>
+          <p className="text-sm opacity-80 mt-1">
+            Transform your future with cutting-edge IT skills. Whether
+            you&apos;re a beginner or looking to level up, we&apos;ve got the
+            perfect course for you!
           </p>
         </div>
 
-        <div className="bg-white px-8 py-8 rounded-b-3xl">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {submitted ? (
+          <div className="p-8 text-center">
+            <div className="text-5xl mb-4">🎉</div>
+            <h3 className="font-display font-bold text-xl mb-2" style={{ color: colors.navy }}>
+              Application Received!
+            </h3>
+            <p className="text-sm mb-6" style={{ color: colors.muted }}>
+              Our counsellor will contact you within 2 hours to confirm your
+              enrollment.
+            </p>
+            <button
+              type="button"
+              onClick={onClose}
+              className="font-bold px-8 py-3 rounded-xl text-white w-full"
+              style={{ background: gradient }}
+            >
+              Got it! 🚀
+            </button>
+          </div>
+        ) : (
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              setSubmitted(true);
+            }}
+            className="p-6 space-y-4"
+          >
             <div>
-              <label className="block text-lg mb-2">Full Name</label>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Full Name
+              </label>
               <input
                 type="text"
-                name="fullName"
-                value={form.fullName}
-                onChange={handleChange}
                 placeholder="Enter your Full Name"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={form.fullName}
+                onChange={onChange("fullName")}
+                style={inputStyle}
+                onFocus={focus}
+                onBlur={blur}
               />
             </div>
 
             <div>
-              <label className="block text-lg mb-2">Email</label>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Email
+              </label>
               <input
                 type="email"
-                name="email"
-                value={form.email}
-                onChange={handleChange}
                 placeholder="Enter your Email"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={form.email}
+                onChange={onChange("email")}
+                style={inputStyle}
+                onFocus={focus}
+                onBlur={blur}
               />
             </div>
 
             <div>
-              <label className="block text-lg mb-2">Phone Number</label>
-              <div className="flex gap-3">
-                <div className="flex items-center gap-2 px-4 py-3 bg-gray-50 rounded-xl">
-                  <span className="text-2xl">🇳🇵</span>
-                  <span className="text-gray-600">+977</span>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Phone Number
+              </label>
+              <div className="flex gap-2">
+                <div
+                  className="flex items-center gap-2 px-3 rounded-xl text-sm font-semibold flex-shrink-0"
+                  style={{
+                    border: `1.5px solid ${colors.border}`,
+                    backgroundColor: colors.surface,
+                    color: colors.navy,
+                  }}
+                >
+                  🇳🇵 +977
                 </div>
                 <input
                   type="tel"
-                  name="phone"
-                  value={form.phone}
-                  onChange={handleChange}
                   placeholder="98XXXXXXXX"
                   required
-                  className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                  value={form.phone}
+                  onChange={onChange("phone")}
+                  style={inputStyle}
+                  onFocus={focus}
+                  onBlur={blur}
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-lg mb-2">Address</label>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Address
+              </label>
               <input
                 type="text"
-                name="address"
-                value={form.address}
-                onChange={handleChange}
                 placeholder="Enter your Address"
                 required
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500"
+                value={form.address}
+                onChange={onChange("address")}
+                style={inputStyle}
+                onFocus={focus}
+                onBlur={blur}
               />
             </div>
 
             <div>
-              <label className="block text-lg mb-2">Course</label>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Course
+              </label>
               <select
-                name="course"
-                value={form.course}
-                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-600"
+                value={form.course}
+                onChange={onChange("course")}
+                style={selectStyle}
+                onFocus={focus}
+                onBlur={blur}
               >
-                <option value="">Select a course</option>
-                {courseOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">Select Course</option>
+                {courses.map((c) => (
+                  <option key={c.id} value={c.title}>
+                    {c.title}
                   </option>
                 ))}
               </select>
             </div>
 
             <div>
-              <label className="block text-lg mb-2">Education Level</label>
+              <label className={labelClass} style={{ color: colors.muted }}>
+                Education Level
+              </label>
               <select
-                name="educationLevel"
-                value={form.educationLevel}
-                onChange={handleChange}
                 required
-                className="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-teal-500 text-gray-600"
+                value={form.education}
+                onChange={onChange("education")}
+                style={selectStyle}
+                onFocus={focus}
+                onBlur={blur}
               >
                 <option value="">Select your education level</option>
-                <option value="SEE">SEE (10th Grade)</option>
-                <option value="+2">+2 (12th Grade)</option>
-                <option value="Bachelor">Bachelor&apos;s Degree</option>
-                <option value="Master">Master&apos;s Degree</option>
-                <option value="Other">Other</option>
+                <option>+2 / High School</option>
+                <option>Bachelor&apos;s Degree</option>
+                <option>Master&apos;s Degree</option>
+                <option>Other</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-lg mb-3">Learning Format</label>
-              <div className="flex gap-4">
-                {["Physical", "Online", "Hybrid"].map((format) => (
-                  <label key={format} className="flex items-center gap-2 cursor-pointer">
+              <label
+                className="block text-xs font-semibold mb-2 uppercase tracking-wider"
+                style={{ color: colors.muted }}
+              >
+                Learning Format
+              </label>
+              <div className="flex gap-5">
+                {["Physical", "Online", "Hybrid"].map((opt) => (
+                  <label
+                    key={opt}
+                    className="flex items-center gap-2 cursor-pointer text-sm font-medium"
+                    style={{ color: colors.body }}
+                  >
                     <input
                       type="radio"
-                      name="learningFormat"
-                      value={format}
-                      checked={form.learningFormat === format}
-                      onChange={handleChange}
-                      className="w-5 h-5 text-teal-600 focus:ring-teal-500"
+                      name="format"
+                      value={opt}
+                      checked={form.format === opt}
+                      onChange={() => setForm((f) => ({ ...f, format: opt }))}
+                      className="accent-[#00bdb8] w-4 h-4"
                     />
-                    <span className="text-gray-700">{format}</span>
+                    {opt}
                   </label>
                 ))}
               </div>
             </div>
 
             <div>
-              <label className="block text-lg mb-3">Have a Laptop?</label>
-              <div className="flex gap-6">
-                {["Yes", "No"].map((option) => (
-                  <label key={option} className="flex items-center gap-2 cursor-pointer">
+              <label
+                className="block text-xs font-semibold mb-2 uppercase tracking-wider"
+                style={{ color: colors.muted }}
+              >
+                Have a Laptop?
+              </label>
+              <div className="flex gap-5">
+                {["Yes", "No"].map((opt) => (
+                  <label
+                    key={opt}
+                    className="flex items-center gap-2 cursor-pointer text-sm font-medium"
+                    style={{ color: colors.body }}
+                  >
                     <input
                       type="radio"
-                      name="hasLaptop"
-                      value={option}
-                      checked={form.hasLaptop === option}
-                      onChange={handleChange}
-                      className="w-5 h-5 text-teal-600 focus:ring-teal-500"
+                      name="laptop"
+                      value={opt}
+                      checked={form.laptop === opt}
+                      onChange={() => setForm((f) => ({ ...f, laptop: opt }))}
+                      className="accent-[#00bdb8] w-4 h-4"
                     />
-                    <span className="text-gray-700">{option}</span>
+                    {opt}
                   </label>
                 ))}
               </div>
@@ -206,12 +309,13 @@ export default function EnrollModal({
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white px-8 py-4 rounded-xl text-xl hover:shadow-lg transition-all"
+              className="w-full font-bold py-4 rounded-xl text-white text-base transition-all active:scale-[0.98] mt-2"
+              style={{ background: gradient, boxShadow: `0 4px 20px ${colors.teal}40` }}
             >
               Let&apos;s Go! 🚀
             </button>
           </form>
-        </div>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,62 @@
+[
+  {
+    "id": 1,
+    "category": "Career",
+    "emoji": "📈",
+    "featured": true,
+    "title": "Top 10 IT Skills in Demand in Nepal — 2025 Edition",
+    "excerpt": "Nepal's tech industry is evolving fast. Here are the skills hiring managers at top companies are actively seeking right now.",
+    "author": "Next Minds Team",
+    "readTime": "5 min read"
+  },
+  {
+    "id": 2,
+    "category": "Career",
+    "emoji": "💻",
+    "featured": false,
+    "title": "How to Land Your First Dev Job with Zero Experience",
+    "excerpt": "Breaking into software development without experience is tough — but these proven strategies have worked for 300+ of our graduates.",
+    "author": "Rajesh Shrestha",
+    "readTime": "7 min read"
+  },
+  {
+    "id": 3,
+    "category": "Industry",
+    "emoji": "📊",
+    "featured": false,
+    "title": "Digital Marketing vs. SEO: Which Course Should You Take?",
+    "excerpt": "Both are high-demand skills — but the right choice depends on your career goals. Here's a detailed comparison to help you decide.",
+    "author": "Next Minds Team",
+    "readTime": "4 min read"
+  },
+  {
+    "id": 4,
+    "category": "Technology",
+    "emoji": "⚙️",
+    "featured": false,
+    "title": "Why DevOps is Nepal's Hottest IT Job in 2025",
+    "excerpt": "DevOps engineers command some of the highest salaries in Nepal's IT sector. Here's what you need to know to break in.",
+    "author": "Suman Adhikari",
+    "readTime": "6 min read"
+  },
+  {
+    "id": 5,
+    "category": "Industry",
+    "emoji": "🔒",
+    "featured": false,
+    "title": "Cyber Security Careers: What Banks in Nepal Are Hiring For",
+    "excerpt": "Nepal's banking sector is investing heavily in cybersecurity. Here's the skills roadmap to land one of these high-paying roles.",
+    "author": "Suman Adhikari",
+    "readTime": "5 min read"
+  },
+  {
+    "id": 6,
+    "category": "Career",
+    "emoji": "🎨",
+    "featured": false,
+    "title": "UI/UX Design in Nepal: Career Guide for 2025",
+    "excerpt": "Design is no longer just about aesthetics. Here's how to build a lucrative UI/UX career in Nepal's growing product ecosystem.",
+    "author": "Samrita KC",
+    "readTime": "5 min read"
+  }
+]

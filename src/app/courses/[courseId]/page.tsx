@@ -1,17 +1,10 @@
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import CoursePageContent from "@/components/CoursePageContent";
-import { getCourseById } from "@/data/courses";
+import { courses, getCourseBySlug } from "@/data/courses";
 
 export function generateStaticParams() {
-  return [
-    { courseId: "mern-stack" },
-    { courseId: "python-django" },
-    { courseId: "ui-ux-design" },
-    { courseId: "flutter-development" },
-    { courseId: "digital-marketing" },
-    { courseId: "data-science-ai" },
-  ];
+  return courses.map((c) => ({ courseId: c.slug }));
 }
 
 export default async function CoursePage({
@@ -20,7 +13,7 @@ export default async function CoursePage({
   params: Promise<{ courseId: string }>;
 }) {
   const { courseId } = await params;
-  const course = getCourseById(courseId);
+  const course = getCourseBySlug(courseId);
 
   if (!course) {
     notFound();
