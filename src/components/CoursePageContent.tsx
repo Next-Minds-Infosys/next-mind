@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { Course } from "@/data/courses";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import EnrollModal from "./EnrollModal";
