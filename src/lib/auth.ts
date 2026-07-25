@@ -3,10 +3,12 @@ import { Pool } from "pg";
 
 const globalForPool = globalThis as unknown as { authPool?: Pool };
 
+// Same connection string as src/db/sequelize.ts - auth and the ORM must not
+// point at different databases.
 const pool =
   globalForPool.authPool ??
   new Pool({
-    connectionString: "postgresql://nextmind:nextmind@127.0.0.1:5432/nextminds",
+    connectionString: process.env.DATABASE_URL,
   });
 
 if (process.env.NODE_ENV !== "production") {
@@ -20,12 +22,12 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  socialProviders: {
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID ?? "",
-      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
-    },
-  },
+  // socialProviders: {
+  //   github: {
+  //     clientId: process.env.GITHUB_CLIENT_ID ?? "",
+  //     clientSecret: process.env.GITHUB_CLIENT_SECRET ?? "",
+  //   },
+  // },
   // Map to existing Prisma PascalCase tables
   user: {
     modelName: "User",

@@ -1,0 +1,809 @@
+[
+  {
+    "id": 1,
+    "slug": "full-stack-development",
+    "title": "Full Stack Development",
+    "category": "Development",
+    "duration": "6 months",
+    "level": "Beginner to Advanced",
+    "price": 45000,
+    "badge": "Most Popular",
+    "icon": "⚡",
+    "color": "#00bdb8",
+    "students": 340,
+    "tools": [
+      "React",
+      "Node.js",
+      "MongoDB",
+      "Express",
+      "TypeScript",
+      "Git"
+    ],
+    "shortDesc": "Build complete web applications from frontend to backend with the MERN stack.",
+    "description": "Master the complete web development stack — from crafting beautiful React UIs to building powerful Node.js APIs and managing MongoDB databases. This 6-month intensive program takes you from absolute beginner to a deployment-ready full stack developer with a portfolio of real projects.",
+    "whoIsItFor": [
+      "Fresh graduates looking to enter the tech industry",
+      "Non-technical professionals wanting to switch to software development",
+      "Freelancers who want to build complete web products independently",
+      "Entrepreneurs who want to build their own tech products"
+    ],
+    "skills": [
+      "React.js",
+      "Node.js",
+      "Express.js",
+      "MongoDB",
+      "REST APIs",
+      "TypeScript",
+      "Git & GitHub",
+      "Deployment (AWS/Vercel)",
+      "Authentication (JWT)",
+      "State Management"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Web Fundamentals",
+        "topics": [
+          "HTML5 & semantic markup",
+          "CSS3 & Flexbox/Grid",
+          "JavaScript ES6+",
+          "DOM manipulation"
+        ]
+      },
+      {
+        "title": "Module 2: React.js",
+        "topics": [
+          "Components & Props",
+          "State & Lifecycle",
+          "Hooks (useState, useEffect)",
+          "React Router",
+          "Context API"
+        ]
+      },
+      {
+        "title": "Module 3: Node.js & Express",
+        "topics": [
+          "Node.js core modules",
+          "Express framework",
+          "Middleware",
+          "RESTful API design",
+          "Authentication & JWT"
+        ]
+      },
+      {
+        "title": "Module 4: MongoDB & Mongoose",
+        "topics": [
+          "NoSQL fundamentals",
+          "CRUD operations",
+          "Schema design",
+          "Aggregation pipeline",
+          "Indexes"
+        ]
+      },
+      {
+        "title": "Module 5: Advanced Topics",
+        "topics": [
+          "TypeScript basics",
+          "Testing with Jest",
+          "Docker basics",
+          "CI/CD pipelines",
+          "Performance optimization"
+        ]
+      },
+      {
+        "title": "Module 6: Capstone Project",
+        "topics": [
+          "Full-stack app planning",
+          "Team collaboration with Git",
+          "Deployment to production",
+          "Code review & best practices",
+          "Demo day presentation"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need prior coding experience?",
+        "a": "No. This course starts from absolute zero and builds up progressively. All you need is a laptop and willingness to learn."
+      },
+      {
+        "q": "What tools will I need?",
+        "a": "A laptop with at least 8GB RAM, a code editor (VS Code — free), and a stable internet connection."
+      },
+      {
+        "q": "Will I get a certificate?",
+        "a": "Yes, you'll receive a Next Minds completion certificate recognized across Nepal's IT industry."
+      },
+      {
+        "q": "What kind of projects will I build?",
+        "a": "6+ real-world projects including an e-commerce platform, task management app, and a full-stack capstone project of your choice."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "slug": "digital-marketing",
+    "title": "Digital Marketing",
+    "category": "Marketing",
+    "duration": "3 months",
+    "level": "Beginner",
+    "price": 25000,
+    "badge": "Trending",
+    "icon": "📈",
+    "color": "#52c85a",
+    "students": 280,
+    "tools": [
+      "Google Ads",
+      "Meta Ads",
+      "Google Analytics",
+      "SEMrush",
+      "Canva",
+      "Mailchimp"
+    ],
+    "shortDesc": "Master paid ads, SEO, social media, and analytics to drive business growth.",
+    "description": "Become a complete digital marketer in 3 months. Learn to run profitable ad campaigns on Google and Meta, build SEO-driven content strategies, manage social media, and measure everything with analytics. Hands-on with real ad budgets from day one.",
+    "whoIsItFor": [
+      "Business owners wanting to grow online",
+      "Marketing professionals upgrading their digital skills",
+      "Fresh graduates entering the marketing field",
+      "Freelancers wanting to offer digital marketing services"
+    ],
+    "skills": [
+      "Google Ads (Search, Display, Shopping)",
+      "Meta Ads (Facebook & Instagram)",
+      "SEO On-page & Off-page",
+      "Google Analytics 4",
+      "Content Marketing",
+      "Email Marketing",
+      "Social Media Management",
+      "Conversion Rate Optimization"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Digital Marketing Fundamentals",
+        "topics": [
+          "Marketing funnel & buyer journey",
+          "Brand positioning",
+          "Competitor analysis",
+          "Setting KPIs & goals"
+        ]
+      },
+      {
+        "title": "Module 2: Search Engine Marketing (SEM)",
+        "topics": [
+          "Google Ads account setup",
+          "Keyword research & match types",
+          "Ad copywriting",
+          "Bidding strategies",
+          "Performance tracking"
+        ]
+      },
+      {
+        "title": "Module 3: Social Media Advertising",
+        "topics": [
+          "Facebook & Instagram Ads",
+          "Audience targeting",
+          "Ad creative design in Canva",
+          "A/B testing",
+          "Retargeting campaigns"
+        ]
+      },
+      {
+        "title": "Module 4: SEO & Content Marketing",
+        "topics": [
+          "On-page SEO",
+          "Technical SEO basics",
+          "Backlink building",
+          "Blog content strategy",
+          "Local SEO for Nepal"
+        ]
+      },
+      {
+        "title": "Module 5: Analytics & Reporting",
+        "topics": [
+          "Google Analytics 4 setup",
+          "Conversion tracking",
+          "Custom dashboards",
+          "ROI reporting",
+          "Data-driven decisions"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need a marketing background?",
+        "a": "No. We start from fundamentals and build up. Anyone can learn digital marketing with the right guidance."
+      },
+      {
+        "q": "Will I manage real ad campaigns?",
+        "a": "Yes — students practice with real (small) ad budgets as part of the hands-on training."
+      },
+      {
+        "q": "What salary can I expect after completion?",
+        "a": "Entry-level digital marketing roles in Nepal typically start at NPR 25,000–40,000/month."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "slug": "advanced-seo",
+    "title": "Advanced SEO",
+    "category": "Marketing",
+    "duration": "2 months",
+    "level": "Intermediate",
+    "price": 18000,
+    "badge": null,
+    "icon": "🔍",
+    "color": "#1a7fe8",
+    "students": 190,
+    "tools": [
+      "Ahrefs",
+      "SEMrush",
+      "Google Search Console",
+      "GA4",
+      "Screaming Frog",
+      "Moz"
+    ],
+    "shortDesc": "Master technical SEO, link building, and data-driven strategies to rank #1.",
+    "description": "Go beyond basic SEO and master the advanced techniques that actually move rankings. Learn technical SEO auditing, enterprise link building, Core Web Vitals optimization, and data analysis with industry-grade tools like Ahrefs and SEMrush.",
+    "whoIsItFor": [
+      "Digital marketers wanting to specialize in SEO",
+      "Content writers wanting to understand search intent",
+      "Web developers building SEO-friendly sites",
+      "Business owners wanting organic traffic growth"
+    ],
+    "skills": [
+      "Technical SEO auditing",
+      "Core Web Vitals optimization",
+      "Advanced keyword research",
+      "Link building & outreach",
+      "Schema markup",
+      "International SEO",
+      "E-E-A-T principles",
+      "SEO for e-commerce"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Technical SEO Deep Dive",
+        "topics": [
+          "Site architecture & crawlability",
+          "Core Web Vitals",
+          "Schema markup implementation",
+          "Indexation management",
+          "Mobile-first SEO"
+        ]
+      },
+      {
+        "title": "Module 2: Advanced Keyword Research",
+        "topics": [
+          "Search intent analysis",
+          "Topic clustering",
+          "Competitor gap analysis",
+          "Long-tail strategy",
+          "SERP feature targeting"
+        ]
+      },
+      {
+        "title": "Module 3: Link Building Mastery",
+        "topics": [
+          "Link prospecting with Ahrefs",
+          "Guest posting at scale",
+          "Digital PR",
+          "Broken link building",
+          "Skyscraper technique"
+        ]
+      },
+      {
+        "title": "Module 4: Analytics & Reporting",
+        "topics": [
+          "GA4 advanced segments",
+          "Search Console deep dive",
+          "Custom SEO dashboards",
+          "ROI attribution",
+          "Client reporting"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Is this for complete beginners?",
+        "a": "No. This course assumes basic SEO knowledge. If you're new, start with our Digital Marketing course first."
+      },
+      {
+        "q": "What tools are used?",
+        "a": "Ahrefs, SEMrush, Google Search Console, GA4, and Screaming Frog — all industry-standard tools."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "slug": "qa-engineering",
+    "title": "QA Engineering",
+    "category": "Development",
+    "duration": "4 months",
+    "level": "Beginner",
+    "price": 32000,
+    "badge": null,
+    "icon": "🛡️",
+    "color": "#e06b6b",
+    "students": 145,
+    "tools": [
+      "Selenium",
+      "JIRA",
+      "Postman",
+      "TestNG",
+      "Cypress",
+      "JMeter"
+    ],
+    "shortDesc": "Become a quality engineer who catches bugs before they reach production.",
+    "description": "Learn manual and automated testing from scratch. Master the tools and methodologies that companies use to ensure software quality — from writing test cases to automating regression suites with Selenium and Cypress.",
+    "whoIsItFor": [
+      "Beginners wanting a career in software testing",
+      "Developers wanting to add QA to their skillset",
+      "Non-technical professionals transitioning into tech",
+      "Project managers wanting to understand QA processes"
+    ],
+    "skills": [
+      "Manual testing",
+      "Test case writing",
+      "Selenium WebDriver",
+      "Cypress",
+      "API testing with Postman",
+      "JIRA for bug tracking",
+      "Performance testing with JMeter",
+      "Agile QA processes"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Manual Testing Fundamentals",
+        "topics": [
+          "SDLC & STLC",
+          "Test case design techniques",
+          "Bug lifecycle",
+          "Test documentation",
+          "Types of testing"
+        ]
+      },
+      {
+        "title": "Module 2: API Testing",
+        "topics": [
+          "REST API concepts",
+          "Postman for API testing",
+          "Test automation with Postman collections",
+          "API documentation"
+        ]
+      },
+      {
+        "title": "Module 3: Selenium WebDriver",
+        "topics": [
+          "Java basics for QA",
+          "Selenium setup & configuration",
+          "Locators & XPath",
+          "Page Object Model",
+          "TestNG framework"
+        ]
+      },
+      {
+        "title": "Module 4: Cypress & Modern Testing",
+        "topics": [
+          "Cypress setup",
+          "Writing E2E tests",
+          "Fixtures & custom commands",
+          "CI/CD integration",
+          "Test reporting"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need coding knowledge?",
+        "a": "Basic programming concepts help but aren't required. We cover enough Java/JavaScript for automation testing."
+      },
+      {
+        "q": "Is QA in demand in Nepal?",
+        "a": "Yes — QA engineers are consistently among the most hired roles at Nepal's IT companies and BPOs."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "slug": "cyber-security",
+    "title": "Cyber Security",
+    "category": "Security",
+    "duration": "5 months",
+    "level": "Intermediate",
+    "price": 40000,
+    "badge": "High Demand",
+    "icon": "🔒",
+    "color": "#f4a44a",
+    "students": 210,
+    "tools": [
+      "Kali Linux",
+      "Wireshark",
+      "Metasploit",
+      "Burp Suite",
+      "Nmap",
+      "OWASP ZAP"
+    ],
+    "shortDesc": "Master ethical hacking, penetration testing, and defensive security strategies.",
+    "description": "Nepal's most comprehensive cybersecurity training. Learn offensive and defensive security from the ground up — from network fundamentals to advanced penetration testing, web application security, and security operations. Prepares you for roles in Nepal's growing banking and fintech sector.",
+    "whoIsItFor": [
+      "IT professionals wanting to specialize in security",
+      "Network administrators wanting to protect infrastructure",
+      "Students interested in ethical hacking and pen testing",
+      "Banking & fintech employees needing security knowledge"
+    ],
+    "skills": [
+      "Penetration testing",
+      "Network security",
+      "Web application security (OWASP Top 10)",
+      "Vulnerability assessment",
+      "Incident response",
+      "Security operations (SOC)",
+      "Cryptography basics",
+      "Compliance & risk management"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Networking & Linux Fundamentals",
+        "topics": [
+          "TCP/IP & OSI model",
+          "Linux command line",
+          "Network protocols",
+          "Firewalls & VPNs",
+          "Wireshark packet analysis"
+        ]
+      },
+      {
+        "title": "Module 2: Ethical Hacking & Reconnaissance",
+        "topics": [
+          "Hacker mindset & methodology",
+          "OSINT techniques",
+          "Nmap & network scanning",
+          "Vulnerability scanning with Nessus"
+        ]
+      },
+      {
+        "title": "Module 3: Exploitation & Post-Exploitation",
+        "topics": [
+          "Metasploit framework",
+          "Buffer overflows basics",
+          "Privilege escalation",
+          "Lateral movement",
+          "Covering tracks"
+        ]
+      },
+      {
+        "title": "Module 4: Web Application Security",
+        "topics": [
+          "OWASP Top 10",
+          "Burp Suite for web testing",
+          "SQL injection",
+          "XSS & CSRF",
+          "API security testing"
+        ]
+      },
+      {
+        "title": "Module 5: Defensive Security & SOC",
+        "topics": [
+          "SIEM tools",
+          "Log analysis",
+          "Incident response process",
+          "Digital forensics basics",
+          "Security policies & compliance"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Is this course legal?",
+        "a": "Yes. We teach ethical hacking — all techniques are practiced in controlled lab environments. We cover legal and compliance aspects thoroughly."
+      },
+      {
+        "q": "What certifications can I get?",
+        "a": "This course prepares you for CEH (Certified Ethical Hacker), CompTIA Security+, and eJPT certifications."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "slug": "devops-engineering",
+    "title": "DevOps Engineering",
+    "category": "DevOps",
+    "duration": "5 months",
+    "level": "Intermediate",
+    "price": 42000,
+    "badge": "New",
+    "icon": "⚙️",
+    "color": "#00bdb8",
+    "students": 175,
+    "tools": [
+      "Docker",
+      "Kubernetes",
+      "AWS",
+      "Jenkins",
+      "Terraform",
+      "GitHub Actions"
+    ],
+    "shortDesc": "Bridge development and operations with containers, CI/CD, and cloud infrastructure.",
+    "description": "Master the DevOps toolchain that modern engineering teams depend on. From containerizing applications with Docker to orchestrating them with Kubernetes, automating pipelines with Jenkins and GitHub Actions, and managing cloud infrastructure on AWS — this course builds the skills companies urgently need.",
+    "whoIsItFor": [
+      "Software developers wanting to move into DevOps/SRE roles",
+      "System administrators wanting to modernize their skills",
+      "IT operations professionals learning cloud-native tools",
+      "Team leads wanting to improve deployment velocity"
+    ],
+    "skills": [
+      "Docker & containerization",
+      "Kubernetes orchestration",
+      "AWS (EC2, S3, EKS, RDS)",
+      "CI/CD with Jenkins & GitHub Actions",
+      "Infrastructure as Code (Terraform)",
+      "Monitoring (Prometheus & Grafana)",
+      "Linux administration",
+      "Bash scripting"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Linux & Networking for DevOps",
+        "topics": [
+          "Linux administration",
+          "Shell scripting & Bash",
+          "Networking fundamentals",
+          "SSH & security basics"
+        ]
+      },
+      {
+        "title": "Module 2: Containerization with Docker",
+        "topics": [
+          "Docker architecture",
+          "Writing Dockerfiles",
+          "Docker Compose",
+          "Container networking",
+          "Registry & image management"
+        ]
+      },
+      {
+        "title": "Module 3: Kubernetes",
+        "topics": [
+          "K8s architecture & concepts",
+          "Deployments & Services",
+          "ConfigMaps & Secrets",
+          "Ingress & networking",
+          "Helm charts"
+        ]
+      },
+      {
+        "title": "Module 4: CI/CD Pipelines",
+        "topics": [
+          "Jenkins setup & pipelines",
+          "GitHub Actions workflows",
+          "Automated testing in pipelines",
+          "Blue-green deployments",
+          "Rollbacks & versioning"
+        ]
+      },
+      {
+        "title": "Module 5: Cloud Infrastructure (AWS)",
+        "topics": [
+          "AWS core services",
+          "IAM & security",
+          "Terraform for IaC",
+          "Monitoring with CloudWatch",
+          "Cost optimization"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need development experience?",
+        "a": "Basic Linux and one programming language knowledge is recommended. Pure beginners should take Full Stack first."
+      },
+      {
+        "q": "Will I get AWS hands-on experience?",
+        "a": "Yes — each student gets access to a dedicated AWS sandbox environment throughout the course."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "slug": "ui-ux-design",
+    "title": "UI/UX Design",
+    "category": "Design",
+    "duration": "4 months",
+    "level": "Beginner",
+    "price": 28000,
+    "badge": null,
+    "icon": "🎨",
+    "color": "#d06bbd",
+    "students": 220,
+    "tools": [
+      "Figma",
+      "Adobe XD",
+      "Miro",
+      "Notion",
+      "Maze",
+      "Lottiefiles"
+    ],
+    "shortDesc": "Design beautiful, user-centered digital products using industry-standard tools.",
+    "description": "Learn to design digital products that users love. From user research and wireframing to high-fidelity prototypes and design systems, this course covers the complete UX process with Figma — the industry-standard tool used by top design teams worldwide.",
+    "whoIsItFor": [
+      "Creative individuals wanting a tech career without coding",
+      "Developers wanting to design their own products",
+      "Marketing professionals adding design to their skill set",
+      "Entrepreneurs who want to design their own startup's UX"
+    ],
+    "skills": [
+      "User research methods",
+      "Information architecture",
+      "Wireframing & prototyping",
+      "Figma (advanced)",
+      "Design systems",
+      "Usability testing",
+      "Interaction design",
+      "Accessibility (WCAG)"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: UX Research & Strategy",
+        "topics": [
+          "User interviews & surveys",
+          "Personas & user journeys",
+          "Competitive analysis",
+          "Information architecture",
+          "Content strategy"
+        ]
+      },
+      {
+        "title": "Module 2: Wireframing & Lo-Fi Prototyping",
+        "topics": [
+          "Sketching techniques",
+          "Wireframe tools (Miro)",
+          "Low-fidelity prototyping",
+          "Usability testing basics",
+          "Iterative design"
+        ]
+      },
+      {
+        "title": "Module 3: UI Design with Figma",
+        "topics": [
+          "Visual design principles",
+          "Typography & color theory",
+          "Component libraries",
+          "Auto layout & constraints",
+          "Responsive design"
+        ]
+      },
+      {
+        "title": "Module 4: Advanced Figma & Handoff",
+        "topics": [
+          "Interactive prototyping",
+          "Design systems",
+          "Developer handoff (Inspect)",
+          "Motion & micro-interactions",
+          "Portfolio project"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need any design software experience?",
+        "a": "No. We start with Figma from scratch. If you can use a computer, you can learn UI/UX design."
+      },
+      {
+        "q": "Is there a high demand for designers in Nepal?",
+        "a": "Yes — Nepal's growing startup ecosystem and outsourcing market has strong demand for quality UI/UX designers."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "slug": "data-science-ai",
+    "title": "Data Science & AI",
+    "category": "Data",
+    "duration": "6 months",
+    "level": "Intermediate",
+    "price": 48000,
+    "badge": "Premium",
+    "icon": "🤖",
+    "color": "#1a7fe8",
+    "students": 165,
+    "tools": [
+      "Python",
+      "TensorFlow",
+      "Pandas",
+      "NumPy",
+      "Scikit-learn",
+      "Jupyter",
+      "SQL"
+    ],
+    "shortDesc": "Build machine learning models and AI solutions using Python and TensorFlow.",
+    "description": "Nepal's most in-depth Data Science and AI course. Master Python for data analysis, build and deploy machine learning models, work with neural networks, and build AI-powered applications. Backed by projects that directly apply to Nepal's banking, telecom, and e-commerce sectors.",
+    "whoIsItFor": [
+      "Software developers wanting to move into AI/ML",
+      "Analysts and statisticians learning programming",
+      "Researchers wanting to apply ML to their domain",
+      "Fresh graduates targeting high-paying data roles"
+    ],
+    "skills": [
+      "Python for data science",
+      "Pandas & NumPy",
+      "Data visualization (Matplotlib, Seaborn)",
+      "Machine learning (Scikit-learn)",
+      "Deep learning (TensorFlow/Keras)",
+      "SQL & databases",
+      "Feature engineering",
+      "Model deployment (Flask/FastAPI)"
+    ],
+    "curriculum": [
+      {
+        "title": "Module 1: Python & Data Fundamentals",
+        "topics": [
+          "Python programming",
+          "NumPy & Pandas",
+          "Data cleaning & wrangling",
+          "Exploratory data analysis",
+          "Data visualization"
+        ]
+      },
+      {
+        "title": "Module 2: Statistics & Machine Learning",
+        "topics": [
+          "Descriptive & inferential statistics",
+          "Supervised learning algorithms",
+          "Unsupervised learning",
+          "Model evaluation & validation",
+          "Feature engineering"
+        ]
+      },
+      {
+        "title": "Module 3: Deep Learning",
+        "topics": [
+          "Neural network fundamentals",
+          "TensorFlow & Keras",
+          "CNNs for image recognition",
+          "RNNs & time series",
+          "Transfer learning"
+        ]
+      },
+      {
+        "title": "Module 4: NLP & Generative AI",
+        "topics": [
+          "Text preprocessing",
+          "Sentiment analysis",
+          "Transformers & BERT basics",
+          "Working with OpenAI APIs",
+          "Building AI-powered apps"
+        ]
+      },
+      {
+        "title": "Module 5: SQL & Data Engineering",
+        "topics": [
+          "SQL advanced queries",
+          "Database design",
+          "ETL pipelines",
+          "Data warehousing basics",
+          "BigQuery & cloud data tools"
+        ]
+      },
+      {
+        "title": "Module 6: Capstone Project",
+        "topics": [
+          "End-to-end ML project",
+          "Model deployment with Flask",
+          "Dashboard with Streamlit",
+          "Presentation to industry panel"
+        ]
+      }
+    ],
+    "faqs": [
+      {
+        "q": "Do I need a math background?",
+        "a": "Basic high school math is enough. We cover all statistics from first principles within the course."
+      },
+      {
+        "q": "What salary can I expect?",
+        "a": "Data science roles in Nepal start at NPR 60,000–80,000/month. Senior roles can reach NPR 1.5L+."
+      }
+    ]
+  }
+]

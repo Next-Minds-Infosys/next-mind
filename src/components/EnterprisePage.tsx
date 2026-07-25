@@ -15,6 +15,9 @@ import {
   Zap,
 } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { enterpriseContactSchema, type EnterpriseContactInput, type EnterpriseContactFormValues } from "@/lib/schemas";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -111,28 +114,46 @@ const partnerBenefits = [
 ];
 
 function EnterpriseContactForm() {
-  const [form, setForm] = useState({ name: "", orgName: "", email: "", phone: "", orgType: "", teamSize: "", trainingInterests: "" });
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
+  const [submitError, setSubmitError] = useState("");
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
-  };
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<EnterpriseContactFormValues, unknown, EnterpriseContactInput>({
+    resolver: zodResolver(enterpriseContactSchema),
+    defaultValues: {
+      name: "", orgName: "", email: "", phone: "",
+      orgType: "", teamSize: "", trainingInterests: "",
+    },
+  });
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus("sending");
+  const handleSubmit = rhfHandleSubmit(async (values) => {
+    setSubmitError("");
     try {
       const res = await fetch("/api/enterprise-contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(values),
       });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Something went wrong. Please try again.");
+      }
+      reset();
       setStatus("sent");
-    } catch {
+    } catch (err) {
       setStatus("error");
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong.");
     }
-  };
+  });
+
+  const fieldError = (name: keyof EnterpriseContactFormValues) =>
+    errors[name] ? (
+      <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p>
+    ) : null;
 
   const inputClass = "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
 
@@ -154,30 +175,34 @@ function EnterpriseContactForm() {
     <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
       <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
       <CardContent className="p-8 md:p-12">
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
           <div className="grid md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Name *</label>
-              <input name="name" type="text" value={form.name} onChange={handleChange} required placeholder="John Doe" className={inputClass} />
+              <input {...register("name")} type="text" placeholder="John Doe" className={inputClass} />
+              {fieldError("name")}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Name *</label>
-              <input name="orgName" type="text" value={form.orgName} onChange={handleChange} required placeholder="Your Company" className={inputClass} />
+              <input {...register("orgName")} type="text" placeholder="Your Company" className={inputClass} />
+              {fieldError("orgName")}
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-              <input name="email" type="email" value={form.email} onChange={handleChange} required placeholder="you@company.com" className={inputClass} />
+              <input {...register("email")} type="email" placeholder="you@company.com" className={inputClass} />
+              {fieldError("email")}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone *</label>
-              <input name="phone" type="tel" value={form.phone} onChange={handleChange} required placeholder="+977-9XXXXXXXXX" className={inputClass} />
+              <input {...register("phone")} type="tel" placeholder="+977-9XXXXXXXXX" className={inputClass} />
+              {fieldError("phone")}
             </div>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Type *</label>
-            <select name="orgType" value={form.orgType} onChange={handleChange} required className={`${inputClass} text-gray-500`}>
+            <select {...register("orgType")} required className={`${inputClass} text-gray-500`}>
               <option value="">Select type</option>
               <option>College/University</option>
               <option>Corporate/Private Company</option>
@@ -188,7 +213,7 @@ function EnterpriseContactForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Team Size</label>
-            <select name="teamSize" value={form.teamSize} onChange={handleChange} className={`${inputClass} text-gray-500`}>
+            <select {...register("teamSize")} className={`${inputClass} text-gray-500`}>
               <option value="">Select team size</option>
               <option>10–25 people</option>
               <option>25–50 people</option>
@@ -198,12 +223,16 @@ function EnterpriseContactForm() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">Training Interests</label>
-            <textarea name="trainingInterests" value={form.trainingInterests} onChange={handleChange} rows={4} placeholder="Tell us about your training needs, goals, and areas of interest..."
+            <textarea {...register("trainingInterests")} rows={4} placeholder="Tell us about your training needs, goals, and areas of interest..."
               className={`${inputClass} resize-none`} />
           </div>
-          {status === "error" && <p className="text-sm text-red-500">Something went wrong. Please try again.</p>}
-          <Button type="submit" size="lg" className="w-full" disabled={status === "sending"}>
-            {status === "sending" ? "Sending…" : "Request a Consultation"}
+          {status === "error" && (
+            <p className="text-sm text-red-500">
+              {submitError || "Something went wrong. Please try again."}
+            </p>
+          )}
+          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Sending…" : "Request a Consultation"}
           </Button>
 
           <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-6">

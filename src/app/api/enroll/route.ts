@@ -2,14 +2,14 @@ import { NextRequest } from "next/server";
 import { sendMail } from "@/lib/mailer";
 import { Course, Enrollment } from "@/db";
 import { createId } from "@/db/id";
+import { enrollSchema, parseInput } from "@/lib/schemas";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { fullName, email, phone, address, course, educationLevel, learningFormat, hasLaptop } = body;
+  const parsed = parseInput(enrollSchema, await request.json().catch(() => null));
+  if (!parsed.success) return Response.json({ error: parsed.error }, { status: 400 });
 
-  if (!fullName || !email || !course) {
-    return Response.json({ error: "Missing required fields" }, { status: 400 });
-  }
+  const { fullName, email, phone, address, course, educationLevel, learningFormat, hasLaptop } =
+    parsed.data;
 
   const courseRow =
     (await Course.findOne({ where: { slug: course } })) ??
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
     address: address || null,
     courseId: courseRow.id,
     educationLevel: educationLevel || null,
-    learningFormat: learningFormat || "Physical",
-    hasLaptop: hasLaptop || "No",
+    learningFormat,
+    hasLaptop,
     createdAt: new Date(),
   });
 

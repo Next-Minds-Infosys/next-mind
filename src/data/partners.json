@@ -1,0 +1,14 @@
+[
+  { "name": "Leapfrog Technology", "emoji": "🐸", "type": "Hiring Partner" },
+  { "name": "CloudFactory", "emoji": "☁️", "type": "Hiring Partner" },
+  { "name": "Deerwalk", "emoji": "🦌", "type": "Hiring Partner" },
+  { "name": "NIC Asia Bank", "emoji": "🏦", "type": "Hiring Partner" },
+  { "name": "Daraz Nepal", "emoji": "🛒", "type": "Hiring Partner" },
+  { "name": "Cotiviti Nepal", "emoji": "💊", "type": "Hiring Partner" },
+  { "name": "F1Soft", "emoji": "💳", "type": "Hiring Partner" },
+  { "name": "Fusemachines", "emoji": "🤖", "type": "Technology Partner" },
+  { "name": "Khalti", "emoji": "💜", "type": "Hiring Partner" },
+  { "name": "eSewa", "emoji": "🟢", "type": "Hiring Partner" },
+  { "name": "Vianet", "emoji": "📡", "type": "Technology Partner" },
+  { "name": "Ncell", "emoji": "📱", "type": "Technology Partner" }
+]

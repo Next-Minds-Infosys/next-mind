@@ -11,7 +11,7 @@ interface TopbarProps {
 
 export function Topbar({ onToggleSidebar, userName, userEmail }: TopbarProps) {
   return (
-    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b bg-white px-4 sm:px-6">
+    <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-950/5 bg-white/80 px-4 backdrop-blur-sm sm:px-6">
       <button
         className="text-gray-500 hover:text-gray-800 lg:hidden"
         onClick={onToggleSidebar}

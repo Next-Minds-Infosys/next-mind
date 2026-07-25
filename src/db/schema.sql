@@ -1,5 +1,7 @@
 -- Next Minds schema (compatible with previous Prisma migrations)
 
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 DO $$ BEGIN
   CREATE TYPE "Role" AS ENUM ('ADMIN', 'STUDENT');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
@@ -63,10 +65,20 @@ CREATE TABLE IF NOT EXISTS "Verification" (
     CONSTRAINT "Verification_pkey" PRIMARY KEY ("id")
 );
 
-CREATE TABLE IF NOT EXISTS "Course" (
-    "id" TEXT NOT NULL,
+CREATE TABLE IF NOT EXISTS "Category" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+    "name" TEXT NOT NULL,
     "slug" TEXT NOT NULL,
-    "category" TEXT NOT NULL,
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
+);
+
+CREATE TABLE IF NOT EXISTS "Course" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+    "slug" TEXT NOT NULL,
+    "categoryId" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "contentMd" TEXT NOT NULL,
@@ -140,6 +152,8 @@ CREATE TABLE IF NOT EXISTS "EmailJob" (
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");
 CREATE UNIQUE INDEX IF NOT EXISTS "Account_providerId_accountId_key" ON "Account"("providerId", "accountId");
 CREATE UNIQUE INDEX IF NOT EXISTS "Session_token_key" ON "Session"("token");
+CREATE UNIQUE INDEX IF NOT EXISTS "Category_name_key" ON "Category"("name");
+CREATE UNIQUE INDEX IF NOT EXISTS "Category_slug_key" ON "Category"("slug");
 CREATE UNIQUE INDEX IF NOT EXISTS "Course_slug_key" ON "Course"("slug");
 
 DO $$ BEGIN
@@ -152,6 +166,10 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
   ALTER TABLE "Course" ADD CONSTRAINT "Course_createdById_fkey" FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "Course" ADD CONSTRAINT "Course_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN

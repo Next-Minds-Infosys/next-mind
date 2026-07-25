@@ -3,11 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, ClipboardList, Mail, Building2, X } from "lucide-react";
+import { LayoutDashboard, Tags, BookOpen, ClipboardList, Mail, Building2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const navLinks = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/courses", label: "Courses", icon: BookOpen },
   { href: "/admin/enrollments", label: "Enrollments", icon: ClipboardList },
   { href: "/admin/contacts", label: "Contacts", icon: Mail },
@@ -27,11 +28,11 @@ export function Sidebar({ open, onClose }: SidebarProps) {
       {open && <div className="fixed inset-0 z-30 bg-black/30 lg:hidden" onClick={onClose} />}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 w-64 border-r bg-white transition-transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-40 w-64 border-r border-gray-950/5 bg-white transition-transform lg:translate-x-0 ${
           open ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex h-16 items-center justify-between gap-2 border-b px-5">
+        <div className="flex h-16 items-center justify-between gap-2 border-b border-gray-950/5 px-5">
           <Link href="/admin" className="flex items-center gap-2.5" onClick={onClose}>
             <Image src="/next-minds-logo.png" alt="Next Minds" width={100} height={40} className="h-8 w-auto" />
             <Badge variant="gradient" className="text-xs">

@@ -2,14 +2,13 @@ import { NextRequest } from "next/server";
 import { sendMail } from "@/lib/mailer";
 import { ContactSubmission } from "@/db/models";
 import { createId } from "@/db/id";
+import { contactSchema, parseInput } from "@/lib/schemas";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { name, email, phone, courseInterest, message } = body;
+  const parsed = parseInput(contactSchema, await request.json().catch(() => null));
+  if (!parsed.success) return Response.json({ error: parsed.error }, { status: 400 });
 
-  if (!name || !email || !message) {
-    return Response.json({ error: "Missing required fields" }, { status: 400 });
-  }
+  const { name, email, phone, courseInterest, message } = parsed.data;
 
   await ContactSubmission.create({
     id: createId(),

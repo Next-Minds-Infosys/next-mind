@@ -1,16 +1,15 @@
 import { NextRequest } from "next/server";
 import { sendMail } from "@/lib/mailer";
 import { createId } from "@/db/id";
+import { enterpriseContactSchema, parseInput } from "@/lib/schemas";
 import { EnterpriseInquiry } from "@/db/models/entrise-query";
 // import { EnterpriseInquiry, createId } from "@/db";
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
-  const { name, orgName, email, phone, orgType, teamSize, trainingInterests } = body;
+  const parsed = parseInput(enterpriseContactSchema, await request.json().catch(() => null));
+  if (!parsed.success) return Response.json({ error: parsed.error }, { status: 400 });
 
-  if (!name || !email || !orgName) {
-    return Response.json({ error: "Missing required fields" }, { status: 400 });
-  }
+  const { name, orgName, email, phone, orgType, teamSize, trainingInterests } = parsed.data;
 
   await EnterpriseInquiry.create({
     id: createId(),

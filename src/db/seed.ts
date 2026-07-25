@@ -1,38 +1,21 @@
 import { Course } from "./models/course";
+import { Category } from "./models/category";
 
 import { courses } from "../data/courses";
 import type { Course as StaticCourse } from "../data/courses";
 import { auth } from "../lib/auth";
+import { slugify } from "../lib/utils";
 import { sequelize } from "./sequelize";
 import { User } from ".";
 
+/**
+ * Skills, whoIsItFor, curriculum and faqs now have their own columns, so
+ * contentMd no longer flattens them into markdown. It is reserved for
+ * free-form prose written in the admin's rich-text editor; seed it with the
+ * overview so the NOT NULL column has a sensible starting point.
+ */
 function toContentMd(course: StaticCourse): string {
-  const sections: string[] = [course.detailedDescription, ""];
-
-  sections.push("## What You'll Learn", "");
-  for (const item of course.whatYouWillLearn) sections.push(`- ${item}`);
-  sections.push("");
-
-  sections.push("## Who Is This For", "");
-  for (const item of course.whoIsThisFor) {
-    sections.push(`**${item.title}** — ${item.description}`, "");
-  }
-
-  sections.push("## Curriculum", "");
-  for (const item of course.curriculum) {
-    sections.push(`${item.module}. ${item.title}`);
-  }
-  sections.push("");
-
-  sections.push("## Skills You'll Gain", "");
-  sections.push(course.skillsYouWillLearn.map((s) => `\`${s}\``).join(" · "), "");
-
-  sections.push("## Highlights", "");
-  for (const item of course.highlights) {
-    sections.push(`**${item.title}** — ${item.description}`, "");
-  }
-
-  return sections.join("\n");
+  return course.description;
 }
 
 async function main() {
@@ -59,14 +42,39 @@ async function main() {
   }
   console.log(`Admin user ready: ${admin!.email}`);
 
+  const categoryNames = Array.from(new Set(courses.map((c) => c.category)));
+  const categoryIdByName = new Map<string, string>();
+  for (const name of categoryNames) {
+    const [category] = await Category.findOrCreate({
+      where: { name },
+      defaults: { name, slug: slugify(name) },
+    });
+    categoryIdByName.set(name, category.id);
+    console.log(`Seeded category: ${name}`);
+  }
+
   for (const course of courses) {
-    const existing = await Course.findOne({ where: { slug: course.id } });
+    const existing = await Course.findOne({ where: { slug: course.slug } });
     const payload = {
-      category: course.category,
+      categoryId: categoryIdByName.get(course.category)!,
       title: course.title,
       description: course.description,
+      shortDesc: course.shortDesc,
       contentMd: toContentMd(course),
       tools: course.tools,
+      whoIsItFor: course.whoIsItFor,
+      skills: course.skills,
+      // Stable ids per module so a future CourseModule table (or anchor links)
+      // can reference them without renumbering.
+      curriculum: course.curriculum.map((mod, i) => ({
+        id: `${course.slug}-m${i + 1}`,
+        title: mod.title,
+        topics: mod.topics,
+      })),
+      faqs: course.faqs,
+      badge: course.badge,
+      color: course.color,
+      students: course.students,
       duration: course.duration,
       level: course.level,
       price: course.price,
@@ -76,7 +84,7 @@ async function main() {
       await existing.update(payload);
     } else {
       await Course.create({
-        slug: course.id,
+        slug: course.slug,
         ...payload,
         createdById: admin!.id,
         published: true,
@@ -84,7 +92,7 @@ async function main() {
         updatedAt: new Date(),
       });
     }
-    console.log(`Seeded course: ${course.id}`);
+    console.log(`Seeded course: ${course.slug}`);
   }
 
   await sequelize.close();

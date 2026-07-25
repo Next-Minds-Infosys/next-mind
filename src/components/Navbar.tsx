@@ -1,148 +1,278 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ChevronDown, Menu, X } from "lucide-react";
-import { courseNavItems } from "@/data/courses";
-import EnrollModal from "./EnrollModal";
+import { usePathname } from "next/navigation";
+import { companyLinks } from "@/data/courses";
+import { colors, gradient } from "@/lib/theme";
+
+const mainLinks = [
+  { label: "Home", href: "/" },
+  { label: "Courses", href: "/courses" },
+  { label: "Enterprise", href: "/enterprise" },
+];
+
+const mobileLinks = [
+  { href: "/", label: "Home" },
+  { href: "/courses", label: "Courses" },
+  { href: "/enterprise", label: "Enterprise" },
+  { href: "/about", label: "About Us" },
+  { href: "/blog", label: "Blog" },
+  { href: "/success-stories", label: "Success Stories" },
+  { href: "/testimonials", label: "Testimonials" },
+  { href: "/partners", label: "Partners" },
+  { href: "/contact", label: "Contact" },
+];
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [coursesOpen, setCoursesOpen] = useState(false);
-  const [enrollOpen, setEnrollOpen] = useState(false);
+  const [companyOpen, setCompanyOpen] = useState(false);
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  const companyRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 50);
+    onScroll();
+    window.addEventListener("scroll", onScroll);
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (companyRef.current && !companyRef.current.contains(e.target as Node)) {
+        setCompanyOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  if (pathname !== prevPathname) {
+    setPrevPathname(pathname);
+    setMobileOpen(false);
+    setCompanyOpen(false);
+  }
+
+  const isActive = (href: string) => pathname === href;
 
   return (
-    <>
-      <nav className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm border-b border-gray-200 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link href="/">
-                <Image
-                  src="/next-minds-logo.png"
-                  alt="Next Minds Logo"
-                  width={120}
-                  height={48}
-                  className="h-12 w-auto"
-                  priority
-                />
-              </Link>
-            </div>
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+      style={{
+        backgroundColor: "rgba(255,255,255,0.97)",
+        borderBottom: `1px solid ${scrolled ? colors.border : "#f0f5fa"}`,
+        boxShadow: scrolled ? "0 2px 24px rgba(13,45,82,0.08)" : "none",
+        backdropFilter: "blur(12px)",
+      }}
+    >
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center flex-shrink-0">
+          <Image
+            src="/assets/logo-horizontal.png"
+            alt="Next Minds Infosys"
+            width={1963}
+            height={359}
+            sizes="200px"
+            priority
+            className="h-9 w-auto object-contain"
+          />
+        </Link>
 
-            <div className="hidden md:flex items-center gap-8">
-              <Link
-                href="/"
-                className="text-gray-700 hover:text-teal-600 transition-colors"
-              >
-                Home
-              </Link>
-
-              <div
-                className="relative"
-                onMouseEnter={() => setCoursesOpen(true)}
-                onMouseLeave={() => setCoursesOpen(false)}
-              >
-                <button className="flex items-center gap-1 text-gray-700 hover:text-teal-600 transition-colors">
-                  Courses
-                  <ChevronDown size={16} />
-                </button>
-                {coursesOpen && (
-                  <div className="absolute top-full left-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 py-2">
-                    {courseNavItems.map((course) => (
-                      <Link
-                        key={course.id}
-                        href={`/courses/${course.id}`}
-                        className="block px-4 py-2 text-gray-700 hover:bg-teal-50 hover:text-teal-600 transition-colors"
-                      >
-                        {course.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <Link
-                href="/enterprise"
-                className="text-gray-700 hover:text-teal-600 transition-colors"
-              >
-                Enterprise
-              </Link>
-              <a
-                href="#contact"
-                className="text-gray-700 hover:text-teal-600 transition-colors"
-              >
-                Contact
-              </a>
-              <button
-                onClick={() => setEnrollOpen(true)}
-                className="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-6 py-2 rounded-full hover:shadow-lg transition-all"
-              >
-                Enroll Now
-              </button>
-            </div>
-
-            <button
-              className="md:hidden"
-              onClick={() => setMobileOpen(!mobileOpen)}
+        <div className="hidden md:flex items-center gap-1">
+          {mainLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="px-4 py-2 text-sm font-medium rounded-lg transition-colors relative"
+              style={{
+                color: isActive(l.href) ? colors.teal : colors.body,
+                backgroundColor: "transparent",
+              }}
+              onMouseEnter={(e) => {
+                if (isActive(l.href)) return;
+                e.currentTarget.style.color = colors.teal;
+                e.currentTarget.style.backgroundColor = colors.light;
+              }}
+              onMouseLeave={(e) => {
+                if (isActive(l.href)) return;
+                e.currentTarget.style.color = colors.body;
+                e.currentTarget.style.backgroundColor = "transparent";
+              }}
             >
-              {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+              {l.label}
+              {isActive(l.href) && (
+                <span
+                  className="absolute bottom-0.5 left-4 right-4 h-0.5 rounded-full"
+                  style={{ background: gradient }}
+                />
+              )}
+            </Link>
+          ))}
+
+          <div className="relative" ref={companyRef}>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-lg transition-colors"
+              style={{
+                color: companyOpen ? colors.teal : colors.body,
+                backgroundColor: companyOpen ? colors.light : "transparent",
+              }}
+              onClick={() => setCompanyOpen((v) => !v)}
+            >
+              Company
+              <svg
+                className="w-3.5 h-3.5 transition-transform duration-200"
+                style={{ transform: companyOpen ? "rotate(180deg)" : "none" }}
+                viewBox="0 0 12 8"
+                fill="none"
+              >
+                <path
+                  d="M1 1l5 5 5-5"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </button>
+
+            {companyOpen && (
+              <div
+                className="absolute top-full left-0 mt-2 rounded-2xl py-2 min-w-[220px]"
+                style={{
+                  backgroundColor: colors.card,
+                  border: `1px solid ${colors.border}`,
+                  boxShadow: "0 16px 48px rgba(13,45,82,0.12)",
+                }}
+              >
+                {companyLinks.map((l) => (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className="flex items-center gap-3 px-4 py-2.5 text-sm mx-1 rounded-lg transition-colors"
+                    style={{ color: isActive(l.href) ? colors.teal : colors.body }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.backgroundColor = colors.surface;
+                      e.currentTarget.style.color = colors.teal;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = isActive(l.href)
+                        ? colors.teal
+                        : colors.body;
+                    }}
+                  >
+                    <span>{l.icon}</span>
+                    <span className="font-medium">{l.label}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
-          {mobileOpen && (
-            <div className="md:hidden py-4 space-y-4">
-              <Link
-                href="/"
-                className="block text-gray-700 hover:text-teal-600"
-                onClick={() => setMobileOpen(false)}
-              >
-                Home
-              </Link>
-              <div className="space-y-2">
-                <div className="text-gray-700">Courses</div>
-                <div className="pl-4 space-y-2">
-                  {courseNavItems.map((course) => (
-                    <Link
-                      key={course.id}
-                      href={`/courses/${course.id}`}
-                      className="block text-sm text-gray-600 hover:text-teal-600"
-                      onClick={() => setMobileOpen(false)}
-                    >
-                      {course.name}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              <Link
-                href="/enterprise"
-                className="block text-gray-700 hover:text-teal-600"
-                onClick={() => setMobileOpen(false)}
-              >
-                Enterprise
-              </Link>
-              <a
-                href="#contact"
-                className="block text-gray-700 hover:text-teal-600"
-                onClick={() => setMobileOpen(false)}
-              >
-                Contact
-              </a>
-              <button
-                onClick={() => {
-                  setEnrollOpen(true);
-                  setMobileOpen(false);
-                }}
-                className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white px-6 py-2 rounded-full"
-              >
-                Enroll Now
-              </button>
-            </div>
-          )}
+          <Link
+            href="/contact"
+            className="px-4 py-2 text-sm font-medium rounded-lg transition-colors relative"
+            style={{
+              color: isActive("/contact") ? colors.teal : colors.body,
+              backgroundColor: "transparent",
+            }}
+            onMouseEnter={(e) => {
+              if (isActive("/contact")) return;
+              e.currentTarget.style.color = colors.teal;
+              e.currentTarget.style.backgroundColor = colors.light;
+            }}
+            onMouseLeave={(e) => {
+              if (isActive("/contact")) return;
+              e.currentTarget.style.color = colors.body;
+              e.currentTarget.style.backgroundColor = "transparent";
+            }}
+          >
+            Contact
+            {isActive("/contact") && (
+              <span
+                className="absolute bottom-0.5 left-4 right-4 h-0.5 rounded-full"
+                style={{ background: gradient }}
+              />
+            )}
+          </Link>
         </div>
-      </nav>
 
-      <EnrollModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} />
-    </>
+        <div className="hidden md:flex items-center gap-3">
+          <button
+            type="button"
+            className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
+            style={{ color: colors.body }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = colors.teal;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = colors.body;
+            }}
+          >
+            Sign In
+          </button>
+          <Link
+            href="/courses"
+            className="text-sm font-bold px-6 py-2.5 rounded-xl text-white transition-all active:scale-95"
+            style={{ background: gradient, boxShadow: `0 4px 16px ${colors.teal}40` }}
+          >
+            Enroll Now
+          </Link>
+        </div>
+
+        <button
+          type="button"
+          className="md:hidden p-1"
+          style={{ color: colors.navy }}
+          aria-label="Toggle menu"
+          onClick={() => setMobileOpen((v) => !v)}
+        >
+          <div className="w-6 flex flex-col gap-1.5">
+            {[
+              mobileOpen ? "rotate-45 translate-y-2" : "",
+              mobileOpen ? "opacity-0 scale-x-0" : "",
+              mobileOpen ? "-rotate-45 -translate-y-2" : "",
+            ].map((cls, i) => (
+              <span
+                key={i}
+                className={`h-0.5 w-full rounded transition-all duration-300 ${cls}`}
+                style={{ backgroundColor: colors.navy }}
+              />
+            ))}
+          </div>
+        </button>
+      </div>
+
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ${
+          mobileOpen ? "max-h-[36rem] opacity-100" : "max-h-0 opacity-0"
+        }`}
+        style={{ borderTop: `1px solid ${colors.border}`, backgroundColor: colors.bg }}
+      >
+        <div className="px-6 py-5 flex flex-col gap-1">
+          {mobileLinks.map((l) => (
+            <Link
+              key={l.href}
+              href={l.href}
+              className="py-2.5 text-base font-medium rounded-lg px-3 transition-colors block"
+              style={{ color: isActive(l.href) ? colors.teal : colors.body }}
+            >
+              {l.label}
+            </Link>
+          ))}
+          <Link
+            href="/courses"
+            className="font-bold px-6 py-3 rounded-xl mt-3 text-white text-center block"
+            style={{ background: gradient }}
+          >
+            Enroll Now
+          </Link>
+        </div>
+      </div>
+    </nav>
   );
 }
