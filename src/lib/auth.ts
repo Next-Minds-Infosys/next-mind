@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { headers } from "next/headers";
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
 
@@ -48,4 +50,10 @@ export const auth = betterAuth({
   verification: {
     modelName: "Verification",
   },
+});
+
+// Deduplicates within a single request - layout + page both need the
+// session, and this avoids the duplicate DB-backed lookup.
+export const getSession = cache(async () => {
+  return auth.api.getSession({ headers: await headers() });
 });

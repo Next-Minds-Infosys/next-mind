@@ -1,9 +1,8 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { Op } from "sequelize";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { Course } from "@/db";
 import { courseSchema, parseInput, type CourseInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
@@ -11,7 +10,7 @@ import { slugify } from "@/lib/utils";
 export type { CourseInput };
 
 async function requireAdmin() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return null;
   return session;
 }
@@ -130,7 +129,7 @@ export async function toggleCoursePublished(
   id: string,
   published: boolean
 ): Promise<{ success: true } | { error: string }> {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
   await Course.update({ published }, { where: { id } });
@@ -142,7 +141,7 @@ export async function updateCourseCategory(
   id: string,
   categoryId: string
 ): Promise<{ success: true } | { error: string }> {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
 
   await Course.update({ categoryId }, { where: { id } });

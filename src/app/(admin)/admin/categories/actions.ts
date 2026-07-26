@@ -1,8 +1,7 @@
 "use server";
 
-import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { Category, Course } from "@/db";
 import { categorySchema, parseInput, type CategoryInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
@@ -10,7 +9,7 @@ import { slugify } from "@/lib/utils";
 export type { CategoryInput };
 
 async function requireAdmin() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return null;
   return session;
 }

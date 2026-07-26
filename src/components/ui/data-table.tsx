@@ -23,6 +23,8 @@ export function DataTable<TData, TValue>({
   emptyMessage = "No results.",
   pageSize = 10,
 }: DataTableProps<TData, TValue>) {
+  "use no memo";
+
   const table = useReactTable({
     data,
     columns,

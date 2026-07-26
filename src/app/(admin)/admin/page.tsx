@@ -1,4 +1,3 @@
-import { headers } from "next/headers";
 import Link from "next/link";
 import {
   Tags,
@@ -10,7 +9,7 @@ import {
   ArrowRight,
   Inbox,
 } from "lucide-react";
-import { auth } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
 import { Category, Course, Enrollment } from "@/db";
 import { SubmissionStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -40,7 +39,7 @@ function relativeDate(date: Date) {
 }
 
 export default async function AdminDashboardPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await getSession();
 
   const [
     categoryCount,

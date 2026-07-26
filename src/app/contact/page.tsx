@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import SiteLayout from "@/components/SiteLayout";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import { contactSchema, type ContactInput, type ContactFormValues } from "@/lib/schemas";
@@ -35,7 +35,7 @@ export default function ContactPage() {
     register,
     handleSubmit,
     reset,
-    watch,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<ContactFormValues, unknown, ContactInput>({
     resolver: zodResolver(contactSchema),
@@ -43,7 +43,7 @@ export default function ContactPage() {
   });
 
   // The "Subject" select maps onto the courseInterest column.
-  const subject = watch("courseInterest");
+  const subject = useWatch({ control, name: "courseInterest" });
 
   const onSubmit = handleSubmit(async (values) => {
     setSubmitError("");
