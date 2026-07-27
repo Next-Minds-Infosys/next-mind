@@ -12,5 +12,7 @@ interface CoursesTableProps {
 export function CoursesTable({ courses, categories }: CoursesTableProps) {
   const columns = useMemo(() => createCourseColumns(categories), [categories]);
 
-  return <DataTable columns={columns} data={courses} emptyMessage="No courses yet." pageSize={10} />;
+  return (
+    <DataTable columns={columns} data={courses} emptyMessage="No courses yet." pageSize={10} />
+  );
 }

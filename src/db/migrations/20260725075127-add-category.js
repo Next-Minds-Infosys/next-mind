@@ -23,14 +23,22 @@ module.exports = {
       name: { type: Sequelize.TEXT, allowNull: false, unique: true },
       slug: { type: Sequelize.TEXT, allowNull: false, unique: true },
       description: { type: Sequelize.TEXT, allowNull: true },
-      createdAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal("CURRENT_TIMESTAMP") },
-      updatedAt: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.literal("CURRENT_TIMESTAMP") },
+      createdAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
+      updatedAt: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
+      },
     });
 
     // Course.id was previously generated client-side (Sequelize UUIDV4); align it with
     // Category and generate server-side going forward.
     await queryInterface.sequelize.query(
-      `ALTER TABLE "Course" ALTER COLUMN "id" SET DEFAULT gen_random_uuid()::text`
+      `ALTER TABLE "Course" ALTER COLUMN "id" SET DEFAULT gen_random_uuid()::text`,
     );
 
     await queryInterface.addColumn("Course", "categoryId", {
@@ -39,7 +47,7 @@ module.exports = {
     });
 
     const [distinctCategories] = await queryInterface.sequelize.query(
-      `SELECT DISTINCT "category" FROM "Course"`
+      `SELECT DISTINCT "category" FROM "Course"`,
     );
 
     for (const row of distinctCategories) {
@@ -48,11 +56,11 @@ module.exports = {
         `INSERT INTO "Category" ("name", "slug", "createdAt", "updatedAt")
          VALUES (:name, :slug, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
          RETURNING "id"`,
-        { replacements: { name, slug: slugify(name) } }
+        { replacements: { name, slug: slugify(name) } },
       );
       await queryInterface.sequelize.query(
         `UPDATE "Course" SET "categoryId" = :id WHERE "category" = :name`,
-        { replacements: { id: category.id, name } }
+        { replacements: { id: category.id, name } },
       );
     }
 
@@ -80,7 +88,7 @@ module.exports = {
     });
 
     await queryInterface.sequelize.query(
-      `UPDATE "Course" c SET "category" = cat."name" FROM "Category" cat WHERE cat."id" = c."categoryId"`
+      `UPDATE "Course" c SET "category" = cat."name" FROM "Category" cat WHERE cat."id" = c."categoryId"`,
     );
 
     await queryInterface.changeColumn("Course", "category", {

@@ -1,4 +1,11 @@
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
 import { updateContactStatus } from "./actions";
 import { ContactSubmission } from "@/db/models";
@@ -37,7 +44,11 @@ export default async function AdminContactsPage() {
                 {contact.message}
               </TableCell>
               <TableCell>
-                <StatusSelect id={contact.id} status={contact.status} onUpdate={updateContactStatus} />
+                <StatusSelect
+                  id={contact.id}
+                  status={contact.status}
+                  onUpdate={updateContactStatus}
+                />
               </TableCell>
               <TableCell>{contact.createdAt.toLocaleDateString()}</TableCell>
             </TableRow>

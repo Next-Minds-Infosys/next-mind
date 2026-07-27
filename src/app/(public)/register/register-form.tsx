@@ -101,7 +101,8 @@ export default function RegisterForm() {
                   <div>
                     <p className="text-sm font-medium text-teal-800">Admin created</p>
                     <p className="text-xs text-teal-600 mt-0.5">
-                      <span className="font-medium">{success}</span> can now sign in with their password.
+                      <span className="font-medium">{success}</span> can now sign in with their
+                      password.
                     </p>
                   </div>
                 </motion.div>
@@ -179,8 +180,8 @@ export default function RegisterForm() {
                             ? i === 0
                               ? "bg-red-400"
                               : i === 1
-                              ? "bg-yellow-400"
-                              : "bg-teal-500"
+                                ? "bg-yellow-400"
+                                : "bg-teal-500"
                             : "bg-gray-200"
                         }`}
                       />
@@ -189,10 +190,10 @@ export default function RegisterForm() {
                       {form.password.length < 8
                         ? "Too short"
                         : form.password.length < 12
-                        ? "Fair"
-                        : form.password.length < 16
-                        ? "Good"
-                        : "Strong"}
+                          ? "Fair"
+                          : form.password.length < 16
+                            ? "Good"
+                            : "Strong"}
                     </span>
                   </div>
                 )}

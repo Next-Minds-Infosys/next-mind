@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
           <tr><td><strong>Message</strong></td><td style="white-space:pre-wrap">${message}</td></tr>
         </table>
       `,
-    })
+    }),
   );
 
   return Response.json({ success: true });

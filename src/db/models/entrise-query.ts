@@ -49,5 +49,5 @@ EnterpriseInquiry.init(
     status: { type: DataTypes.STRING, allowNull: false, defaultValue: "PENDING" },
     createdAt: { type: DataTypes.DATE, allowNull: false },
   },
-  { sequelize, tableName: "EnterpriseInquiry", modelName: "EnterpriseInquiry", updatedAt: false }
+  { sequelize, tableName: "EnterpriseInquiry", modelName: "EnterpriseInquiry", updatedAt: false },
 );

@@ -8,11 +8,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function sendMail(options: {
-  subject: string;
-  html: string;
-  replyTo?: string;
-}) {
+export async function sendMail(options: { subject: string; html: string; replyTo?: string }) {
   await transporter.sendMail({
     from: `"Next Minds Website" <${process.env.SMTP_USER}>`,
     to: process.env.SMTP_TO,

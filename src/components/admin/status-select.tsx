@@ -9,7 +9,10 @@ const STATUS_OPTIONS = Object.values(SubmissionStatus);
 interface StatusSelectProps {
   id: string;
   status: SubmissionStatus;
-  onUpdate: (id: string, status: SubmissionStatus) => Promise<{ success: true } | { error: string }>;
+  onUpdate: (
+    id: string,
+    status: SubmissionStatus,
+  ) => Promise<{ success: true } | { error: string }>;
 }
 
 export function StatusSelect({ id, status, onUpdate }: StatusSelectProps) {

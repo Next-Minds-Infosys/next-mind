@@ -19,7 +19,10 @@ type EmailJobCreation = Optional<
   "id" | "replyTo" | "status" | "attempts" | "lastError" | "createdAt" | "sentAt"
 >;
 
-export class EmailJob extends Model<EmailJobAttributes, EmailJobCreation> implements EmailJobAttributes {
+export class EmailJob
+  extends Model<EmailJobAttributes, EmailJobCreation>
+  implements EmailJobAttributes
+{
   declare id: string;
   declare subject: string;
   declare html: string;
@@ -43,5 +46,5 @@ EmailJob.init(
     createdAt: { type: DataTypes.DATE, allowNull: false },
     sentAt: { type: DataTypes.DATE, allowNull: true },
   },
-  { sequelize, tableName: "EmailJob", modelName: "EmailJob", updatedAt: false }
+  { sequelize, tableName: "EmailJob", modelName: "EmailJob", updatedAt: false },
 );

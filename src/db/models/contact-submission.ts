@@ -43,5 +43,5 @@ ContactSubmission.init(
     status: { type: DataTypes.STRING, allowNull: false, defaultValue: "PENDING" },
     createdAt: { type: DataTypes.DATE, allowNull: false },
   },
-  { sequelize, tableName: "ContactSubmission", modelName: "ContactSubmission", updatedAt: false }
+  { sequelize, tableName: "ContactSubmission", modelName: "ContactSubmission", updatedAt: false },
 );

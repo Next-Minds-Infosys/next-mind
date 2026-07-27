@@ -8,6 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "db:migrate": "sequelize-cli db:migrate",
     "db:seed": "tsx src/db/seed.ts",
     "db:sync": "tsx src/db/sync.ts"
@@ -53,6 +56,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
+    "prettier": "^3.9.6",
     "sequelize-cli": "^6.6.3",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",

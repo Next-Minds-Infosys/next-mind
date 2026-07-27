@@ -54,7 +54,10 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
           </Link>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:bg-red-50 focus:text-red-700">
+        <DropdownMenuItem
+          onClick={handleSignOut}
+          className="text-red-600 focus:bg-red-50 focus:text-red-700"
+        >
           <LogOut size={15} />
           Sign out
         </DropdownMenuItem>

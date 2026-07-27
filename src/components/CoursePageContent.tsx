@@ -2,22 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import {
-  Award,
-  BookOpen,
-  CheckCircle2,
-  Clock,
-  Layers,
-  Mail,
-  Phone,
-  Users,
-} from "lucide-react";
-import { getInstructorBySlug, type Course } from "@/data/courses";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import { Award, BookOpen, CheckCircle2, Clock, Layers, Mail, Phone, Users } from "lucide-react";
+import type { PublicCourse } from "@/db/queries";
 import { colors } from "@/lib/theme";
 import EnrollModal from "./EnrollModal";
 
 const sections = [
   { id: "overview", label: "Overview" },
+  { id: "about", label: "About" },
   { id: "who-is-this-for", label: "Who Is This For" },
   { id: "skills", label: "Skills" },
   { id: "curriculum", label: "Curriculum" },
@@ -85,10 +79,15 @@ const counsellingBenefits = [
   "Learning roadmap",
 ];
 
-export default function CoursePageContent({ course }: { course: Course }) {
+interface CoursePageContentProps {
+  course: PublicCourse;
+  courses: PublicCourse[];
+}
+
+export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [active, setActive] = useState("overview");
-  const instructor = getInstructorBySlug(course.slug);
+  const instructor = course.mentor;
   const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -99,7 +98,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
         if (visible) setActive(visible.target.id);
       },
-      { rootMargin: "-140px 0px -55% 0px", threshold: 0 }
+      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
     );
     sections.forEach((s) => {
       const el = document.getElementById(s.id);
@@ -122,13 +121,18 @@ export default function CoursePageContent({ course }: { course: Course }) {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
-              <div className="text-sm text-nm-teal px-3 py-1 rounded-full inline-block mb-4" style={{ backgroundColor: `${colors.teal}25` }}>
+              <div
+                className="text-sm text-nm-teal px-3 py-1 rounded-full inline-block mb-4"
+                style={{ backgroundColor: `${colors.teal}25` }}
+              >
                 {course.category}
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
                 {course.title}
               </h1>
-              <p className="text-xl mb-6" style={{ color: "rgba(255,255,255,0.70)" }}>{course.description}</p>
+              <p className="text-xl mb-6" style={{ color: "rgba(255,255,255,0.70)" }}>
+                {course.description}
+              </p>
 
               <div className="flex flex-wrap gap-4 mb-8">
                 <button
@@ -168,9 +172,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
               <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
                 <BookOpen size={48} />
               </div>
-              <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">
-                {course.title}
-              </h3>
+              <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">{course.title}</h3>
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 text-nm-body">
                   <Layers size={18} className="text-nm-teal flex-shrink-0" />
@@ -230,14 +232,12 @@ export default function CoursePageContent({ course }: { course: Course }) {
       </section>
 
       {/* Sticky section nav */}
-      <div
-        ref={navRef}
-        className="sticky top-16 bg-white border-b border-nm-border z-40"
-      >
+      <div ref={navRef} className="sticky top-16 bg-white border-b border-nm-border z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-6 overflow-x-auto py-4 scrollbar-none">
             {sections
               .filter((s) => s.id !== "mentor" || instructor)
+              .filter((s) => s.id !== "about" || course.contentMd)
               .map((s) => (
                 <button
                   key={s.id}
@@ -260,9 +260,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
         <div className="grid md:grid-cols-3 gap-8">
           <div className="md:col-span-2 space-y-16">
             <section id="overview" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                Course Overview
-              </h2>
+              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">Course Overview</h2>
               <p className="mb-6">{course.description}</p>
               <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">
                 What You Will Achieve
@@ -270,15 +268,23 @@ export default function CoursePageContent({ course }: { course: Course }) {
               <ul className="space-y-3">
                 {course.skills.slice(0, 6).map((s) => (
                   <li key={s} className="flex items-start gap-3">
-                    <CheckCircle2
-                      size={20}
-                      className="text-nm-teal flex-shrink-0 mt-0.5"
-                    />
+                    <CheckCircle2 size={20} className="text-nm-teal flex-shrink-0 mt-0.5" />
                     <span className="">{s}</span>
                   </li>
                 ))}
               </ul>
             </section>
+
+            {course.contentMd && (
+              <section id="about" className="scroll-mt-36">
+                <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
+                  About This Course
+                </h2>
+                <div className="prose-content max-w-none [&_h1]:font-display [&_h2]:font-display [&_h3]:font-display [&_h1]:mt-6 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-nm-navy [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-nm-navy [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-nm-navy [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_a]:text-nm-teal [&_a]:underline [&_strong]:font-semibold [&_blockquote]:border-l-2 [&_blockquote]:border-nm-teal [&_blockquote]:pl-4 [&_blockquote]:text-nm-muted [&_code]:rounded [&_code]:bg-nm-light [&_code]:px-1 [&_code]:py-0.5 [&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-nm-navy [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-white">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{course.contentMd}</ReactMarkdown>
+                </div>
+              </section>
+            )}
 
             <section id="who-is-this-for" className="scroll-mt-36">
               <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
@@ -334,8 +340,8 @@ export default function CoursePageContent({ course }: { course: Course }) {
                 Course Curriculum
               </h2>
               <p className="mb-6">
-                Our comprehensive curriculum is designed by industry experts to
-                ensure you gain practical, job-ready skills.
+                Our comprehensive curriculum is designed by industry experts to ensure you gain
+                practical, job-ready skills.
               </p>
               <div className="space-y-3">
                 {course.curriculum.map((mod, i) => (
@@ -348,12 +354,8 @@ export default function CoursePageContent({ course }: { course: Course }) {
                         {String(i + 1).padStart(2, "0")}
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-nm-navy">
-                          {mod.title}
-                        </h4>
-                        <p className="text-sm text-nm-muted mt-1">
-                          {mod.topics.join(" · ")}
-                        </p>
+                        <h4 className="text-lg font-semibold text-nm-navy">{mod.title}</h4>
+                        <p className="text-sm text-nm-muted mt-1">{mod.topics.join(" · ")}</p>
                       </div>
                     </div>
                   </div>
@@ -367,13 +369,13 @@ export default function CoursePageContent({ course }: { course: Course }) {
                   Learn <span className="text-nm-teal">From Industry Experts</span>
                 </h2>
                 <p className="mb-6">
-                  Every {course.title} batch is led by a working professional —
-                  not a full-time lecturer. You learn the tools, habits, and
-                  shortcuts they use on real projects every week.
+                  Every {course.title} batch is led by a working professional — not a full-time
+                  lecturer. You learn the tools, habits, and shortcuts they use on real projects
+                  every week.
                 </p>
                 <div className="border border-nm-border rounded-lg p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition-all">
                   <div
-                    className="relative w-full sm:w-[150px] flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center nm-gradient"
+                    className="relative w-full sm:w-[150px] flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center nm-gradient text-white"
                     style={{ aspectRatio: "3 / 4" }}
                   >
                     {instructor.photo ? (
@@ -385,7 +387,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
                         className="object-cover"
                       />
                     ) : (
-                      <span className="text-6xl">{instructor.emoji}</span>
+                      <Users size={64} />
                     )}
                   </div>
                   <div className="flex-1">
@@ -407,16 +409,11 @@ export default function CoursePageContent({ course }: { course: Course }) {
                 {whyUs.map((w) => {
                   const Icon = w.icon;
                   return (
-                    <div
-                      key={w.title}
-                      className="bg-white border border-nm-border rounded-lg p-6"
-                    >
+                    <div key={w.title} className="bg-white border border-nm-border rounded-lg p-6">
                       <div className="w-12 h-12 nm-gradient rounded-full flex items-center justify-center text-white mb-4">
                         <Icon size={22} />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-nm-navy">
-                        {w.title}
-                      </h3>
+                      <h3 className="text-xl font-semibold mb-2 text-nm-navy">{w.title}</h3>
                       <p className="">{w.desc}</p>
                     </div>
                   );
@@ -431,9 +428,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
               <div className="space-y-4">
                 {course.faqs.map((faq) => (
                   <div key={faq.q} className="border border-nm-border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-2 text-nm-navy">
-                      {faq.q}
-                    </h3>
+                    <h3 className="text-lg font-semibold mb-2 text-nm-navy">{faq.q}</h3>
                     <p className="">{faq.a}</p>
                   </div>
                 ))}
@@ -471,16 +466,11 @@ export default function CoursePageContent({ course }: { course: Course }) {
                 Schedule Counselling
               </button>
               <div className="mt-6 pt-6 border-t border-nm-border">
-                <h4 className="font-semibold mb-3 text-nm-navy">
-                  Benefits of Counselling:
-                </h4>
+                <h4 className="font-semibold mb-3 text-nm-navy">Benefits of Counselling:</h4>
                 <ul className="space-y-2 text-sm text-nm-body">
                   {counsellingBenefits.map((b) => (
                     <li key={b} className="flex items-start gap-2">
-                      <CheckCircle2
-                        size={16}
-                        className="text-nm-teal flex-shrink-0 mt-0.5"
-                      />
+                      <CheckCircle2 size={16} className="text-nm-teal flex-shrink-0 mt-0.5" />
                       <span>{b}</span>
                     </li>
                   ))}
@@ -501,8 +491,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
             Ready to Start Your Journey?
           </h2>
           <p className="text-xl mb-8" style={{ color: "rgba(255,255,255,0.65)" }}>
-            Join thousands of students who have transformed their careers with
-            Next Minds
+            Join thousands of students who have transformed their careers with Next Minds
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <button
@@ -527,6 +516,7 @@ export default function CoursePageContent({ course }: { course: Course }) {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         preSelectedCourse={course.title}
+        courses={courses}
       />
     </div>
   );

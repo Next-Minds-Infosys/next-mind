@@ -23,7 +23,7 @@ type EnrollmentCreation = Optional<
   "id" | "address" | "educationLevel" | "userId" | "status" | "createdAt"
 >;
 
-export class Enrollment
+class EnrollmentModel
   extends Model<EnrollmentAttributes, EnrollmentCreation>
   implements EnrollmentAttributes
 {
@@ -42,20 +42,36 @@ export class Enrollment
   declare course?: Course;
 }
 
-Enrollment.init(
-  {
-    id: { type: DataTypes.STRING, primaryKey: true },
-    fullName: { type: DataTypes.STRING, allowNull: false },
-    email: { type: DataTypes.STRING, allowNull: false },
-    phone: { type: DataTypes.STRING, allowNull: false },
-    address: { type: DataTypes.STRING, allowNull: true },
-    courseId: { type: DataTypes.STRING, allowNull: false },
-    educationLevel: { type: DataTypes.STRING, allowNull: true },
-    learningFormat: { type: DataTypes.STRING, allowNull: false },
-    hasLaptop: { type: DataTypes.STRING, allowNull: false },
-    userId: { type: DataTypes.STRING, allowNull: true },
-    status: { type: DataTypes.STRING, allowNull: false, defaultValue: "PENDING" },
-    createdAt: { type: DataTypes.DATE, allowNull: false },
-  },
-  { sequelize, tableName: "Enrollment", modelName: "Enrollment", updatedAt: false }
-);
+// Next's dev server (Turbopack/Fast Refresh) can re-evaluate this module
+// while other already-loaded modules (e.g. the associations in src/db/index.ts)
+// still reference the previous evaluation's class. Two different `Enrollment`
+// classes then fail Sequelize's `instanceof Model` checks. Caching on
+// globalThis (matching src/db/sequelize.ts) keeps one instance per process.
+const globalForEnrollmentModel = globalThis as unknown as { Enrollment?: typeof EnrollmentModel };
+
+export const Enrollment = globalForEnrollmentModel.Enrollment ?? EnrollmentModel;
+// The class name doubles as an instance type in TypeScript; re-declare that
+// here since `Enrollment` above is a `const` binding, not the class declaration.
+export type Enrollment = InstanceType<typeof EnrollmentModel>;
+
+if (!globalForEnrollmentModel.Enrollment) {
+  globalForEnrollmentModel.Enrollment = Enrollment;
+
+  Enrollment.init(
+    {
+      id: { type: DataTypes.STRING, primaryKey: true },
+      fullName: { type: DataTypes.STRING, allowNull: false },
+      email: { type: DataTypes.STRING, allowNull: false },
+      phone: { type: DataTypes.STRING, allowNull: false },
+      address: { type: DataTypes.STRING, allowNull: true },
+      courseId: { type: DataTypes.STRING, allowNull: false },
+      educationLevel: { type: DataTypes.STRING, allowNull: true },
+      learningFormat: { type: DataTypes.STRING, allowNull: false },
+      hasLaptop: { type: DataTypes.STRING, allowNull: false },
+      userId: { type: DataTypes.STRING, allowNull: true },
+      status: { type: DataTypes.STRING, allowNull: false, defaultValue: "PENDING" },
+      createdAt: { type: DataTypes.DATE, allowNull: false },
+    },
+    { sequelize, tableName: "Enrollment", modelName: "Enrollment", updatedAt: false },
+  );
+}

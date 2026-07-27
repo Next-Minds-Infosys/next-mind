@@ -1,12 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import type { ColumnDef } from "@tanstack/react-table";
 import { Trash2 } from "lucide-react";
 import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { CategorySelect } from "./category-select";
 import { PublishToggle } from "./publish-toggle";
 import type { CurriculumModule, Faq } from "@/db/models/course";
-import { CourseDialog } from "./course-dialog";
 import { deleteCourse } from "./actions";
 
 export interface CourseRow {
@@ -33,21 +33,23 @@ export interface CourseRow {
 }
 
 export function createCourseColumns(
-  categories: { id: string; name: string }[]
+  categories: { id: string; name: string }[],
 ): ColumnDef<CourseRow>[] {
   return [
     {
       accessorKey: "title",
       header: "Title",
-      cell: ({ row }) => (
-        <span className="font-medium text-gray-900">{row.original.title}</span>
-      ),
+      cell: ({ row }) => <span className="font-medium text-gray-900">{row.original.title}</span>,
     },
     {
       accessorKey: "categoryId",
       header: "Category",
       cell: ({ row }) => (
-        <CategorySelect courseId={row.original.id} categoryId={row.original.categoryId} categories={categories} />
+        <CategorySelect
+          courseId={row.original.id}
+          categoryId={row.original.categoryId}
+          categories={categories}
+        />
       ),
     },
     {
@@ -78,33 +80,12 @@ export function createCourseColumns(
         const course = row.original;
         return (
           <div className="flex items-center gap-3">
-            <CourseDialog
-              categories={categories}
-              initial={{
-                id: course.id,
-                title: course.title,
-                categoryId: course.categoryId,
-                description: course.description,
-                shortDesc: course.shortDesc,
-                contentMd: course.contentMd,
-                tools: course.tools,
-                whoIsItFor: course.whoIsItFor,
-                skills: course.skills,
-                curriculum: course.curriculum,
-                faqs: course.faqs,
-                badge: course.badge,
-                color: course.color,
-                students: course.students,
-                duration: course.duration,
-                level: course.level,
-                price: course.price,
-                imageUrl: course.imageUrl,
-                published: course.published,
-              }}
-              trigger={
-                <button className="text-sm font-medium text-teal-600 hover:text-teal-700">Edit</button>
-              }
-            />
+            <Link
+              href={`/admin/courses/${course.id}/edit`}
+              className="text-sm font-medium text-teal-600 hover:text-teal-700"
+            >
+              Edit
+            </Link>
             <ConfirmDeleteDialog
               title="Delete course?"
               description={

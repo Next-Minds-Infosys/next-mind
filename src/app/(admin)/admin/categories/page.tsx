@@ -1,6 +1,13 @@
 import { Plus } from "lucide-react";
 import { Category, Course, Enrollment } from "@/db";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { DeleteCategoryButton } from "./delete-button";
 import { CategoryDialog } from "./category-dialog";
 
@@ -22,7 +29,9 @@ export default async function AdminCategoriesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-gray-900">Categories</h1>
-          <p className="text-sm text-gray-500 mt-1">Group courses into the tracks students browse by</p>
+          <p className="text-sm text-gray-500 mt-1">
+            Group courses into the tracks students browse by
+          </p>
         </div>
         <CategoryDialog
           trigger={
@@ -55,7 +64,7 @@ export default async function AdminCategoriesPage() {
               const courseList = category.courses ?? [];
               const enrollmentCount = courseList.reduce(
                 (sum, course) => sum + (course.enrollments?.length ?? 0),
-                0
+                0,
               );
               return (
                 <TableRow key={category.id}>

@@ -7,18 +7,14 @@ import { Course } from "@/db";
 import { courseSchema, parseInput, type CourseInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
 
-export type { CourseInput };
-
 async function requireAdmin() {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return null;
   return session;
 }
 
-
-
 export async function createCourse(
-  data: CourseInput
+  data: CourseInput,
 ): Promise<{ success: true } | { error: string }> {
   const session = await requireAdmin();
   if (!session) return { error: "Unauthorized" };
@@ -55,6 +51,7 @@ export async function createCourse(
     level: data.level.trim(),
     price: data.price,
     imageUrl: data.imageUrl.trim() || null,
+    mentorId: data.mentorId.trim() || null,
     published: data.published,
     createdById: session.user.id,
   });
@@ -66,7 +63,7 @@ export async function createCourse(
 
 export async function updateCourse(
   id: string,
-  data: CourseInput
+  data: CourseInput,
 ): Promise<{ success: true } | { error: string }> {
   if (!(await requireAdmin())) return { error: "Unauthorized" };
 
@@ -108,6 +105,7 @@ export async function updateCourse(
     level: data.level.trim(),
     price: data.price,
     imageUrl: data.imageUrl.trim() || null,
+    mentorId: data.mentorId.trim() || null,
     published: data.published,
   });
 
@@ -127,7 +125,7 @@ export async function deleteCourse(id: string): Promise<{ success: true } | { er
 
 export async function toggleCoursePublished(
   id: string,
-  published: boolean
+  published: boolean,
 ): Promise<{ success: true } | { error: string }> {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
@@ -139,7 +137,7 @@ export async function toggleCoursePublished(
 
 export async function updateCourseCategory(
   id: string,
-  categoryId: string
+  categoryId: string,
 ): Promise<{ success: true } | { error: string }> {
   const session = await getSession();
   if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };

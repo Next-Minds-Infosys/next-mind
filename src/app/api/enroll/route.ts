@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
           <tr><td><strong>Has Laptop</strong></td><td>${hasLaptop}</td></tr>
         </table>
       `,
-    })
+    }),
   );
 
   return Response.json({ success: true });

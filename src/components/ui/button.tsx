@@ -10,8 +10,7 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow hover:shadow-lg hover:shadow-teal-200/60 active:scale-[0.98]",
-        outline:
-          "border-2 border-teal-500 text-teal-600 hover:bg-teal-50 active:scale-[0.98]",
+        outline: "border-2 border-teal-500 text-teal-600 hover:bg-teal-50 active:scale-[0.98]",
         ghost: "text-teal-600 hover:bg-teal-50 hover:text-teal-700",
         link: "text-teal-600 underline-offset-4 hover:underline",
         secondary: "bg-gray-100 text-gray-700 hover:bg-gray-200",
@@ -24,12 +23,11 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: { variant: "default", size: "default" },
-  }
+  },
 );
 
 export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
@@ -39,7 +37,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />
     );
-  }
+  },
 );
 Button.displayName = "Button";
 

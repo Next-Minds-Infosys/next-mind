@@ -21,12 +21,13 @@ import {
   TableHead,
   TableCell,
 } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { ContactSubmission } from "@/db/models/contact-submission";
 import { EnterpriseInquiry } from "@/db/models/entrise-query";
 
 // Hairline surface. Tailwind v4 renders an uncoloured `border` as currentColor,
-// so panels use a light ring instead.
-const PANEL = "rounded-2xl bg-white ring-1 ring-gray-950/5";
+// so cards use a light ring instead.
+const RING = "ring-1 ring-gray-950/5";
 const FOCUS =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500 focus-visible:ring-offset-2";
 
@@ -121,18 +122,20 @@ export default async function AdminDashboardPage() {
         </h2>
         <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
           {stats.map((stat) => (
-            <Link
-              key={stat.href}
-              href={stat.href}
-              className={`group block ${PANEL} p-5 transition hover:shadow-[0_6px_24px_rgba(20,184,166,0.10)] hover:ring-teal-500/30 ${FOCUS}`}
-            >
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 text-white">
-                <stat.icon size={18} />
-              </span>
-              <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight text-gray-900">
-                {stat.count.toLocaleString()}
-              </p>
-              <p className="mt-0.5 text-sm text-gray-500">{stat.label}</p>
+            <Link key={stat.href} href={stat.href} className={`group block rounded-2xl ${FOCUS}`}>
+              <Card
+                className={`${RING} transition hover:shadow-[0_6px_24px_rgba(20,184,166,0.10)] hover:ring-teal-500/30`}
+              >
+                <CardContent className="p-5">
+                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 text-white">
+                    <stat.icon size={18} />
+                  </span>
+                  <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight text-gray-900">
+                    {stat.count.toLocaleString()}
+                  </p>
+                  <p className="mt-0.5 text-sm text-gray-500">{stat.label}</p>
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
@@ -145,91 +148,93 @@ export default async function AdminDashboardPage() {
         </h2>
         <div className="grid gap-4 sm:grid-cols-2">
           {needsAttention.map((item) => (
-            <Link
-              key={item.label}
-              href={item.href}
-              className={`group flex items-center gap-4 ${PANEL} p-5 transition hover:ring-gray-950/10 ${FOCUS}`}
-            >
-              <span
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.tint}`}
-              >
-                <item.icon size={18} />
-              </span>
-              <span className="min-w-0 flex-1">
-                <span className="block text-2xl font-semibold leading-tight tabular-nums text-gray-900">
-                  {item.count.toLocaleString()}
-                </span>
-                <span className="block text-sm font-medium text-gray-700">{item.label}</span>
-                <span className="block truncate text-xs text-gray-500">{item.hint}</span>
-              </span>
-              <ArrowRight
-                size={16}
-                className="shrink-0 text-gray-300 transition group-hover:translate-x-0.5 group-hover:text-teal-600"
-              />
+            <Link key={item.label} href={item.href} className={`group block rounded-2xl ${FOCUS}`}>
+              <Card className={`${RING} transition hover:ring-gray-950/10`}>
+                <CardContent className="flex items-center gap-4 p-5">
+                  <span
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${item.tint}`}
+                  >
+                    <item.icon size={18} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-2xl font-semibold leading-tight tabular-nums text-gray-900">
+                      {item.count.toLocaleString()}
+                    </span>
+                    <span className="block text-sm font-medium text-gray-700">{item.label}</span>
+                    <span className="block truncate text-xs text-gray-500">{item.hint}</span>
+                  </span>
+                  <ArrowRight
+                    size={16}
+                    className="shrink-0 text-gray-300 transition group-hover:translate-x-0.5 group-hover:text-teal-600"
+                  />
+                </CardContent>
+              </Card>
             </Link>
           ))}
         </div>
       </section>
 
       {/* Recent enrollments */}
-      <section aria-labelledby="recent-heading" className={`${PANEL} overflow-hidden`}>
-        <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
-          <div>
-            <h2 id="recent-heading" className="font-semibold text-gray-900">
-              Recent enrollments
-            </h2>
-            <p className="text-sm text-gray-500">
-              Latest student applications from the public site
-            </p>
+      <section aria-labelledby="recent-heading">
+        <Card className={`${RING} overflow-hidden`}>
+          <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-4">
+            <div>
+              <h2 id="recent-heading" className="font-semibold text-gray-900">
+                Recent enrollments
+              </h2>
+              <p className="text-sm text-gray-500">
+                Latest student applications from the public site
+              </p>
+            </div>
+            <Link
+              href="/admin/enrollments"
+              className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-teal-600 transition hover:text-teal-700 ${FOCUS}`}
+            >
+              View all
+              <ArrowRight size={14} />
+            </Link>
           </div>
-          <Link
-            href="/admin/enrollments"
-            className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-sm font-medium text-teal-600 transition hover:text-teal-700 ${FOCUS}`}
-          >
-            View all
-            <ArrowRight size={14} />
-          </Link>
-        </div>
 
-        {recentEnrollments.length === 0 ? (
-          <div className="flex flex-col items-center gap-2 border-t border-gray-950/5 px-5 py-12 text-center">
-            <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-50 text-gray-400">
-              <Inbox size={20} />
-            </span>
-            <p className="text-sm font-medium text-gray-700">No enrollments yet</p>
-            <p className="max-w-xs text-sm text-gray-500">
-              Applications submitted through the Enroll Now form will appear here.
-            </p>
-          </div>
-        ) : (
-          <Table bare className="border-t border-gray-950/5">
-            <TableHeader>
-              <TableRow>
-                <TableHead className="pl-5">Student</TableHead>
-                <TableHead>Course</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="pr-5">Submitted</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {recentEnrollments.map((enrollment) => (
-                <TableRow key={enrollment.id}>
-                  <TableCell className="pl-5">
-                    <p className="font-medium text-gray-900">{enrollment.fullName}</p>
-                    <p className="text-xs text-gray-500">{enrollment.email}</p>
-                  </TableCell>
-                  <TableCell>{enrollment.course?.title ?? "—"}</TableCell>
-                  <TableCell>
-                    <StatusBadge status={enrollment.status} />
-                  </TableCell>
-                  <TableCell className="whitespace-nowrap pr-5 text-gray-500">
-                    {relativeDate(enrollment.createdAt)}
-                  </TableCell>
+          {recentEnrollments.length === 0 ? (
+            <div className="flex flex-col items-center gap-2 border-t border-gray-950/5 px-5 py-12 text-center">
+              <span className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-50 text-gray-400">
+                <Inbox size={20} />
+              </span>
+              <p className="text-sm font-medium text-gray-700">No enrollments yet</p>
+              <p className="max-w-xs text-sm text-gray-500">
+                Applications submitted through the Enroll Now form will appear here.
+              </p>
+            </div>
+          ) : (
+            <Table bare className="border-t border-gray-950/5">
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="pl-5">Student</TableHead>
+                  <TableHead>Course</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="pr-5">Submitted</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              </TableHeader>
+              <TableBody>
+                {recentEnrollments.map((enrollment) => (
+                  <TableRow key={enrollment.id}>
+                    <TableCell className="pl-5">
+                      <p className="font-medium text-gray-900">{enrollment.fullName}</p>
+                      <p className="text-xs text-gray-500">{enrollment.email}</p>
+                    </TableCell>
+                    <TableCell>{enrollment.course?.title ?? "—"}</TableCell>
+                    <TableCell>
+                      <StatusBadge status={enrollment.status} />
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap pr-5 text-gray-500">
+                      {relativeDate(enrollment.createdAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </Card>
       </section>
     </div>
   );

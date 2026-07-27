@@ -17,10 +17,15 @@ import {
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { enterpriseContactSchema, type EnterpriseContactInput, type EnterpriseContactFormValues } from "@/lib/schemas";
+import {
+  enterpriseContactSchema,
+  type EnterpriseContactInput,
+  type EnterpriseContactFormValues,
+} from "@/lib/schemas";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import type { PublicCourse } from "@/db/queries";
 import EnrollModal from "./EnrollModal";
 
 const fadeUp = {
@@ -28,7 +33,10 @@ const fadeUp = {
   show: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] },
+    transition: {
+      duration: 0.55,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
   },
 };
 
@@ -37,7 +45,13 @@ const staggerContainer = {
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
 };
 
-function AnimatedSection({ children, className }: { children: React.ReactNode; className?: string }) {
+function AnimatedSection({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
   const ref = useRef(null);
   const inView = useInView(ref, { once: true, margin: "-80px" });
   return (
@@ -64,7 +78,12 @@ const sectors = [
       "Faculty development programs to update teaching methodologies",
       "Placement readiness training to improve student employability",
     ],
-    courses: ["Full Stack Development", "AI & Machine Learning", "Cybersecurity Fundamentals", "UI/UX Design"],
+    courses: [
+      "Full Stack Development",
+      "AI & Machine Learning",
+      "Cybersecurity Fundamentals",
+      "UI/UX Design",
+    ],
   },
   {
     icon: Users,
@@ -76,7 +95,12 @@ const sectors = [
       "Productivity optimization with modern tools and methodologies",
       "Innovation training for continuous improvement culture",
     ],
-    courses: ["Agile & Project Management", "Data Analytics", "Cloud Computing", "Digital Transformation"],
+    courses: [
+      "Agile & Project Management",
+      "Data Analytics",
+      "Cloud Computing",
+      "Digital Transformation",
+    ],
   },
   {
     icon: Globe,
@@ -100,17 +124,47 @@ const sectors = [
       "Digital marketing and community engagement",
       "Project management and team collaboration tools",
     ],
-    courses: ["Social Impact Analytics", "Digital Advocacy", "Nonprofit Technology", "Grant Management"],
+    courses: [
+      "Social Impact Analytics",
+      "Digital Advocacy",
+      "Nonprofit Technology",
+      "Grant Management",
+    ],
   },
 ];
 
 const partnerBenefits = [
-  { icon: Target, title: "Customized Programs", description: "Tailored curriculum designed specifically for your organization's needs and goals" },
-  { icon: Users, title: "Expert Trainers", description: "Industry professionals with real-world experience in top tech companies" },
-  { icon: TrendingUp, title: "Measurable Results", description: "Track progress with assessments, projects, and performance metrics" },
-  { icon: Award, title: "Recognized Certification", description: "Industry-recognized certificates for all participants upon completion" },
-  { icon: Shield, title: "Flexible Delivery", description: "On-site, online, or hybrid training options to suit your schedule" },
-  { icon: Zap, title: "Ongoing Support", description: "Post-training support and consultation to ensure continued success" },
+  {
+    icon: Target,
+    title: "Customized Programs",
+    description:
+      "Tailored curriculum designed specifically for your organization's needs and goals",
+  },
+  {
+    icon: Users,
+    title: "Expert Trainers",
+    description: "Industry professionals with real-world experience in top tech companies",
+  },
+  {
+    icon: TrendingUp,
+    title: "Measurable Results",
+    description: "Track progress with assessments, projects, and performance metrics",
+  },
+  {
+    icon: Award,
+    title: "Recognized Certification",
+    description: "Industry-recognized certificates for all participants upon completion",
+  },
+  {
+    icon: Shield,
+    title: "Flexible Delivery",
+    description: "On-site, online, or hybrid training options to suit your schedule",
+  },
+  {
+    icon: Zap,
+    title: "Ongoing Support",
+    description: "Post-training support and consultation to ensure continued success",
+  },
 ];
 
 function EnterpriseContactForm() {
@@ -125,8 +179,13 @@ function EnterpriseContactForm() {
   } = useForm<EnterpriseContactFormValues, unknown, EnterpriseContactInput>({
     resolver: zodResolver(enterpriseContactSchema),
     defaultValues: {
-      name: "", orgName: "", email: "", phone: "",
-      orgType: "", teamSize: "", trainingInterests: "",
+      name: "",
+      orgName: "",
+      email: "",
+      phone: "",
+      orgType: "",
+      teamSize: "",
+      trainingInterests: "",
     },
   });
 
@@ -151,11 +210,10 @@ function EnterpriseContactForm() {
   });
 
   const fieldError = (name: keyof EnterpriseContactFormValues) =>
-    errors[name] ? (
-      <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p>
-    ) : null;
+    errors[name] ? <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p> : null;
 
-  const inputClass = "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
+  const inputClass =
+    "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
 
   if (status === "sent") {
     return (
@@ -165,7 +223,9 @@ function EnterpriseContactForm() {
           <div className="text-5xl mb-4">🎉</div>
           <p className="text-2xl font-bold text-gray-800 mb-2">Request received!</p>
           <p className="text-gray-500">Our enterprise team will reach out within 24 hours.</p>
-          <Button className="mt-8" onClick={() => setStatus("idle")}>Submit another request</Button>
+          <Button className="mt-8" onClick={() => setStatus("idle")}>
+            Submit another request
+          </Button>
         </CardContent>
       </Card>
     );
@@ -179,29 +239,53 @@ function EnterpriseContactForm() {
           <div className="grid md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Name *</label>
-              <input {...register("name")} type="text" placeholder="John Doe" className={inputClass} />
+              <input
+                {...register("name")}
+                type="text"
+                placeholder="John Doe"
+                className={inputClass}
+              />
               {fieldError("name")}
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Name *</label>
-              <input {...register("orgName")} type="text" placeholder="Your Company" className={inputClass} />
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Organization Name *
+              </label>
+              <input
+                {...register("orgName")}
+                type="text"
+                placeholder="Your Company"
+                className={inputClass}
+              />
               {fieldError("orgName")}
             </div>
           </div>
           <div className="grid md:grid-cols-2 gap-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
-              <input {...register("email")} type="email" placeholder="you@company.com" className={inputClass} />
+              <input
+                {...register("email")}
+                type="email"
+                placeholder="you@company.com"
+                className={inputClass}
+              />
               {fieldError("email")}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone *</label>
-              <input {...register("phone")} type="tel" placeholder="+977-9XXXXXXXXX" className={inputClass} />
+              <input
+                {...register("phone")}
+                type="tel"
+                placeholder="+977-9XXXXXXXXX"
+                className={inputClass}
+              />
               {fieldError("phone")}
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Organization Type *</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Organization Type *
+            </label>
             <select {...register("orgType")} required className={`${inputClass} text-gray-500`}>
               <option value="">Select type</option>
               <option>College/University</option>
@@ -222,9 +306,15 @@ function EnterpriseContactForm() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1.5">Training Interests</label>
-            <textarea {...register("trainingInterests")} rows={4} placeholder="Tell us about your training needs, goals, and areas of interest..."
-              className={`${inputClass} resize-none`} />
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Training Interests
+            </label>
+            <textarea
+              {...register("trainingInterests")}
+              rows={4}
+              placeholder="Tell us about your training needs, goals, and areas of interest..."
+              className={`${inputClass} resize-none`}
+            />
           </div>
           {status === "error" && (
             <p className="text-sm text-red-500">
@@ -257,7 +347,7 @@ function EnterpriseContactForm() {
   );
 }
 
-export default function EnterprisePage() {
+export default function EnterprisePage({ courses }: { courses: PublicCourse[] }) {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
@@ -284,18 +374,29 @@ export default function EnterprisePage() {
 
           <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6">
             Build a{" "}
-            <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">Smarter</span>
+            <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+              Smarter
+            </span>
             ,{" "}
-            <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">Stronger</span>
+            <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+              Stronger
+            </span>
             , More Future-Ready Team
           </motion.h1>
 
-          <motion.p variants={fadeUp} className="text-lg text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed">
-            Your one-stop partner for Learning & Development. We help organizations grow through purposeful
-            learning—enabling teams to upskill, reskill, and stay competitive in the fast-changing tech landscape.
+          <motion.p
+            variants={fadeUp}
+            className="text-lg text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed"
+          >
+            Your one-stop partner for Learning & Development. We help organizations grow through
+            purposeful learning—enabling teams to upskill, reskill, and stay competitive in the
+            fast-changing tech landscape.
           </motion.p>
 
-          <motion.div variants={fadeUp} className="flex flex-col sm:flex-row gap-4 justify-center mb-14">
+          <motion.div
+            variants={fadeUp}
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
+          >
             <Button size="lg" onClick={() => setEnrollOpen(true)}>
               Book a Discovery Call
             </Button>
@@ -339,14 +440,30 @@ export default function EnterprisePage() {
                   Services
                 </span>
               </h2>
-              <p className="text-lg text-gray-500">Comprehensive learning solutions for every organization</p>
+              <p className="text-lg text-gray-500">
+                Comprehensive learning solutions for every organization
+              </p>
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-7">
               {[
-                { icon: TrendingUp, title: "Technical Upskilling", description: "Software development, AI, data science, and emerging technology training" },
-                { icon: Users, title: "Soft Skills & Leadership", description: "Communication, teamwork, problem-solving, and leadership development" },
-                { icon: Zap, title: "Productivity Boosters", description: "Efficiency tools, agile methodologies, and workflow optimization" },
+                {
+                  icon: TrendingUp,
+                  title: "Technical Upskilling",
+                  description:
+                    "Software development, AI, data science, and emerging technology training",
+                },
+                {
+                  icon: Users,
+                  title: "Soft Skills & Leadership",
+                  description:
+                    "Communication, teamwork, problem-solving, and leadership development",
+                },
+                {
+                  icon: Zap,
+                  title: "Productivity Boosters",
+                  description: "Efficiency tools, agile methodologies, and workflow optimization",
+                },
               ].map((service) => {
                 const Icon = service.icon;
                 return (
@@ -384,7 +501,9 @@ export default function EnterprisePage() {
                   Every Sector
                 </span>
               </h2>
-              <p className="text-lg text-gray-500">Specialized training programs for different organizational needs</p>
+              <p className="text-lg text-gray-500">
+                Specialized training programs for different organizational needs
+              </p>
             </motion.div>
 
             <div className="space-y-7">
@@ -405,20 +524,31 @@ export default function EnterprisePage() {
                             <Icon size={28} />
                           </div>
                           <h3 className="text-2xl font-bold mb-3">{sector.title}</h3>
-                          <p className="text-teal-50 text-sm leading-relaxed">{sector.description}</p>
+                          <p className="text-teal-50 text-sm leading-relaxed">
+                            {sector.description}
+                          </p>
                         </div>
                         <div className="md:col-span-2 p-8">
-                          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">What We Offer</h4>
+                          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+                            What We Offer
+                          </h4>
                           <ul className="space-y-3 mb-6">
                             {sector.features.map((feature) => (
                               <li key={feature} className="flex items-start gap-3">
-                                <CheckCircle size={16} className="text-teal-600 flex-shrink-0 mt-0.5" />
-                                <span className="text-sm text-gray-600 leading-relaxed">{feature}</span>
+                                <CheckCircle
+                                  size={16}
+                                  className="text-teal-600 flex-shrink-0 mt-0.5"
+                                />
+                                <span className="text-sm text-gray-600 leading-relaxed">
+                                  {feature}
+                                </span>
                               </li>
                             ))}
                           </ul>
                           <div className="pt-4 border-t border-gray-100">
-                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Sample Programs</p>
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+                              Sample Programs
+                            </p>
                             <div className="flex flex-wrap gap-2">
                               {sector.courses.map((course) => (
                                 <Badge key={course} variant="default" className="text-xs">
@@ -449,7 +579,9 @@ export default function EnterprisePage() {
                   Next Minds
                 </span>
               </h2>
-              <p className="text-lg text-gray-500">Proven results that drive organizational success</p>
+              <p className="text-lg text-gray-500">
+                Proven results that drive organizational success
+              </p>
             </motion.div>
 
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
@@ -499,9 +631,10 @@ export default function EnterprisePage() {
                 <CardContent className="p-10 md:p-12">
                   <div className="text-5xl text-teal-500 mb-4 leading-none">&ldquo;</div>
                   <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-                    Next Minds helped us upskill our entire development team with their comprehensive
-                    MERN stack program. The training was practical, relevant, and immediately applicable
-                    to our projects. Our team&apos;s productivity and code quality have significantly improved.
+                    Next Minds helped us upskill our entire development team with their
+                    comprehensive MERN stack program. The training was practical, relevant, and
+                    immediately applicable to our projects. Our team&apos;s productivity and code
+                    quality have significantly improved.
                   </p>
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
@@ -530,15 +663,34 @@ export default function EnterprisePage() {
                   Work With You
                 </span>
               </h2>
-              <p className="text-lg text-gray-500">A collaborative approach to ensure maximum impact</p>
+              <p className="text-lg text-gray-500">
+                A collaborative approach to ensure maximum impact
+              </p>
             </motion.div>
 
             <div className="grid md:grid-cols-4 gap-7">
               {[
-                { step: "1", title: "Discovery Call", description: "Understand your organization's goals, challenges, and learning needs" },
-                { step: "2", title: "Custom Design", description: "Create tailored curriculum and training program for your team" },
-                { step: "3", title: "Deliver Training", description: "Execute the program with expert instructors and hands-on projects" },
-                { step: "4", title: "Measure & Support", description: "Track results and provide ongoing support for continued success" },
+                {
+                  step: "1",
+                  title: "Discovery Call",
+                  description:
+                    "Understand your organization's goals, challenges, and learning needs",
+                },
+                {
+                  step: "2",
+                  title: "Custom Design",
+                  description: "Create tailored curriculum and training program for your team",
+                },
+                {
+                  step: "3",
+                  title: "Deliver Training",
+                  description: "Execute the program with expert instructors and hands-on projects",
+                },
+                {
+                  step: "4",
+                  title: "Measure & Support",
+                  description: "Track results and provide ongoing support for continued success",
+                },
               ].map((item) => (
                 <motion.div
                   key={item.step}
@@ -563,7 +715,10 @@ export default function EnterprisePage() {
       </section>
 
       {/* ── Contact ── */}
-      <section id="contact" className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white">
+      <section
+        id="contact"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
+      >
         <div className="max-w-4xl mx-auto">
           <AnimatedSection>
             <motion.div variants={fadeUp} className="text-center mb-12">
@@ -573,7 +728,9 @@ export default function EnterprisePage() {
                   Organization
                 </span>
               </h2>
-              <p className="text-lg text-gray-500">Book a free consultation to discuss your training needs</p>
+              <p className="text-lg text-gray-500">
+                Book a free consultation to discuss your training needs
+              </p>
             </motion.div>
 
             <motion.div variants={fadeUp}>
@@ -585,7 +742,7 @@ export default function EnterprisePage() {
 
       <AnimatePresence>
         {enrollOpen && (
-          <EnrollModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} />
+          <EnrollModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} courses={courses} />
         )}
       </AnimatePresence>
     </div>

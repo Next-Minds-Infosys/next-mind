@@ -2,22 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { courses } from "@/data/courses";
+import type { PublicCourse } from "@/db/queries";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import EnrollModal from "@/components/EnrollModal";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
-const categories = ["All", ...Array.from(new Set(courses.map((c) => c.category)))];
 const levels = ["All Levels", "Beginner", "Intermediate", "Beginner to Advanced"];
-const durations = [
-  "Any Duration",
-  "2 months",
-  "3 months",
-  "4 months",
-  "5 months",
-  "6 months",
-];
+const durations = ["Any Duration", "2 months", "3 months", "4 months", "5 months", "6 months"];
 
-export default function CoursesListing() {
+export default function CoursesListing({ courses }: { courses: PublicCourse[] }) {
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(courses.map((c) => c.category)))],
+    [courses],
+  );
   const [category, setCategory] = useState("All");
   const [level, setLevel] = useState("All Levels");
   const [duration, setDuration] = useState("Any Duration");
@@ -39,21 +36,15 @@ export default function CoursesListing() {
           return false;
         return true;
       }),
-    [category, level, duration, search]
+    [courses, category, level, duration, search],
   );
 
   const hasFilters =
-    category !== "All" ||
-    level !== "All Levels" ||
-    duration !== "Any Duration" ||
-    Boolean(search);
+    category !== "All" || level !== "All Levels" || duration !== "Any Duration" || Boolean(search);
 
   return (
     <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
-      <div
-        className="py-16 px-6"
-        style={{ background: heroGradient }}
-      >
+      <div className="py-16 px-6" style={{ background: heroGradient }}>
         <div className="max-w-7xl mx-auto text-center">
           <div
             className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-4"
@@ -78,8 +69,7 @@ export default function CoursesListing() {
             </span>
           </h1>
           <p className="text-lg max-w-xl mx-auto" style={{ color: "rgba(255,255,255,0.65)" }}>
-            {courses.length} industry-aligned courses. Both online and on-campus
-            at New Baneshwor.
+            {courses.length} industry-aligned courses. Both online and on-campus at New Baneshwor.
           </p>
         </div>
       </div>
@@ -131,7 +121,11 @@ export default function CoursesListing() {
               className="px-5 py-2 rounded-full text-sm font-semibold whitespace-nowrap flex-shrink-0 transition-all"
               style={
                 category === cat
-                  ? { background: gradient, color: colors.navy, boxShadow: `0 4px 14px ${colors.teal}40` }
+                  ? {
+                      background: gradient,
+                      color: colors.navy,
+                      boxShadow: `0 4px 14px ${colors.teal}40`,
+                    }
                   : {
                       backgroundColor: colors.surface,
                       color: colors.body,
@@ -226,30 +220,23 @@ export default function CoursesListing() {
             <p style={{ color: colors.muted }}>Try adjusting your filters or search term.</p>
           </div>
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((course) => (
-              <div
+              <Card
                 key={course.id}
-                className="rounded-2xl overflow-hidden group transition-all duration-300 hover:-translate-y-1.5 flex flex-col"
-                style={{
-                  backgroundColor: colors.card,
-                  border: `1px solid ${colors.border}`,
-                  boxShadow: "0 2px 8px rgba(13,45,82,0.05)",
-                }}
+                className="group flex flex-col overflow-hidden border-nm-border bg-nm-card py-0 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl"
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = `${course.color}50`;
-                  e.currentTarget.style.boxShadow = "0 12px 40px rgba(13,45,82,0.10)";
                 }}
                 onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = colors.border;
-                  e.currentTarget.style.boxShadow = "0 2px 8px rgba(13,45,82,0.05)";
+                  e.currentTarget.style.borderColor = "";
                 }}
               >
-                <div className="h-1" style={{ backgroundColor: course.color }} />
-                <div className="p-5 flex-1 flex flex-col">
-                  <div className="flex gap-2 flex-wrap mb-3">
+                <div className="h-1.5 shrink-0" style={{ backgroundColor: course.color }} />
+                <CardContent className="flex flex-1 flex-col p-5">
+                  <div className="mb-3 flex flex-wrap gap-2">
                     <span
-                      className="text-xs font-bold px-2.5 py-1 rounded-full border"
+                      className="rounded-full border px-2.5 py-1 text-xs font-bold"
                       style={{
                         color: course.color,
                         borderColor: `${course.color}40`,
@@ -259,99 +246,67 @@ export default function CoursesListing() {
                       {course.category}
                     </span>
                     {course.badge && (
-                      <span
-                        className="text-xs font-bold px-2.5 py-1 rounded-full"
-                        style={{ backgroundColor: `${colors.teal}12`, color: colors.teal }}
-                      >
+                      <span className="rounded-full bg-nm-teal/10 px-2.5 py-1 text-xs font-bold text-nm-teal">
                         {course.badge}
                       </span>
                     )}
-                    <span
-                      className="text-xs font-bold px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: `${colors.blue}10`, color: colors.blue }}
-                    >
+                    <span className="rounded-full bg-nm-blue/10 px-2.5 py-1 text-xs font-bold text-nm-blue">
                       🤖 AI Enhanced
                     </span>
                   </div>
 
-                  <h3
-                    className="font-display font-bold text-base leading-snug mb-2"
-                    style={{ color: colors.navy }}
-                  >
+                  <h3 className="mb-2 font-display text-base font-bold leading-snug text-nm-navy">
                     {course.title}
                   </h3>
-                  <p
-                    className="text-xs leading-relaxed mb-4 flex-1"
-                    style={{ color: colors.muted }}
-                  >
+                  <p className="mb-4 flex-1 text-xs leading-relaxed text-nm-muted">
                     {course.shortDesc}
                   </p>
 
-                  <div className="flex gap-3 text-xs mb-4" style={{ color: colors.muted }}>
+                  <div className="mb-4 flex gap-3 text-xs text-nm-muted">
                     <span>⏱ {course.duration}</span>
                     <span>•</span>
                     <span>📊 {course.level}</span>
                   </div>
 
-                  <div className="flex gap-1 flex-wrap mb-4">
+                  <div className="mb-4 flex flex-wrap gap-1">
                     {course.tools.slice(0, 4).map((tool) => (
                       <span
                         key={tool}
-                        className="text-[10px] px-2 py-0.5 rounded-md"
-                        style={{
-                          backgroundColor: colors.surface,
-                          color: colors.muted,
-                          border: `1px solid ${colors.border}`,
-                        }}
+                        className="rounded-md border border-nm-border bg-nm-surface px-2 py-0.5 text-xs text-nm-muted"
                       >
                         {tool}
                       </span>
                     ))}
                   </div>
+                </CardContent>
 
-                  <div
-                    className="flex items-center justify-between pt-4 border-t"
-                    style={{ borderColor: colors.border }}
-                  >
-                    <div>
-                      <div className="font-bold text-sm" style={{ color: colors.navy }}>
-                        NPR {course.price.toLocaleString()}
-                      </div>
-                      <div className="text-xs" style={{ color: colors.muted }}>
-                        {course.students} enrolled
-                      </div>
+                <CardFooter className="flex items-center justify-between border-t border-nm-border p-5 pt-4">
+                  <div>
+                    <div className="text-sm font-bold text-nm-navy">
+                      NPR {course.price.toLocaleString()}
                     </div>
-                    <div className="flex gap-2">
-                      <Link
-                        href={`/courses/${course.slug}`}
-                        className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                        style={{ border: `1px solid ${colors.border}`, color: colors.navy }}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = colors.teal;
-                          e.currentTarget.style.color = colors.teal;
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = colors.border;
-                          e.currentTarget.style.color = colors.navy;
-                        }}
-                      >
-                        Details
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setPreselect(course.title);
-                          setModalOpen(true);
-                        }}
-                        className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all group-hover:shadow-md"
-                        style={{ background: gradient }}
-                      >
-                        Enroll Now →
-                      </button>
-                    </div>
+                    <div className="text-xs text-nm-muted">{course.students} enrolled</div>
                   </div>
-                </div>
-              </div>
+                  <div className="flex gap-2">
+                    <Link
+                      href={`/courses/${course.slug}`}
+                      className="rounded-lg border border-nm-border px-3 py-1.5 text-xs font-semibold text-nm-navy transition-all hover:border-nm-teal hover:text-nm-teal"
+                    >
+                      Details
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreselect(course.title);
+                        setModalOpen(true);
+                      }}
+                      className="nm-gradient rounded-lg px-3 py-1.5 text-xs font-bold text-white transition-all group-hover:shadow-md"
+                    >
+                      Enroll Now →
+                    </button>
+                  </div>
+                </CardFooter>
+              </Card>
             ))}
           </div>
         )}
@@ -361,6 +316,7 @@ export default function CoursesListing() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         preSelectedCourse={preselect}
+        courses={courses}
       />
     </div>
   );

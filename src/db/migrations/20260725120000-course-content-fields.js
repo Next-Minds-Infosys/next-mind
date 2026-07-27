@@ -19,49 +19,49 @@ module.exports = {
         "Course",
         "shortDesc",
         { type: Sequelize.TEXT, allowNull: true },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "whoIsItFor",
         { type: Sequelize.ARRAY(Sequelize.TEXT), allowNull: false, defaultValue: [] },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "skills",
         { type: Sequelize.ARRAY(Sequelize.TEXT), allowNull: false, defaultValue: [] },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "curriculum",
         { type: Sequelize.JSONB, allowNull: false, defaultValue: [] },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "faqs",
         { type: Sequelize.JSONB, allowNull: false, defaultValue: [] },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "badge",
         { type: Sequelize.TEXT, allowNull: true },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "color",
         { type: Sequelize.TEXT, allowNull: true },
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.addColumn(
         "Course",
         "students",
         { type: Sequelize.INTEGER, allowNull: false, defaultValue: 0 },
-        { transaction: t }
+        { transaction: t },
       );
 
       // changeColumn cannot emit a USING clause, so do the cast in raw SQL.
@@ -70,11 +70,11 @@ module.exports = {
         `ALTER TABLE "Course"
            ALTER COLUMN "price" TYPE INTEGER
            USING COALESCE(NULLIF(regexp_replace("price", '[^0-9]', '', 'g'), '')::integer, 0)`,
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.sequelize.query(
         `ALTER TABLE "Course" ALTER COLUMN "price" SET DEFAULT 0`,
-        { transaction: t }
+        { transaction: t },
       );
 
       // The public listing filters on both of these.
@@ -102,11 +102,11 @@ module.exports = {
 
       await queryInterface.sequelize.query(
         `ALTER TABLE "Course" ALTER COLUMN "price" DROP DEFAULT`,
-        { transaction: t }
+        { transaction: t },
       );
       await queryInterface.sequelize.query(
         `ALTER TABLE "Course" ALTER COLUMN "price" TYPE TEXT USING "price"::text`,
-        { transaction: t }
+        { transaction: t },
       );
 
       for (const column of [

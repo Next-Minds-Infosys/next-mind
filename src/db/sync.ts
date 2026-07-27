@@ -3,7 +3,6 @@
  * Safe on an existing Prisma-migrated DB (does not alter columns).
  */
 
-
 import { readFileSync } from "fs";
 import { join } from "path";
 import { sequelize } from "./sequelize";
@@ -14,7 +13,7 @@ async function main() {
 
   // Prefer running the Prisma-compatible SQL schema if tables are missing
   const [tables] = (await sequelize.query(
-    `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'User'`
+    `SELECT tablename FROM pg_tables WHERE schemaname = 'public' AND tablename = 'User'`,
   )) as [{ tablename: string }[], unknown];
 
   if (tables.length === 0) {

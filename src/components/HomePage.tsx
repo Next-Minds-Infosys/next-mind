@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { courses, testimonials } from "@/data/courses";
+import { testimonials } from "@/data/courses";
+import type { PublicCourse } from "@/db/queries";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import EnrollModal from "./EnrollModal";
 
@@ -77,7 +78,7 @@ const processSteps = [
   },
 ];
 
-function Hero() {
+function Hero({ courses }: { courses: PublicCourse[] }) {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [enrollIndex, setEnrollIndex] = useState(0);
@@ -162,10 +163,7 @@ function Hero() {
                 {rotatingWords[index]}
               </span>
               <br />
-              <span
-                className="text-transparent bg-clip-text"
-                style={{ backgroundImage: gradient }}
-              >
+              <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
                 Lead Tomorrow
               </span>
             </h1>
@@ -174,9 +172,8 @@ function Hero() {
               className="text-lg leading-relaxed mb-10 max-w-[520px]"
               style={{ color: colors.body }}
             >
-              Where your ambition meets opportunities. Nepal&apos;s most
-              career-focused IT training institute — in-person at New Baneshwor
-              and live online.
+              Where your ambition meets opportunities. Nepal&apos;s most career-focused IT training
+              institute — in-person at New Baneshwor and live online.
             </p>
 
             <div className="flex flex-wrap gap-4 mb-12">
@@ -325,7 +322,7 @@ function Hero() {
         </div>
       </div>
 
-      <EnrollModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <EnrollModal isOpen={modalOpen} onClose={() => setModalOpen(false)} courses={courses} />
     </section>
   );
 }
@@ -355,7 +352,7 @@ function ToolsMarquee() {
   );
 }
 
-function PopularCourses() {
+function PopularCourses({ courses }: { courses: PublicCourse[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselect, setPreselect] = useState("");
   const popular = courses.slice(0, 6);
@@ -376,10 +373,7 @@ function PopularCourses() {
               style={{ color: colors.navy }}
             >
               Find Your Path to a{" "}
-              <span
-                className="text-transparent bg-clip-text"
-                style={{ backgroundImage: gradient }}
-              >
+              <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
                 Future-Proof Career
               </span>
             </h2>
@@ -520,6 +514,7 @@ function PopularCourses() {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         preSelectedCourse={preselect}
+        courses={courses}
       />
     </section>
   );
@@ -767,10 +762,7 @@ function Process() {
             style={{ color: colors.navy }}
           >
             Your Journey from{" "}
-            <span
-              className="text-transparent bg-clip-text"
-              style={{ backgroundImage: gradient }}
-            >
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
               Zero to Hero
             </span>
           </h2>
@@ -817,7 +809,7 @@ function Process() {
   );
 }
 
-function FinalCta() {
+function FinalCta({ courses }: { courses: PublicCourse[] }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -861,8 +853,7 @@ function FinalCta() {
               className="text-lg mb-10 max-w-md mx-auto leading-relaxed"
               style={{ color: "rgba(255,255,255,0.65)" }}
             >
-              Book a free 30-minute counselling session and find the perfect
-              course for your goals.
+              Book a free 30-minute counselling session and find the perfect course for your goals.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <button
@@ -888,21 +879,21 @@ function FinalCta() {
         </div>
       </div>
 
-      <EnrollModal isOpen={modalOpen} onClose={() => setModalOpen(false)} />
+      <EnrollModal isOpen={modalOpen} onClose={() => setModalOpen(false)} courses={courses} />
     </section>
   );
 }
 
-export default function HomePage() {
+export default function HomePage({ courses }: { courses: PublicCourse[] }) {
   return (
     <>
-      <Hero />
+      <Hero courses={courses} />
       <ToolsMarquee />
-      <PopularCourses />
+      <PopularCourses courses={courses} />
       <StatsStrip />
       <Testimonials />
       <Process />
-      <FinalCta />
+      <FinalCta courses={courses} />
     </>
   );
 }

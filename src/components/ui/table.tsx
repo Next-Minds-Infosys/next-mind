@@ -38,7 +38,7 @@ TableBody.displayName = "TableBody";
 const TableRow = React.forwardRef<HTMLTableRowElement, React.HTMLAttributes<HTMLTableRowElement>>(
   ({ className, ...props }, ref) => (
     <tr ref={ref} className={cn("transition-colors hover:bg-gray-50/70", className)} {...props} />
-  )
+  ),
 );
 TableRow.displayName = "TableRow";
 
@@ -50,7 +50,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     className={cn(
       "whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500",
-      className
+      className,
     )}
     {...props}
   />

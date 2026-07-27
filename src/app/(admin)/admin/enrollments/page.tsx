@@ -1,5 +1,12 @@
 import { Course, Enrollment } from "@/db";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
 import { updateEnrollmentStatus } from "./actions";
 
@@ -39,7 +46,11 @@ export default async function AdminEnrollmentsPage() {
               <TableCell>{enrollment.learningFormat}</TableCell>
               <TableCell>{enrollment.hasLaptop}</TableCell>
               <TableCell>
-                <StatusSelect id={enrollment.id} status={enrollment.status} onUpdate={updateEnrollmentStatus} />
+                <StatusSelect
+                  id={enrollment.id}
+                  status={enrollment.status}
+                  onUpdate={updateEnrollmentStatus}
+                />
               </TableCell>
               <TableCell>{enrollment.createdAt.toLocaleDateString()}</TableCell>
             </TableRow>

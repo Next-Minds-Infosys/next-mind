@@ -137,6 +137,7 @@ export const courseSchema = z.object({
   level: trimmed(1, 80, "Level"),
   price: z.coerce.number().int().min(0, "Price must be 0 or more."),
   imageUrl: z.string().trim().max(500).optional().or(z.literal("")).default(""),
+  mentorId: z.string().trim().optional().or(z.literal("")).default(""),
   published: z.boolean().default(true),
 });
 export type CourseInput = z.infer<typeof courseSchema>;
@@ -149,19 +150,26 @@ export const categorySchema = z.object({
 export type CategoryInput = z.infer<typeof categorySchema>;
 export type CategoryFormValues = z.input<typeof categorySchema>;
 
+export const mentorSchema = z.object({
+  name: trimmed(2, 120, "Name"),
+  role: trimmed(2, 120, "Role"),
+  bio: trimmed(10, 2000, "Bio"),
+  photo: z.string().trim().max(500).optional().or(z.literal("")).default(""),
+});
+export type MentorInput = z.infer<typeof mentorSchema>;
+export type MentorFormValues = z.input<typeof mentorSchema>;
+
 // ------------------------------------------------------------------ helpers
 
 /**
  * Server-side guard. Returns either parsed data or the first readable error,
  * matching the `{ error }` contract the actions and routes already use.
  */
-export type ParseResult<T> =
-  | { success: true; data: T }
-  | { success: false; error: string };
+export type ParseResult<T> = { success: true; data: T } | { success: false; error: string };
 
 export function parseInput<T extends z.ZodType>(
   schema: T,
-  payload: unknown
+  payload: unknown,
 ): ParseResult<z.infer<T>> {
   const result = schema.safeParse(payload);
   if (result.success) return { success: true, data: result.data };

@@ -32,10 +32,7 @@ async function main() {
     const result = await auth.api.signUpEmail({
       body: { email: adminEmail, password: adminPassword, name: "Admin" },
     });
-    await User.update(
-      { role: "ADMIN", emailVerified: true },
-      { where: { id: result.user.id } }
-    );
+    await User.update({ role: "ADMIN", emailVerified: true }, { where: { id: result.user.id } });
     admin = await User.findByPk(result.user.id);
   } else if (admin.role !== "ADMIN") {
     await admin.update({ role: "ADMIN", emailVerified: true });

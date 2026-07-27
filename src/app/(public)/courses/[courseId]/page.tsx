@@ -1,19 +1,18 @@
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import CoursePageContent from "@/components/CoursePageContent";
-import { courses, getCourseBySlug } from "@/data/courses";
+import { getPublicCourseBySlug, getPublicCourses } from "@/db/queries";
 
-export function generateStaticParams() {
-  return courses.map((c) => ({ courseId: c.slug }));
-}
+// No generateStaticParams already makes this dynamic in practice, but this
+// makes it explicit rather than relying on Next's inference.
+export const dynamic = "force-dynamic";
 
-export default async function CoursePage({
-  params,
-}: {
-  params: Promise<{ courseId: string }>;
-}) {
+export default async function CoursePage({ params }: { params: Promise<{ courseId: string }> }) {
   const { courseId } = await params;
-  const course = getCourseBySlug(courseId);
+  const [course, courses] = await Promise.all([
+    getPublicCourseBySlug(courseId),
+    getPublicCourses(),
+  ]);
 
   if (!course) {
     notFound();
@@ -21,7 +20,7 @@ export default async function CoursePage({
 
   return (
     <SiteLayout>
-      <CoursePageContent course={course} />
+      <CoursePageContent course={course} courses={courses} />
     </SiteLayout>
   );
 }

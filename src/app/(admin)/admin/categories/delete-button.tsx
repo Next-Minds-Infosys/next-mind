@@ -28,7 +28,9 @@ export function DeleteCategoryButton({ id, disabled }: DeleteCategoryButtonProps
           Delete
         </button>
         {blockedMessage && (
-          <p className="absolute right-0 top-full mt-1 w-48 text-xs text-red-500">{blockedMessage}</p>
+          <p className="absolute right-0 top-full mt-1 w-48 text-xs text-red-500">
+            {blockedMessage}
+          </p>
         )}
       </div>
     );

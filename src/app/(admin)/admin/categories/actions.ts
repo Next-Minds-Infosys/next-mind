@@ -15,7 +15,7 @@ async function requireAdmin() {
 }
 
 export async function createCategory(
-  data: CategoryInput
+  data: CategoryInput,
 ): Promise<{ success: true } | { error: string }> {
   if (!(await requireAdmin())) return { error: "Unauthorized" };
 
@@ -43,7 +43,7 @@ export async function createCategory(
 
 export async function updateCategory(
   id: string,
-  data: CategoryInput
+  data: CategoryInput,
 ): Promise<{ success: true } | { error: string }> {
   if (!(await requireAdmin())) return { error: "Unauthorized" };
 
@@ -72,9 +72,7 @@ export async function updateCategory(
   return { success: true };
 }
 
-export async function deleteCategory(
-  id: string
-): Promise<{ success: true } | { error: string }> {
+export async function deleteCategory(id: string): Promise<{ success: true } | { error: string }> {
   if (!(await requireAdmin())) return { error: "Unauthorized" };
 
   const courseCount = await Course.count({ where: { categoryId: id } });

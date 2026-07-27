@@ -11,14 +11,7 @@
     "icon": "⚡",
     "color": "#00bdb8",
     "students": 340,
-    "tools": [
-      "React",
-      "Node.js",
-      "MongoDB",
-      "Express",
-      "TypeScript",
-      "Git"
-    ],
+    "tools": ["React", "Node.js", "MongoDB", "Express", "TypeScript", "Git"],
     "shortDesc": "Build complete web applications from frontend to backend with the MERN stack.",
     "description": "Master the complete web development stack — from crafting beautiful React UIs to building powerful Node.js APIs and managing MongoDB databases. This 6-month intensive program takes you from absolute beginner to a deployment-ready full stack developer with a portfolio of real projects.",
     "whoIsItFor": [
@@ -131,14 +124,7 @@
     "icon": "📈",
     "color": "#52c85a",
     "students": 280,
-    "tools": [
-      "Google Ads",
-      "Meta Ads",
-      "Google Analytics",
-      "SEMrush",
-      "Canva",
-      "Mailchimp"
-    ],
+    "tools": ["Google Ads", "Meta Ads", "Google Analytics", "SEMrush", "Canva", "Mailchimp"],
     "shortDesc": "Master paid ads, SEO, social media, and analytics to drive business growth.",
     "description": "Become a complete digital marketer in 3 months. Learn to run profitable ad campaigns on Google and Meta, build SEO-driven content strategies, manage social media, and measure everything with analytics. Hands-on with real ad budgets from day one.",
     "whoIsItFor": [
@@ -235,14 +221,7 @@
     "icon": "🔍",
     "color": "#1a7fe8",
     "students": 190,
-    "tools": [
-      "Ahrefs",
-      "SEMrush",
-      "Google Search Console",
-      "GA4",
-      "Screaming Frog",
-      "Moz"
-    ],
+    "tools": ["Ahrefs", "SEMrush", "Google Search Console", "GA4", "Screaming Frog", "Moz"],
     "shortDesc": "Master technical SEO, link building, and data-driven strategies to rank #1.",
     "description": "Go beyond basic SEO and master the advanced techniques that actually move rankings. Learn technical SEO auditing, enterprise link building, Core Web Vitals optimization, and data analysis with industry-grade tools like Ahrefs and SEMrush.",
     "whoIsItFor": [
@@ -326,14 +305,7 @@
     "icon": "🛡️",
     "color": "#e06b6b",
     "students": 145,
-    "tools": [
-      "Selenium",
-      "JIRA",
-      "Postman",
-      "TestNG",
-      "Cypress",
-      "JMeter"
-    ],
+    "tools": ["Selenium", "JIRA", "Postman", "TestNG", "Cypress", "JMeter"],
     "shortDesc": "Become a quality engineer who catches bugs before they reach production.",
     "description": "Learn manual and automated testing from scratch. Master the tools and methodologies that companies use to ensure software quality — from writing test cases to automating regression suites with Selenium and Cypress.",
     "whoIsItFor": [
@@ -416,14 +388,7 @@
     "icon": "🔒",
     "color": "#f4a44a",
     "students": 210,
-    "tools": [
-      "Kali Linux",
-      "Wireshark",
-      "Metasploit",
-      "Burp Suite",
-      "Nmap",
-      "OWASP ZAP"
-    ],
+    "tools": ["Kali Linux", "Wireshark", "Metasploit", "Burp Suite", "Nmap", "OWASP ZAP"],
     "shortDesc": "Master ethical hacking, penetration testing, and defensive security strategies.",
     "description": "Nepal's most comprehensive cybersecurity training. Learn offensive and defensive security from the ground up — from network fundamentals to advanced penetration testing, web application security, and security operations. Prepares you for roles in Nepal's growing banking and fintech sector.",
     "whoIsItFor": [
@@ -516,14 +481,7 @@
     "icon": "⚙️",
     "color": "#00bdb8",
     "students": 175,
-    "tools": [
-      "Docker",
-      "Kubernetes",
-      "AWS",
-      "Jenkins",
-      "Terraform",
-      "GitHub Actions"
-    ],
+    "tools": ["Docker", "Kubernetes", "AWS", "Jenkins", "Terraform", "GitHub Actions"],
     "shortDesc": "Bridge development and operations with containers, CI/CD, and cloud infrastructure.",
     "description": "Master the DevOps toolchain that modern engineering teams depend on. From containerizing applications with Docker to orchestrating them with Kubernetes, automating pipelines with Jenkins and GitHub Actions, and managing cloud infrastructure on AWS — this course builds the skills companies urgently need.",
     "whoIsItFor": [
@@ -616,14 +574,7 @@
     "icon": "🎨",
     "color": "#d06bbd",
     "students": 220,
-    "tools": [
-      "Figma",
-      "Adobe XD",
-      "Miro",
-      "Notion",
-      "Maze",
-      "Lottiefiles"
-    ],
+    "tools": ["Figma", "Adobe XD", "Miro", "Notion", "Maze", "Lottiefiles"],
     "shortDesc": "Design beautiful, user-centered digital products using industry-standard tools.",
     "description": "Learn to design digital products that users love. From user research and wireframing to high-fidelity prototypes and design systems, this course covers the complete UX process with Figma — the industry-standard tool used by top design teams worldwide.",
     "whoIsItFor": [
@@ -707,15 +658,7 @@
     "icon": "🤖",
     "color": "#1a7fe8",
     "students": 165,
-    "tools": [
-      "Python",
-      "TensorFlow",
-      "Pandas",
-      "NumPy",
-      "Scikit-learn",
-      "Jupyter",
-      "SQL"
-    ],
+    "tools": ["Python", "TensorFlow", "Pandas", "NumPy", "Scikit-learn", "Jupyter", "SQL"],
     "shortDesc": "Build machine learning models and AI solutions using Python and TensorFlow.",
     "description": "Nepal's most in-depth Data Science and AI course. Master Python for data analysis, build and deploy machine learning models, work with neural networks, and build AI-powered applications. Backed by projects that directly apply to Nepal's banking, telecom, and e-commerce sectors.",
     "whoIsItFor": [

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { courses } from "@/data/courses";
+import type { PublicCourse } from "@/db/queries";
 import { colors, gradient } from "@/lib/theme";
 import { enrollSchema, type EnrollInput, type EnrollFormValues } from "@/lib/schemas";
 
@@ -11,6 +11,7 @@ interface EnrollModalProps {
   isOpen: boolean;
   onClose: () => void;
   preSelectedCourse?: string;
+  courses: Pick<PublicCourse, "id" | "title">[];
 }
 
 const inputStyle: React.CSSProperties = {
@@ -35,6 +36,7 @@ export default function EnrollModal({
   isOpen,
   onClose,
   preSelectedCourse = "",
+  courses,
 }: EnrollModalProps) {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState("");
@@ -102,7 +104,6 @@ export default function EnrollModal({
   };
   const labelClass = "block text-xs font-semibold mb-1.5 uppercase tracking-wider";
 
-
   return (
     <div
       className="fixed inset-0 z-[100] flex items-center justify-center p-4"
@@ -127,9 +128,8 @@ export default function EnrollModal({
           <div className="text-2xl mb-1">🚀</div>
           <h2 className="font-display font-bold text-xl">Start Your Journey!</h2>
           <p className="text-sm opacity-80 mt-1">
-            Transform your future with cutting-edge IT skills. Whether
-            you&apos;re a beginner or looking to level up, we&apos;ve got the
-            perfect course for you!
+            Transform your future with cutting-edge IT skills. Whether you&apos;re a beginner or
+            looking to level up, we&apos;ve got the perfect course for you!
           </p>
         </div>
 
@@ -140,8 +140,7 @@ export default function EnrollModal({
               Application Received!
             </h3>
             <p className="text-sm mb-6" style={{ color: colors.muted }}>
-              Our counsellor will contact you within 2 hours to confirm your
-              enrollment.
+              Our counsellor will contact you within 2 hours to confirm your enrollment.
             </p>
             <button
               type="button"
@@ -165,9 +164,11 @@ export default function EnrollModal({
                 style={inputStyle}
                 onFocus={focus}
               />
-            {errors.fullName && (
-              <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{errors.fullName.message}</p>
-            )}
+              {errors.fullName && (
+                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
+                  {errors.fullName.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -181,9 +182,11 @@ export default function EnrollModal({
                 style={inputStyle}
                 onFocus={focus}
               />
-            {errors.email && (
-              <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{errors.email.message}</p>
-            )}
+              {errors.email && (
+                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -209,9 +212,11 @@ export default function EnrollModal({
                   onFocus={focus}
                 />
               </div>
-            {errors.phone && (
-              <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{errors.phone.message}</p>
-            )}
+              {errors.phone && (
+                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -225,9 +230,11 @@ export default function EnrollModal({
                 style={inputStyle}
                 onFocus={focus}
               />
-            {errors.address && (
-              <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{errors.address.message}</p>
-            )}
+              {errors.address && (
+                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
+                  {errors.address.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -242,9 +249,11 @@ export default function EnrollModal({
                   </option>
                 ))}
               </select>
-            {errors.course && (
-              <p className="text-xs mt-1" style={{ color: "#dc2626" }}>{errors.course.message}</p>
-            )}
+              {errors.course && (
+                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
+                  {errors.course.message}
+                </p>
+              )}
             </div>
 
             <div>

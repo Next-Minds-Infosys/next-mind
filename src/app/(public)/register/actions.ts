@@ -30,10 +30,7 @@ export async function createAdminUser(data: {
       body: { email, password, name },
     });
 
-    await User.update(
-      { role: "ADMIN", emailVerified: true },
-      { where: { id: result.user.id } }
-    );
+    await User.update({ role: "ADMIN", emailVerified: true }, { where: { id: result.user.id } });
 
     return { success: true, email };
   } catch (err) {

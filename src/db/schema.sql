@@ -3,7 +3,7 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 DO $$ BEGIN
-  CREATE TYPE "Role" AS ENUM ('ADMIN', 'STUDENT');
+  CREATE TYPE "Role" AS ENUM ('ADMIN', 'TEACHER', 'STUDENT');
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
@@ -75,6 +75,17 @@ CREATE TABLE IF NOT EXISTS "Category" (
     CONSTRAINT "Category_pkey" PRIMARY KEY ("id")
 );
 
+CREATE TABLE IF NOT EXISTS "Mentor" (
+    "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
+    "name" TEXT NOT NULL,
+    "role" TEXT NOT NULL,
+    "bio" TEXT NOT NULL,
+    "photo" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    CONSTRAINT "Mentor_pkey" PRIMARY KEY ("id")
+);
+
 CREATE TABLE IF NOT EXISTS "Course" (
     "id" TEXT NOT NULL DEFAULT gen_random_uuid()::text,
     "slug" TEXT NOT NULL,
@@ -89,6 +100,7 @@ CREATE TABLE IF NOT EXISTS "Course" (
     "imageUrl" TEXT,
     "published" BOOLEAN NOT NULL DEFAULT true,
     "createdById" TEXT,
+    "mentorId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "Course_pkey" PRIMARY KEY ("id")
@@ -170,6 +182,10 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN
   ALTER TABLE "Course" ADD CONSTRAINT "Course_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+
+DO $$ BEGIN
+  ALTER TABLE "Course" ADD CONSTRAINT "Course_mentorId_fkey" FOREIGN KEY ("mentorId") REFERENCES "Mentor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 DO $$ BEGIN

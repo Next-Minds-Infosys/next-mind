@@ -45,12 +45,21 @@ export default function LoginForm() {
       className="w-full max-w-md"
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number] }}
+      transition={{
+        duration: 0.5,
+        ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+      }}
     >
       {/* Logo */}
       <div className="flex justify-center mb-8">
         <Link href="/">
-          <Image src="/next-minds-logo.png" alt="Next Minds" width={140} height={56} className="h-14 w-auto" />
+          <Image
+            src="/next-minds-logo.png"
+            alt="Next Minds"
+            width={140}
+            height={56}
+            className="h-14 w-auto"
+          />
         </Link>
       </div>
 

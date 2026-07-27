@@ -29,10 +29,18 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
         Page {pageIndex + 1} of {pageCount} · {totalRows} total
       </p>
       <div className="flex items-center gap-1">
-        <NavButton onClick={() => table.setPageIndex(0)} disabled={!table.getCanPreviousPage()} label="First">
+        <NavButton
+          onClick={() => table.setPageIndex(0)}
+          disabled={!table.getCanPreviousPage()}
+          label="First"
+        >
           <ChevronsLeft size={16} />
         </NavButton>
-        <NavButton onClick={() => table.previousPage()} disabled={!table.getCanPreviousPage()} label="Previous">
+        <NavButton
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+          label="Previous"
+        >
           <ChevronLeft size={16} />
         </NavButton>
 
@@ -51,12 +59,12 @@ export function DataTablePagination<TData>({ table }: DataTablePaginationProps<T
                 "min-w-[2rem] rounded-lg px-2.5 py-1.5 text-sm font-medium transition-colors",
                 page === pageIndex
                   ? "bg-gradient-to-r from-teal-500 to-blue-600 text-white shadow"
-                  : "text-gray-600 hover:bg-gray-100"
+                  : "text-gray-600 hover:bg-gray-100",
               )}
             >
               {page + 1}
             </button>
-          )
+          ),
         )}
 
         <NavButton onClick={() => table.nextPage()} disabled={!table.getCanNextPage()} label="Next">
