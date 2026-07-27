@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2, PartyPopper, Rocket, X } from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
-import { colors, gradient } from "@/lib/theme";
 import { enrollSchema, type EnrollInput, type EnrollFormValues } from "@/lib/schemas";
+import { Dialog, DialogClose, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface EnrollModalProps {
   isOpen: boolean;
@@ -14,23 +16,10 @@ interface EnrollModalProps {
   courses: Pick<PublicCourse, "id" | "title">[];
 }
 
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "10px 14px",
-  borderRadius: "10px",
-  border: `1.5px solid ${colors.border}`,
-  backgroundColor: colors.surface,
-  color: colors.navy,
-  fontSize: "14px",
-  outline: "none",
-  transition: "border-color 0.2s",
-};
-
-const selectStyle: React.CSSProperties = {
-  ...inputStyle,
-  appearance: "none",
-  cursor: "pointer",
-};
+const fieldClass =
+  "w-full rounded-xl border border-nm-border bg-nm-surface px-3.5 py-2.5 text-sm text-nm-navy outline-none transition-colors placeholder:text-nm-muted focus:border-nm-teal focus:ring-2 focus:ring-nm-teal/15";
+const labelClass = "mb-1.5 block text-xs font-semibold uppercase tracking-wider text-nm-muted";
+const errorClass = "mt-1 text-xs text-red-600";
 
 export default function EnrollModal({
   isOpen,
@@ -90,254 +79,192 @@ export default function EnrollModal({
     }
   });
 
-  useEffect(() => {
-    document.body.style.overflow = isOpen ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
-  }, [isOpen]);
-
-  if (!isOpen) return null;
-
-  const focus = (e: React.FocusEvent<HTMLElement>) => {
-    e.currentTarget.style.borderColor = colors.teal;
-  };
-  const labelClass = "block text-xs font-semibold mb-1.5 uppercase tracking-wider";
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
-      style={{ backgroundColor: "rgba(13,45,82,0.55)", backdropFilter: "blur(4px)" }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div
-        className="relative w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl"
-        style={{ backgroundColor: colors.card, maxHeight: "90vh", overflowY: "auto" }}
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={false}
+        className="max-w-2xl overflow-hidden rounded-3xl border-none p-0 shadow-2xl"
       >
-        <div className="p-6 text-white" style={{ background: gradient }}>
-          <button
-            type="button"
-            onClick={onClose}
+        <div className="nm-gradient relative p-6 text-white sm:p-8">
+          <DialogClose
             aria-label="Close"
-            className="absolute top-4 right-4 w-8 h-8 rounded-full flex items-center justify-center text-white/80 hover:text-white hover:bg-white/20 transition-all"
+            className="absolute right-4 top-4 flex h-8 w-8 items-center justify-center rounded-full text-white/80 transition-all hover:bg-white/20 hover:text-white"
           >
-            ✕
-          </button>
-          <div className="text-2xl mb-1">🚀</div>
-          <h2 className="font-display font-bold text-xl">Start Your Journey!</h2>
-          <p className="text-sm opacity-80 mt-1">
+            <X className="h-4 w-4" />
+          </DialogClose>
+          <div className="mb-3 flex h-11 w-11 items-center justify-center rounded-2xl bg-white/15">
+            <Rocket className="h-5 w-5" />
+          </div>
+          <DialogTitle className="font-display text-xl font-bold text-white sm:text-2xl">
+            Start Your Journey!
+          </DialogTitle>
+          <DialogDescription className="mt-1 text-sm text-white/80">
             Transform your future with cutting-edge IT skills. Whether you&apos;re a beginner or
             looking to level up, we&apos;ve got the perfect course for you!
-          </p>
+          </DialogDescription>
         </div>
 
         {submitted ? (
-          <div className="p-8 text-center">
-            <div className="text-5xl mb-4">🎉</div>
-            <h3 className="font-display font-bold text-xl mb-2" style={{ color: colors.navy }}>
+          <div className="p-8 text-center sm:p-10">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-nm-green/10">
+              <PartyPopper className="h-7 w-7 text-nm-green" />
+            </div>
+            <h3 className="mb-2 font-display text-xl font-bold text-nm-navy">
               Application Received!
             </h3>
-            <p className="text-sm mb-6" style={{ color: colors.muted }}>
+            <p className="mb-6 text-sm text-nm-muted">
               Our counsellor will contact you within 2 hours to confirm your enrollment.
             </p>
             <button
               type="button"
               onClick={onClose}
-              className="font-bold px-8 py-3 rounded-xl text-white w-full"
-              style={{ background: gradient }}
+              className="nm-gradient w-full rounded-xl py-3 font-bold text-white transition-all active:scale-[0.98]"
             >
-              Got it! 🚀
+              Got it!
             </button>
           </div>
         ) : (
-          <form onSubmit={onSubmit} className="p-6 space-y-4" noValidate>
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Full Name
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your Full Name"
-                {...register("fullName")}
-                style={inputStyle}
-                onFocus={focus}
-              />
-              {errors.fullName && (
-                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
-                  {errors.fullName.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Email
-              </label>
-              <input
-                type="email"
-                placeholder="Enter your Email"
-                {...register("email")}
-                style={inputStyle}
-                onFocus={focus}
-              />
-              {errors.email && (
-                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
-                  {errors.email.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Phone Number
-              </label>
-              <div className="flex gap-2">
-                <div
-                  className="flex items-center gap-2 px-3 rounded-xl text-sm font-semibold flex-shrink-0"
-                  style={{
-                    border: `1.5px solid ${colors.border}`,
-                    backgroundColor: colors.surface,
-                    color: colors.navy,
-                  }}
-                >
-                  🇳🇵 +977
-                </div>
+          <form onSubmit={onSubmit} className="space-y-4 p-6 sm:p-8" noValidate>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>Full Name</label>
                 <input
-                  type="tel"
-                  placeholder="98XXXXXXXX"
-                  {...register("phone")}
-                  style={inputStyle}
-                  onFocus={focus}
+                  type="text"
+                  placeholder="Enter your full name"
+                  {...register("fullName")}
+                  className={fieldClass}
                 />
+                {errors.fullName && <p className={errorClass}>{errors.fullName.message}</p>}
               </div>
-              {errors.phone && (
-                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
-                  {errors.phone.message}
-                </p>
-              )}
+
+              <div>
+                <label className={labelClass}>Email</label>
+                <input
+                  type="email"
+                  placeholder="Enter your email"
+                  {...register("email")}
+                  className={fieldClass}
+                />
+                {errors.email && <p className={errorClass}>{errors.email.message}</p>}
+              </div>
+
+              <div>
+                <label className={labelClass}>Phone Number</label>
+                <div className="flex gap-2">
+                  <div className="flex flex-shrink-0 items-center gap-2 rounded-xl border border-nm-border bg-nm-surface px-3 text-sm font-semibold text-nm-navy">
+                    🇳🇵 +977
+                  </div>
+                  <input
+                    type="tel"
+                    placeholder="98XXXXXXXX"
+                    {...register("phone")}
+                    className={fieldClass}
+                  />
+                </div>
+                {errors.phone && <p className={errorClass}>{errors.phone.message}</p>}
+              </div>
+
+              <div>
+                <label className={labelClass}>Address</label>
+                <input
+                  type="text"
+                  placeholder="Enter your address"
+                  {...register("address")}
+                  className={fieldClass}
+                />
+                {errors.address && <p className={errorClass}>{errors.address.message}</p>}
+              </div>
+
+              <div>
+                <label className={labelClass}>Course</label>
+                <select {...register("course")} className={cn(fieldClass, "cursor-pointer")}>
+                  <option value="">Select course</option>
+                  {courses.map((c) => (
+                    <option key={c.id} value={c.title}>
+                      {c.title}
+                    </option>
+                  ))}
+                </select>
+                {errors.course && <p className={errorClass}>{errors.course.message}</p>}
+              </div>
+
+              <div>
+                <label className={labelClass}>Education Level</label>
+                <select {...register("educationLevel")} className={cn(fieldClass, "cursor-pointer")}>
+                  <option value="">Select your education level</option>
+                  <option>+2 / High School</option>
+                  <option>Bachelor&apos;s Degree</option>
+                  <option>Master&apos;s Degree</option>
+                  <option>Other</option>
+                </select>
+              </div>
             </div>
 
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Address
-              </label>
-              <input
-                type="text"
-                placeholder="Enter your Address"
-                {...register("address")}
-                style={inputStyle}
-                onFocus={focus}
-              />
-              {errors.address && (
-                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
-                  {errors.address.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Course
-              </label>
-              <select {...register("course")} style={selectStyle} onFocus={focus}>
-                <option value="">Select Course</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.title}>
-                    {c.title}
-                  </option>
-                ))}
-              </select>
-              {errors.course && (
-                <p className="text-xs mt-1" style={{ color: "#dc2626" }}>
-                  {errors.course.message}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className={labelClass} style={{ color: colors.muted }}>
-                Education Level
-              </label>
-              <select {...register("educationLevel")} style={selectStyle} onFocus={focus}>
-                <option value="">Select your education level</option>
-                <option>+2 / High School</option>
-                <option>Bachelor&apos;s Degree</option>
-                <option>Master&apos;s Degree</option>
-                <option>Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label
-                className="block text-xs font-semibold mb-2 uppercase tracking-wider"
-                style={{ color: colors.muted }}
-              >
-                Learning Format
-              </label>
-              <div className="flex gap-5">
-                {["Physical", "Online", "Hybrid"].map((opt) => (
-                  <label
-                    key={opt}
-                    className="flex items-center gap-2 cursor-pointer text-sm font-medium"
-                    style={{ color: colors.body }}
-                  >
+            <fieldset>
+              <legend className={labelClass}>Learning Format</legend>
+              <div className="flex flex-wrap gap-2">
+                {(["Physical", "Online", "Hybrid"] as const).map((opt) => (
+                  <div key={opt} className="relative">
                     <input
                       type="radio"
+                      id={`learningFormat-${opt}`}
                       value={opt}
                       {...register("learningFormat")}
-                      className="accent-[#00bdb8] w-4 h-4"
+                      className="peer sr-only"
                     />
-                    {opt}
-                  </label>
+                    <label
+                      htmlFor={`learningFormat-${opt}`}
+                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
+                    >
+                      {opt}
+                    </label>
+                  </div>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
-            <div>
-              <label
-                className="block text-xs font-semibold mb-2 uppercase tracking-wider"
-                style={{ color: colors.muted }}
-              >
-                Have a Laptop?
-              </label>
-              <div className="flex gap-5">
-                {["Yes", "No"].map((opt) => (
-                  <label
-                    key={opt}
-                    className="flex items-center gap-2 cursor-pointer text-sm font-medium"
-                    style={{ color: colors.body }}
-                  >
+            <fieldset>
+              <legend className={labelClass}>Have a Laptop?</legend>
+              <div className="flex flex-wrap gap-2">
+                {(["Yes", "No"] as const).map((opt) => (
+                  <div key={opt} className="relative">
                     <input
                       type="radio"
+                      id={`hasLaptop-${opt}`}
                       value={opt}
                       {...register("hasLaptop")}
-                      className="accent-[#00bdb8] w-4 h-4"
+                      className="peer sr-only"
                     />
-                    {opt}
-                  </label>
+                    <label
+                      htmlFor={`hasLaptop-${opt}`}
+                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
+                    >
+                      {opt}
+                    </label>
+                  </div>
                 ))}
               </div>
-            </div>
+            </fieldset>
 
-            {submitError && (
-              <p className="text-sm text-center" style={{ color: "#dc2626" }}>
-                {submitError}
-              </p>
-            )}
+            {submitError && <p className="text-center text-sm text-red-600">{submitError}</p>}
 
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full font-bold py-4 rounded-xl text-white text-base transition-all active:scale-[0.98] mt-2 disabled:opacity-60"
-              style={{ background: gradient, boxShadow: `0 4px 20px ${colors.teal}40` }}
+              className="nm-gradient mt-2 flex w-full items-center justify-center gap-2 rounded-xl py-3.5 text-base font-bold text-white shadow-lg shadow-nm-teal/20 transition-all active:scale-[0.98] disabled:opacity-60"
             >
-              {isSubmitting ? "Submitting…" : "Let's Go! 🚀"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Submitting…
+                </>
+              ) : (
+                "Let's Go!"
+              )}
             </button>
           </form>
         )}
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }
