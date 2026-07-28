@@ -4,7 +4,17 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Award, BookOpen, CheckCircle2, Clock, Layers, Mail, Phone, Users } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
+  Layers,
+  Mail,
+  Phone,
+  Users,
+} from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
 import { colors } from "@/lib/theme";
 import EnrollModal from "./EnrollModal";
@@ -87,6 +97,8 @@ interface CoursePageContentProps {
 export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [active, setActive] = useState("overview");
+  // Curriculum accordion: one module open at a time, all collapsed on load.
+  const [openModule, setOpenModule] = useState<number | null>(null);
   const instructor = course.mentor;
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -344,22 +356,57 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 practical, job-ready skills.
               </p>
               <div className="space-y-3">
-                {course.curriculum.map((mod, i) => (
-                  <div
-                    key={mod.title}
-                    className="border border-nm-border rounded-lg p-4 hover:bg-nm-light transition-all"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 nm-gradient rounded-full flex items-center justify-center text-white flex-shrink-0 text-sm font-bold">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-nm-navy">{mod.title}</h4>
-                        <p className="text-sm text-nm-muted mt-1">{mod.topics.join(" · ")}</p>
-                      </div>
+                {course.curriculum.map((mod, i) => {
+                  const open = openModule === i;
+                  return (
+                    <div
+                      key={mod.id ?? `${mod.title}-${i}`}
+                      className="border border-nm-border rounded-lg overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenModule(open ? null : i)}
+                        aria-expanded={open}
+                        aria-controls={`curriculum-panel-${i}`}
+                        className="w-full flex items-start gap-4 p-4 text-left hover:bg-nm-light transition-all"
+                      >
+                        <span className="w-10 h-10 nm-gradient rounded-full flex items-center justify-center text-white flex-shrink-0 text-sm font-bold">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-lg font-semibold text-nm-navy">
+                            {mod.title}
+                          </span>
+                          {mod.topics.length > 0 && (
+                            <span className="block text-sm text-nm-muted mt-1">
+                              {mod.topics.length} {mod.topics.length === 1 ? "topic" : "topics"}
+                            </span>
+                          )}
+                        </span>
+                        <ChevronDown
+                          size={18}
+                          aria-hidden="true"
+                          className={`flex-shrink-0 mt-2.5 text-nm-muted transition-transform duration-200 ${
+                            open ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {open && mod.topics.length > 0 && (
+                        <div
+                          id={`curriculum-panel-${i}`}
+                          className="border-t border-nm-border px-4 py-4"
+                        >
+                          <ul className="list-disc pl-9 space-y-1.5 text-sm text-nm-muted">
+                            {mod.topics.map((topic) => (
+                              <li key={topic}>{topic}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 

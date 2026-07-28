@@ -24,20 +24,20 @@ class MentorModel extends Model<MentorAttributes, MentorCreation> implements Men
   declare coursesMentored?: import("./course").Course[];
 }
 
-// Next's dev server (Turbopack/Fast Refresh) can re-evaluate this module
-// while other already-loaded modules (e.g. the associations in src/db/index.ts)
-// still reference the previous evaluation's class. Two different `Mentor`
-// classes then fail Sequelize's `instanceof Model` checks. Caching on
-// globalThis (matching src/db/sequelize.ts) keeps one instance per process.
-const globalForMentorModel = globalThis as unknown as { Mentor?: typeof MentorModel };
+// Model identity must match the `Model` base class of the same sequelize
+// instance, or Sequelize's `instanceof Model` checks fail when defining
+// associations. `sequelize.models` is that instance's own registry, so it stays
+// consistent both in dev (shared cached instance) and in a production build
+// (one instance per module graph). A separate globalThis key would not: the
+// sequelize instance is only cached outside production, so cached classes could
+// outlive the `Model` they extend.
 
-export const Mentor = globalForMentorModel.Mentor ?? MentorModel;
+export const Mentor = (sequelize.models.Mentor as typeof MentorModel | undefined) ?? MentorModel;
 // The class name doubles as an instance type in TypeScript; re-declare that
 // here since `Mentor` above is a `const` binding, not the class declaration.
 export type Mentor = InstanceType<typeof MentorModel>;
 
-if (!globalForMentorModel.Mentor) {
-  globalForMentorModel.Mentor = Mentor;
+if (!sequelize.models.Mentor) {
 
   Mentor.init(
     {

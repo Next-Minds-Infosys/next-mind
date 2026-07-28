@@ -6,15 +6,13 @@ import { Enrollment } from "./models/enrollment";
 import { Mentor } from "./models/mentor";
 import { User } from "./models/user";
 
-// Each model file now caches its class on globalThis, so re-evaluating this
-// file (Turbopack/Fast Refresh) always sees the same classes - but this guard
-// still keeps association setup itself from running more than once per
-// process, since it only needs to happen the first time.
-const globalForAssociations = globalThis as unknown as { dbAssociated?: boolean };
-
-if (!globalForAssociations.dbAssociated) {
-  globalForAssociations.dbAssociated = true;
-
+// Guard on the models themselves rather than a globalThis boolean. A
+// process-wide flag is wrong here: a production build evaluates this module in
+// more than one graph, and the first graph would flip the flag so later graphs
+// skip association setup entirely - or worse, run it with a mix of classes from
+// different graphs. Checking an association that this block defines is
+// self-scoping, because associations live on the model classes.
+if (!Course.associations.category) {
   User.hasMany(Course, { foreignKey: "createdById", as: "coursesAuthored" });
   Course.belongsTo(User, { foreignKey: "createdById", as: "createdBy" });
 

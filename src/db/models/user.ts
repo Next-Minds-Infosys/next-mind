@@ -29,20 +29,20 @@ class UserModel extends Model<UserAttributes, UserCreation> implements UserAttri
   declare updatedAt: Date;
 }
 
-// Next's dev server (Turbopack/Fast Refresh) can re-evaluate this module
-// while other already-loaded modules (e.g. the associations in src/db/index.ts)
-// still reference the previous evaluation's class. Two different `User`
-// classes then fail Sequelize's `instanceof Model` checks. Caching on
-// globalThis (matching src/db/sequelize.ts) keeps one instance per process.
-const globalForUserModel = globalThis as unknown as { User?: typeof UserModel };
+// Model identity must match the `Model` base class of the same sequelize
+// instance, or Sequelize's `instanceof Model` checks fail when defining
+// associations. `sequelize.models` is that instance's own registry, so it stays
+// consistent both in dev (shared cached instance) and in a production build
+// (one instance per module graph). A separate globalThis key would not: the
+// sequelize instance is only cached outside production, so cached classes could
+// outlive the `Model` they extend.
 
-export const User = globalForUserModel.User ?? UserModel;
+export const User = (sequelize.models.User as typeof UserModel | undefined) ?? UserModel;
 // The class name doubles as an instance type in TypeScript; re-declare that
 // here since `User` above is a `const` binding, not the class declaration.
 export type User = InstanceType<typeof UserModel>;
 
-if (!globalForUserModel.User) {
-  globalForUserModel.User = User;
+if (!sequelize.models.User) {
 
   User.init(
     {
