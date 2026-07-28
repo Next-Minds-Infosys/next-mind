@@ -1,0 +1,16 @@
+const path = require("path");
+
+// Keep sequelize-cli inside the project's existing src/db structure instead of
+// its default top-level models/ migrations/ seeders/ layout.
+//
+// NOTE: models-path is only used by `sequelize-cli model:generate`. The models
+// here are hand-written TypeScript (src/db/models/*.ts) that call
+// `Model.init({ sequelize })` against the shared instance in
+// src/db/sequelize.ts. Do not let the CLI generate a models/index.js there -
+// it opens a second Sequelize connection and only auto-loads .js files.
+module.exports = {
+  config: path.resolve("config", "config.json"),
+  "models-path": path.resolve("src", "db", "models"),
+  "migrations-path": path.resolve("src", "db", "migrations"),
+  "seeders-path": path.resolve("src", "db", "seeders"),
+};

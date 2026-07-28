@@ -1,0 +1,27 @@
+{
+  "development": {
+    "username": "nextmind_user",
+    "password": "nextmind",
+    "database": "nextmind_db",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "test": {
+    "username": "nextmind_user",
+    "password": "nextmind_db",
+    "database": "nextmind_db_test",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres"
+  },
+  "production": {
+    "username": "nextmind_user",
+    "password": "nextmind_db",
+    "database": "nextmind_db",
+    "host": "127.0.0.1",
+    "port": 5432,
+    "dialect": "postgres",
+    "use_env_variable": "DATABASE_URL"
+  }
+}

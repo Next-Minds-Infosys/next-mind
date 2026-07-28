@@ -160,9 +160,7 @@ export default function Navbar() {
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.backgroundColor = "transparent";
-                      e.currentTarget.style.color = isActive(l.href)
-                        ? colors.teal
-                        : colors.body;
+                      e.currentTarget.style.color = isActive(l.href) ? colors.teal : colors.body;
                     }}
                   >
                     <span>{l.icon}</span>

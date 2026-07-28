@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { courses } from "@/data/courses";
+import type { PublicCourse } from "@/db/queries";
 import { colors, gradient } from "@/lib/theme";
 import { socialLinks, whatsappPath } from "./SocialIcons";
 
@@ -21,7 +21,7 @@ const contactRows = [
   { icon: "🕐", text: "Sun–Fri: 9 AM – 6 PM" },
 ];
 
-export default function Footer() {
+export default function Footer({ courses }: { courses: PublicCourse[] }) {
   return (
     <footer
       className="border-t pt-14 pb-8 px-6"
@@ -39,8 +39,8 @@ export default function Footer() {
               className="h-11 w-auto object-contain mb-5"
             />
             <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: colors.muted }}>
-              Empowering Nepal&apos;s future tech leaders with world-class IT
-              training, mentorship, and career support.
+              Empowering Nepal&apos;s future tech leaders with world-class IT training, mentorship,
+              and career support.
             </p>
             <div className="flex gap-2.5">
               {socialLinks.map((s) => (

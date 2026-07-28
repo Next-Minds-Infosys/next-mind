@@ -1,0 +1,75 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { getSession } from "@/lib/auth";
+import { Course, Mentor } from "@/db";
+import { mentorSchema, parseInput, type MentorInput } from "@/lib/schemas";
+
+async function requireAdmin() {
+  const session = await getSession();
+  if (!session || session.user.role !== "ADMIN") return null;
+  return session;
+}
+
+export async function createMentor(
+  data: MentorInput,
+): Promise<{ success: true } | { error: string }> {
+  if (!(await requireAdmin())) return { error: "Unauthorized" };
+
+  const parsed = parseInput(mentorSchema, data);
+  if (!parsed.success) return { error: parsed.error };
+  data = parsed.data;
+
+  await Mentor.create({
+    name: data.name,
+    role: data.role,
+    bio: data.bio,
+    photo: data.photo.trim() || null,
+  });
+
+  revalidatePath("/admin/mentors");
+  revalidatePath("/admin/courses");
+  revalidatePath("/admin");
+  return { success: true };
+}
+
+export async function updateMentor(
+  id: string,
+  data: MentorInput,
+): Promise<{ success: true } | { error: string }> {
+  if (!(await requireAdmin())) return { error: "Unauthorized" };
+
+  const parsed = parseInput(mentorSchema, data);
+  if (!parsed.success) return { error: parsed.error };
+  data = parsed.data;
+
+  const mentor = await Mentor.findByPk(id);
+  if (!mentor) return { error: "Mentor not found." };
+
+  await mentor.update({
+    name: data.name,
+    role: data.role,
+    bio: data.bio,
+    photo: data.photo.trim() || null,
+  });
+
+  revalidatePath("/admin/mentors");
+  revalidatePath("/admin/courses");
+  return { success: true };
+}
+
+export async function deleteMentor(id: string): Promise<{ success: true } | { error: string }> {
+  if (!(await requireAdmin())) return { error: "Unauthorized" };
+
+  const courseCount = await Course.count({ where: { mentorId: id } });
+  if (courseCount > 0) {
+    return {
+      error: `Cannot delete: ${courseCount} course${courseCount === 1 ? "" : "s"} still assign this mentor.`,
+    };
+  }
+
+  await Mentor.destroy({ where: { id } });
+  revalidatePath("/admin/mentors");
+  revalidatePath("/admin");
+  return { success: true };
+}
