@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Anjali Shrestha",
+    "emoji": "👩‍💼",
+    "role": "Digital Marketing Executive",
+    "company": "F1Soft International",
+    "before": "Fresher, BBA Graduate",
+    "after": "Marketing Executive at F1Soft",
+    "salary": "NPR 45,000/mo",
+    "course": "Digital Marketing",
+    "quote": "Next Minds gave me the practical skills that my degree never did. I was placed before I even finished the course."
+  },
+  {
+    "id": 2,
+    "name": "Sanjay Lama",
+    "emoji": "👨‍💻",
+    "role": "Backend Developer",
+    "company": "Khalti",
+    "before": "Unemployed, 2-year gap",
+    "after": "Backend Developer at Khalti",
+    "salary": "NPR 70,000/mo",
+    "course": "Full Stack Development",
+    "quote": "The placement team literally called me with job opportunities. I had 3 offers within a week of graduating."
+  },
+  {
+    "id": 3,
+    "name": "Nisha Thapa",
+    "emoji": "👩‍🔬",
+    "role": "QA Engineer",
+    "company": "Cotiviti Nepal",
+    "before": "Customer Service Agent",
+    "after": "QA Engineer at Cotiviti",
+    "salary": "NPR 55,000/mo",
+    "course": "QA Engineering",
+    "quote": "I doubled my salary and found work I'm genuinely excited about. This course changed my life trajectory."
+  },
+  {
+    "id": 4,
+    "name": "Prakash Bhandari",
+    "emoji": "👨‍🔒",
+    "role": "Security Analyst",
+    "company": "NIC Asia Bank",
+    "before": "IT Support Technician",
+    "after": "Security Analyst at NIC Asia",
+    "salary": "NPR 65,000/mo",
+    "course": "Cyber Security",
+    "quote": "The real-world labs and CTF challenges in the course prepared me for actual threats I see every day."
+  },
+  {
+    "id": 5,
+    "name": "Sunita Gurung",
+    "emoji": "👩‍🎨",
+    "role": "Product Designer",
+    "company": "Leapfrog Technology",
+    "before": "Graphic Design Freelancer",
+    "after": "Product Designer at Leapfrog",
+    "salary": "NPR 60,000/mo",
+    "course": "UI/UX Design",
+    "quote": "Understanding the full UX process — not just making things look nice — is what got me the Leapfrog job."
+  },
+  {
+    "id": 6,
+    "name": "Rajan Shrestha",
+    "emoji": "📊",
+    "role": "Data Analyst",
+    "company": "Fusemachines",
+    "before": "Fresher, BSc Math",
+    "after": "Data Analyst at Fusemachines",
+    "salary": "NPR 75,000/mo",
+    "course": "Data Science & AI",
+    "quote": "The capstone project I built during the course became the main talking point in every job interview I had."
+  }
+]

@@ -1,6 +1,88 @@
+@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..900;1,9..40,100..900&display=swap");
 @import "tailwindcss";
 
+:root {
+  --nm-bg: #ffffff;
+  --nm-surface: #f4f9fc;
+  --nm-card: #ffffff;
+  --nm-border: #deeaf4;
+  --nm-light: #e8f5f5;
+  --nm-navy: #0d2d52;
+  --nm-teal: #00bdb8;
+  --nm-blue: #1a7fe8;
+  --nm-green: #52c85a;
+  --nm-heading: #0d2d52;
+  --nm-body: #3d5166;
+  --nm-muted: #7a90a8;
+  --nm-orange: #f4a44a;
+  --nm-gradient: linear-gradient(135deg, #00bdb8, #1a7fe8);
+  --font-sans: "DM Sans", sans-serif;
+  --font-display: "Bricolage Grotesque", sans-serif;
+}
+
+@theme inline {
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+  --color-nm-teal: var(--nm-teal);
+  --color-nm-blue: var(--nm-blue);
+  --color-nm-navy: var(--nm-navy);
+  --color-nm-body: var(--nm-body);
+  --color-nm-muted: var(--nm-muted);
+  --color-nm-surface: var(--nm-surface);
+  --color-nm-border: var(--nm-border);
+  --color-nm-light: var(--nm-light);
+  --color-nm-green: var(--nm-green);
+  --color-nm-orange: var(--nm-orange);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #deeaf4 transparent;
+}
+
 body {
-  background: #ffffff;
-  color: #171717;
+  background: var(--nm-bg);
+  color: var(--nm-body);
+  font-family: var(--font-sans);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.nm-gradient {
+  background: var(--nm-gradient);
+}
+
+.nm-gradient-text {
+  background: var(--nm-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translate(0);
+  }
+  to {
+    transform: translate(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 28s linear infinite;
+}
+
+.scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+.nm-hero-panel {
+  background: linear-gradient(135deg, var(--nm-navy), #0a3d6e);
 }

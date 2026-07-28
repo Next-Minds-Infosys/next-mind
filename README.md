@@ -1,25 +1,42 @@
 # Next Minds
 
-Next.js replica of the [Next Minds Figma site](https://book-pine-04957477.figma.site/) — IT training institute website for Kathmandu, Nepal.
+Next.js site + **admin dashboard** for [Next Minds Infosys](https://www.nextmindsinfosys.com/) — IT training institute in Kathmandu, Nepal.
 
-## Getting Started
+## Stack
+
+- Next.js 16 (App Router) + TypeScript + Tailwind CSS
+- **Sequelize** + PostgreSQL
+- better-auth (email/password) with **ADMIN** role gate
+
+## Setup
 
 ```bash
-npm install
-npm run dev
+pnpm install
+# ensure Postgres is running (next-mind-postgres on :5434)
+pnpm db:sync
+pnpm db:seed
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open [http://localhost:3000](http://localhost:3000). Admin: [http://localhost:3000/admin](http://localhost:3000/admin) (login required; `ADMIN` role only).
 
-## Pages
+Set `ADMIN_EMAIL` / `ADMIN_PASSWORD` and `DATABASE_URL` in `.env`.
 
-- `/` — Home page with courses, learning journey, contact form
-- `/courses/[courseId]` — Individual course detail pages
-- `/enterprise` — Enterprise training solutions
+## Admin dashboard (`/admin`)
 
-## Tech Stack
+Admin-only. Manages:
 
-- Next.js 16 (App Router)
-- TypeScript
-- Tailwind CSS
-- Lucide React icons
+- Courses (publish toggle)
+- Enrollments
+- Contact submissions
+- Enterprise inquiries
+
+Public forms (`/api/enroll`, `/api/contact`, `/api/enterprise-contact`) persist via Sequelize and email notify.
+
+## Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `pnpm db:sync` | Apply `src/db/schema.sql` if tables missing |
+| `pnpm db:seed` | Seed admin user + courses |
+| `pnpm dev` | Dev server |

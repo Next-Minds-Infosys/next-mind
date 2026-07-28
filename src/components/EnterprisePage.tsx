@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Award,
   Building2,
@@ -14,14 +14,64 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import { motion, useInView, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  enterpriseContactSchema,
+  type EnterpriseContactInput,
+  type EnterpriseContactFormValues,
+} from "@/lib/schemas";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { PublicCourse } from "@/db/queries";
 import EnrollModal from "./EnrollModal";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 28 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.55,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
+  },
+};
+
+const staggerContainer = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.09, delayChildren: 0.1 } },
+};
+
+function AnimatedSection({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true, margin: "-80px" });
+  return (
+    <motion.div
+      ref={ref}
+      variants={staggerContainer}
+      initial="hidden"
+      animate={inView ? "show" : "hidden"}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+}
 
 const sectors = [
   {
     icon: Building2,
     title: "For Colleges & Universities",
-    description:
-      "Bridge the gap between academic learning and industry requirements",
+    description: "Bridge the gap between academic learning and industry requirements",
     features: [
       "Industry-relevant curriculum in AI, cybersecurity, web development, and design",
       "Workshops & bootcamps with hands-on project-based learning",
@@ -62,12 +112,7 @@ const sectors = [
       "Governance workshops with design thinking approach",
       "Scalable capacity building from regional to national level",
     ],
-    courses: [
-      "E-Governance",
-      "Cybersecurity",
-      "Digital Service Design",
-      "Data Management",
-    ],
+    courses: ["E-Governance", "Cybersecurity", "Digital Service Design", "Data Management"],
   },
   {
     icon: Target,
@@ -98,46 +143,236 @@ const partnerBenefits = [
   {
     icon: Users,
     title: "Expert Trainers",
-    description:
-      "Industry professionals with real-world experience in top tech companies",
+    description: "Industry professionals with real-world experience in top tech companies",
   },
   {
     icon: TrendingUp,
     title: "Measurable Results",
-    description:
-      "Track progress with assessments, projects, and performance metrics",
+    description: "Track progress with assessments, projects, and performance metrics",
   },
   {
     icon: Award,
     title: "Recognized Certification",
-    description:
-      "Industry-recognized certificates for all participants upon completion",
+    description: "Industry-recognized certificates for all participants upon completion",
   },
   {
     icon: Shield,
     title: "Flexible Delivery",
-    description:
-      "On-site, online, or hybrid training options to suit your schedule",
+    description: "On-site, online, or hybrid training options to suit your schedule",
   },
   {
     icon: Zap,
     title: "Ongoing Support",
-    description:
-      "Post-training support and consultation to ensure continued success",
+    description: "Post-training support and consultation to ensure continued success",
   },
 ];
 
-export default function EnterprisePage() {
+function EnterpriseContactForm() {
+  const [status, setStatus] = useState<"idle" | "sent" | "error">("idle");
+  const [submitError, setSubmitError] = useState("");
+
+  const {
+    register,
+    handleSubmit: rhfHandleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<EnterpriseContactFormValues, unknown, EnterpriseContactInput>({
+    resolver: zodResolver(enterpriseContactSchema),
+    defaultValues: {
+      name: "",
+      orgName: "",
+      email: "",
+      phone: "",
+      orgType: "",
+      teamSize: "",
+      trainingInterests: "",
+    },
+  });
+
+  const handleSubmit = rhfHandleSubmit(async (values) => {
+    setSubmitError("");
+    try {
+      const res = await fetch("/api/enterprise-contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(values),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => null);
+        throw new Error(body?.error ?? "Something went wrong. Please try again.");
+      }
+      reset();
+      setStatus("sent");
+    } catch (err) {
+      setStatus("error");
+      setSubmitError(err instanceof Error ? err.message : "Something went wrong.");
+    }
+  });
+
+  const fieldError = (name: keyof EnterpriseContactFormValues) =>
+    errors[name] ? <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p> : null;
+
+  const inputClass =
+    "w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow";
+
+  if (status === "sent") {
+    return (
+      <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+        <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+        <CardContent className="p-8 md:p-12 text-center py-16">
+          <div className="text-5xl mb-4">🎉</div>
+          <p className="text-2xl font-bold text-gray-800 mb-2">Request received!</p>
+          <p className="text-gray-500">Our enterprise team will reach out within 24 hours.</p>
+          <Button className="mt-8" onClick={() => setStatus("idle")}>
+            Submit another request
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+      <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+      <CardContent className="p-8 md:p-12">
+        <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Your Name *</label>
+              <input
+                {...register("name")}
+                type="text"
+                placeholder="John Doe"
+                className={inputClass}
+              />
+              {fieldError("name")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Organization Name *
+              </label>
+              <input
+                {...register("orgName")}
+                type="text"
+                placeholder="Your Company"
+                className={inputClass}
+              />
+              {fieldError("orgName")}
+            </div>
+          </div>
+          <div className="grid md:grid-cols-2 gap-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Email *</label>
+              <input
+                {...register("email")}
+                type="email"
+                placeholder="you@company.com"
+                className={inputClass}
+              />
+              {fieldError("email")}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Phone *</label>
+              <input
+                {...register("phone")}
+                type="tel"
+                placeholder="+977-9XXXXXXXXX"
+                className={inputClass}
+              />
+              {fieldError("phone")}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Organization Type *
+            </label>
+            <select {...register("orgType")} required className={`${inputClass} text-gray-500`}>
+              <option value="">Select type</option>
+              <option>College/University</option>
+              <option>Corporate/Private Company</option>
+              <option>Government Agency</option>
+              <option>NGO/Foundation</option>
+              <option>Other</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Team Size</label>
+            <select {...register("teamSize")} className={`${inputClass} text-gray-500`}>
+              <option value="">Select team size</option>
+              <option>10–25 people</option>
+              <option>25–50 people</option>
+              <option>50–100 people</option>
+              <option>100+ people</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              Training Interests
+            </label>
+            <textarea
+              {...register("trainingInterests")}
+              rows={4}
+              placeholder="Tell us about your training needs, goals, and areas of interest..."
+              className={`${inputClass} resize-none`}
+            />
+          </div>
+          {status === "error" && (
+            <p className="text-sm text-red-500">
+              {submitError || "Something went wrong. Please try again."}
+            </p>
+          )}
+          <Button type="submit" size="lg" className="w-full" disabled={isSubmitting}>
+            {isSubmitting ? "Sending…" : "Request a Consultation"}
+          </Button>
+
+          <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-6">
+            {[
+              { icon: Phone, label: "Enterprise Hotline", value: "+977-9XXXXXXXXX" },
+              { icon: Mail, label: "Email Us", value: "enterprise@nextminds.edu.np" },
+            ].map(({ icon: Icon, label, value }) => (
+              <div key={label} className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-teal-200/40">
+                  <Icon size={18} />
+                </div>
+                <div>
+                  <div className="text-xs text-gray-400">{label}</div>
+                  <div className="text-sm font-medium text-gray-700">{value}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+}
+
+export default function EnterprisePage({ courses }: { courses: PublicCourse[] }) {
   const [enrollOpen, setEnrollOpen] = useState(false);
+  const heroRef = useRef(null);
+  const heroInView = useInView(heroRef, { once: true });
 
   return (
     <div className="min-h-screen bg-white pt-16">
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 via-blue-50 to-white">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="inline-block bg-gradient-to-r from-teal-500 to-blue-600 text-white px-4 py-2 rounded-full text-sm mb-6">
-            Enterprise Learning Solutions
-          </div>
-          <h1 className="text-5xl md:text-6xl mb-6">
+      {/* ── Hero ── */}
+      <section className="relative overflow-hidden py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 via-blue-50 to-white">
+        <div className="pointer-events-none absolute -top-32 -right-32 w-96 h-96 rounded-full bg-teal-100/40 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-32 w-80 h-80 rounded-full bg-blue-100/40 blur-3xl" />
+
+        <motion.div
+          ref={heroRef}
+          variants={staggerContainer}
+          initial="hidden"
+          animate={heroInView ? "show" : "hidden"}
+          className="relative max-w-7xl mx-auto text-center"
+        >
+          <motion.div variants={fadeUp}>
+            <Badge variant="gradient" className="mb-6 text-sm px-4 py-1.5">
+              Enterprise Learning Solutions
+            </Badge>
+          </motion.div>
+
+          <motion.h1 variants={fadeUp} className="text-5xl md:text-6xl font-bold mb-6">
             Build a{" "}
             <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
               Smarter
@@ -147,412 +382,369 @@ export default function EnterprisePage() {
               Stronger
             </span>
             , More Future-Ready Team
-          </h1>
-          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            Your one-stop partner for Learning & Development. We help
-            organizations grow through purposeful learning—enabling teams to
-            upskill, reskill, and stay competitive in the fast-changing tech
-            landscape.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-            <button
-              onClick={() => setEnrollOpen(true)}
-              className="bg-gradient-to-r from-teal-500 to-blue-600 text-white px-8 py-3 rounded-full hover:shadow-lg transition-all"
-            >
+          </motion.h1>
+
+          <motion.p
+            variants={fadeUp}
+            className="text-lg text-gray-600 mb-10 max-w-3xl mx-auto leading-relaxed"
+          >
+            Your one-stop partner for Learning & Development. We help organizations grow through
+            purposeful learning—enabling teams to upskill, reskill, and stay competitive in the
+            fast-changing tech landscape.
+          </motion.p>
+
+          <motion.div
+            variants={fadeUp}
+            className="flex flex-col sm:flex-row gap-4 justify-center mb-14"
+          >
+            <Button size="lg" onClick={() => setEnrollOpen(true)}>
               Book a Discovery Call
-            </button>
-            <a
-              href="#contact"
-              className="border-2 border-teal-500 text-teal-600 px-8 py-3 rounded-full hover:bg-teal-50 transition-all text-center"
-            >
-              View Sample Programs
-            </a>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <a href="#contact">View Sample Programs</a>
+            </Button>
+          </motion.div>
+
+          <motion.div variants={fadeUp} className="grid md:grid-cols-3 gap-5 max-w-3xl mx-auto">
             {[
               { value: "500+", label: "Professionals Trained" },
               { value: "50+", label: "Corporate Partners" },
               { value: "95%", label: "Satisfaction Rate" },
             ].map((stat) => (
-              <div key={stat.label} className="bg-white rounded-xl p-6 shadow-lg">
-                <h3 className="text-2xl mb-2 bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                  {stat.value}
-                </h3>
-                <p className="text-gray-600">{stat.label}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              Our{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Services
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600">
-              Comprehensive learning solutions for every organization
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                icon: TrendingUp,
-                title: "Technical Upskilling",
-                description:
-                  "Software development, AI, data science, and emerging technology training",
-              },
-              {
-                icon: Users,
-                title: "Soft Skills & Leadership",
-                description:
-                  "Communication, teamwork, problem-solving, and leadership development",
-              },
-              {
-                icon: Zap,
-                title: "Productivity Boosters",
-                description:
-                  "Efficiency tools, agile methodologies, and workflow optimization",
-              },
-            ].map((service) => {
-              const Icon = service.icon;
-              return (
-                <div
-                  key={service.title}
-                  className="text-center p-8 border border-gray-200 rounded-xl hover:shadow-xl transition-all"
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white">
-                    <Icon size={32} />
+              <motion.div
+                key={stat.label}
+                whileHover={{ y: -4, scale: 1.02 }}
+                transition={{ type: "spring", stiffness: 360, damping: 24 }}
+              >
+                <Card className="p-6 shadow-[0_4px_24px_rgba(20,184,166,0.1)] hover:shadow-[0_12px_36px_rgba(20,184,166,0.2)] transition-shadow duration-300 overflow-hidden">
+                  <div className="h-0.5 w-full bg-gradient-to-r from-teal-500 to-blue-600 -mx-6 mb-4 w-[calc(100%+3rem)]" />
+                  <div className="text-3xl font-bold bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent mb-1">
+                    {stat.value}
                   </div>
-                  <h3 className="text-2xl mb-3">{service.title}</h3>
-                  <p className="text-gray-600">{service.description}</p>
-                </div>
-              );
-            })}
-          </div>
+                  <p className="text-sm text-gray-500">{stat.label}</p>
+                </Card>
+              </motion.div>
+            ))}
+          </motion.div>
+        </motion.div>
+      </section>
+
+      {/* ── Services ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-14">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Our{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Services
+                </span>
+              </h2>
+              <p className="text-lg text-gray-500">
+                Comprehensive learning solutions for every organization
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-3 gap-7">
+              {[
+                {
+                  icon: TrendingUp,
+                  title: "Technical Upskilling",
+                  description:
+                    "Software development, AI, data science, and emerging technology training",
+                },
+                {
+                  icon: Users,
+                  title: "Soft Skills & Leadership",
+                  description:
+                    "Communication, teamwork, problem-solving, and leadership development",
+                },
+                {
+                  icon: Zap,
+                  title: "Productivity Boosters",
+                  description: "Efficiency tools, agile methodologies, and workflow optimization",
+                },
+              ].map((service) => {
+                const Icon = service.icon;
+                return (
+                  <motion.div
+                    key={service.title}
+                    variants={fadeUp}
+                    whileHover={{ y: -8 }}
+                    transition={{ type: "spring", stiffness: 360, damping: 24 }}
+                    className="group"
+                  >
+                    <Card className="h-full text-center p-8 shadow-[0_2px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_20px_48px_rgba(20,184,166,0.18)] transition-shadow duration-300 overflow-hidden">
+                      <div className="h-0.5 w-full bg-gradient-to-r from-teal-500 to-blue-600 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 -mx-8 mb-6 w-[calc(100%+4rem)]" />
+                      <div className="w-16 h-16 mx-auto mb-5 bg-gradient-to-br from-teal-500 to-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-teal-200/50 group-hover:scale-110 transition-transform duration-300">
+                        <Icon size={28} />
+                      </div>
+                      <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
+                      <p className="text-sm text-gray-500 leading-relaxed">{service.description}</p>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white">
+      {/* ── Sectors ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              Tailored for{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Every Sector
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600">
-              Specialized training programs for different organizational needs
-            </p>
-          </div>
-          <div className="space-y-12">
-            {sectors.map((sector) => {
-              const Icon = sector.icon;
-              return (
-                <div
-                  key={sector.title}
-                  className="bg-white rounded-2xl shadow-xl overflow-hidden"
-                >
-                  <div className="grid md:grid-cols-3 gap-0">
-                    <div className="bg-gradient-to-br from-teal-500 to-blue-600 p-8 text-white">
-                      <Icon size={48} className="mb-4" />
-                      <h3 className="text-3xl mb-3">{sector.title}</h3>
-                      <p className="text-teal-50">{sector.description}</p>
-                    </div>
-                    <div className="md:col-span-2 p-8">
-                      <h4 className="text-xl mb-4">What We Offer:</h4>
-                      <ul className="space-y-3 mb-6">
-                        {sector.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-3">
-                            <CheckCircle
-                              size={20}
-                              className="text-teal-600 flex-shrink-0 mt-1"
-                            />
-                            <span className="text-gray-600">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <div className="pt-4 border-t border-gray-200">
-                        <h4 className="text-sm mb-3 text-gray-600">
-                          Sample Programs:
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {sector.courses.map((course) => (
-                            <span
-                              key={course}
-                              className="text-sm bg-teal-50 text-teal-700 px-3 py-1 rounded-full"
-                            >
-                              {course}
-                            </span>
-                          ))}
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-14">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Tailored for{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Every Sector
+                </span>
+              </h2>
+              <p className="text-lg text-gray-500">
+                Specialized training programs for different organizational needs
+              </p>
+            </motion.div>
+
+            <div className="space-y-7">
+              {sectors.map((sector) => {
+                const Icon = sector.icon;
+                return (
+                  <motion.div
+                    key={sector.title}
+                    variants={fadeUp}
+                    whileHover={{ y: -4 }}
+                    transition={{ type: "spring", stiffness: 300, damping: 28 }}
+                    className="group"
+                  >
+                    <Card className="overflow-hidden shadow-[0_2px_20px_rgba(0,0,0,0.07)] hover:shadow-[0_16px_48px_rgba(20,184,166,0.15)] transition-shadow duration-300">
+                      <div className="grid md:grid-cols-3">
+                        <div className="bg-gradient-to-br from-teal-500 to-blue-600 p-8 text-white">
+                          <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center mb-5">
+                            <Icon size={28} />
+                          </div>
+                          <h3 className="text-2xl font-bold mb-3">{sector.title}</h3>
+                          <p className="text-teal-50 text-sm leading-relaxed">
+                            {sector.description}
+                          </p>
+                        </div>
+                        <div className="md:col-span-2 p-8">
+                          <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider mb-4">
+                            What We Offer
+                          </h4>
+                          <ul className="space-y-3 mb-6">
+                            {sector.features.map((feature) => (
+                              <li key={feature} className="flex items-start gap-3">
+                                <CheckCircle
+                                  size={16}
+                                  className="text-teal-600 flex-shrink-0 mt-0.5"
+                                />
+                                <span className="text-sm text-gray-600 leading-relaxed">
+                                  {feature}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                          <div className="pt-4 border-t border-gray-100">
+                            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">
+                              Sample Programs
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {sector.courses.map((course) => (
+                                <Badge key={course} variant="default" className="text-xs">
+                                  {course}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
                         </div>
                       </div>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ── Partner Benefits ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-14">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Why Partner with{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Next Minds
+                </span>
+              </h2>
+              <p className="text-lg text-gray-500">
+                Proven results that drive organizational success
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-7">
+              {partnerBenefits.map((benefit) => {
+                const Icon = benefit.icon;
+                return (
+                  <motion.div
+                    key={benefit.title}
+                    variants={fadeUp}
+                    whileHover={{ y: -6, scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 360, damping: 24 }}
+                    className="group"
+                  >
+                    <Card className="h-full p-6 shadow-[0_2px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_40px_rgba(20,184,166,0.15)] transition-shadow duration-300 overflow-hidden">
+                      <div className="h-0.5 w-full bg-gradient-to-r from-teal-500 to-blue-600 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 -mx-6 mb-5 w-[calc(100%+3rem)]" />
+                      <div className="w-12 h-12 mb-4 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center text-white shadow-md shadow-teal-200/50 group-hover:scale-110 transition-transform duration-300">
+                        <Icon size={22} />
+                      </div>
+                      <h3 className="text-lg font-semibold mb-2">{benefit.title}</h3>
+                      <p className="text-sm text-gray-500 leading-relaxed">{benefit.description}</p>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          </AnimatedSection>
+        </div>
+      </section>
+
+      {/* ── Testimonial ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 via-blue-50 to-white">
+        <div className="max-w-4xl mx-auto">
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                What Our{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Partners
+                </span>{" "}
+                Say
+              </h2>
+            </motion.div>
+
+            <motion.div variants={fadeUp}>
+              <Card className="shadow-[0_8px_40px_rgba(20,184,166,0.12)] overflow-hidden">
+                <div className="h-1 w-full bg-gradient-to-r from-teal-500 to-blue-600" />
+                <CardContent className="p-10 md:p-12">
+                  <div className="text-5xl text-teal-500 mb-4 leading-none">&ldquo;</div>
+                  <p className="text-lg text-gray-600 mb-8 leading-relaxed">
+                    Next Minds helped us upskill our entire development team with their
+                    comprehensive MERN stack program. The training was practical, relevant, and
+                    immediately applicable to our projects. Our team&apos;s productivity and code
+                    quality have significantly improved.
+                  </p>
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white shadow-lg">
+                      <Users size={24} />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-800">Rajesh Sharma</div>
+                      <div className="text-sm text-gray-500">CTO, TechCorp Nepal</div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                </CardContent>
+              </Card>
+            </motion.div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+      {/* ── How We Work ── */}
+      <section className="py-24 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              Why Partner with{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Next Minds
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600">
-              Proven results that drive organizational success
-            </p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {partnerBenefits.map((benefit) => {
-              const Icon = benefit.icon;
-              return (
-                <div
-                  key={benefit.title}
-                  className="border border-gray-200 rounded-xl p-6 hover:shadow-xl transition-all"
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-14">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                How We{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Work With You
+                </span>
+              </h2>
+              <p className="text-lg text-gray-500">
+                A collaborative approach to ensure maximum impact
+              </p>
+            </motion.div>
+
+            <div className="grid md:grid-cols-4 gap-7">
+              {[
+                {
+                  step: "1",
+                  title: "Discovery Call",
+                  description:
+                    "Understand your organization's goals, challenges, and learning needs",
+                },
+                {
+                  step: "2",
+                  title: "Custom Design",
+                  description: "Create tailored curriculum and training program for your team",
+                },
+                {
+                  step: "3",
+                  title: "Deliver Training",
+                  description: "Execute the program with expert instructors and hands-on projects",
+                },
+                {
+                  step: "4",
+                  title: "Measure & Support",
+                  description: "Track results and provide ongoing support for continued success",
+                },
+              ].map((item) => (
+                <motion.div
+                  key={item.step}
+                  variants={fadeUp}
+                  whileHover={{ y: -6 }}
+                  transition={{ type: "spring", stiffness: 360, damping: 24 }}
+                  className="group"
                 >
-                  <div className="w-12 h-12 mb-4 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white">
-                    <Icon size={24} />
-                  </div>
-                  <h3 className="text-xl mb-2">{benefit.title}</h3>
-                  <p className="text-gray-600">{benefit.description}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-teal-50 via-blue-50 to-white">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              What Our{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Partners
-              </span>{" "}
-              Say
-            </h2>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-            <div className="text-4xl text-teal-600 mb-4">&ldquo;</div>
-            <p className="text-xl text-gray-600 mb-6">
-              &ldquo;Next Minds helped us upskill our entire development team
-              with their comprehensive MERN stack program. The training was
-              practical, relevant, and immediately applicable to our projects.
-              Our team&apos;s productivity and code quality have significantly
-              improved.&rdquo;
-            </p>
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white">
-                <Users size={32} />
-              </div>
-              <div>
-                <div className="text-lg">Rajesh Sharma</div>
-                <div className="text-gray-600">CTO, TechCorp Nepal</div>
-              </div>
+                  <Card className="h-full p-6 text-center shadow-[0_2px_16px_rgba(0,0,0,0.06)] hover:shadow-[0_16px_40px_rgba(20,184,166,0.14)] transition-shadow duration-300 overflow-hidden">
+                    <div className="h-0.5 w-full bg-gradient-to-r from-teal-500 to-blue-600 origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300 -mx-6 mb-5 w-[calc(100%+3rem)]" />
+                    <div className="w-14 h-14 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white text-xl font-bold shadow-lg shadow-teal-200/50">
+                      {item.step}
+                    </div>
+                    <h3 className="text-base font-semibold mb-2">{item.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{item.description}</p>
+                  </Card>
+                </motion.div>
+              ))}
             </div>
-          </div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <section className="py-20 px-4 sm:px-6 lg:px-8 bg-white">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              How We{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Work With You
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600">
-              A collaborative approach to ensure maximum impact
-            </p>
-          </div>
-          <div className="grid md:grid-cols-4 gap-8">
-            {[
-              {
-                step: "1",
-                title: "Discovery Call",
-                description:
-                  "Understand your organization's goals, challenges, and learning needs",
-              },
-              {
-                step: "2",
-                title: "Custom Design",
-                description:
-                  "Create tailored curriculum and training program for your team",
-              },
-              {
-                step: "3",
-                title: "Deliver Training",
-                description:
-                  "Execute the program with expert instructors and hands-on projects",
-              },
-              {
-                step: "4",
-                title: "Measure & Support",
-                description:
-                  "Track results and provide ongoing support for continued success",
-              },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-teal-500 to-blue-600 rounded-full flex items-center justify-center text-white text-2xl">
-                  {item.step}
-                </div>
-                <h3 className="text-xl mb-2">{item.title}</h3>
-                <p className="text-gray-600">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* ── Contact ── */}
       <section
         id="contact"
-        className="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
+        className="py-24 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-gray-50 to-white"
       >
         <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl md:text-5xl mb-4">
-              Let&apos;s Transform Your{" "}
-              <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
-                Organization
-              </span>
-            </h2>
-            <p className="text-xl text-gray-600">
-              Book a free consultation to discuss your training needs
-            </p>
-          </div>
-          <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
-            <form className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700">
-                    Your Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="John Doe"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700">
-                    Organization Name *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="Your Company"
-                  />
-                </div>
-              </div>
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700">
-                    Email *
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="you@company.com"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm mb-2 text-gray-700">
-                    Phone *
-                  </label>
-                  <input
-                    type="tel"
-                    required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                    placeholder="+977-9XXXXXXXXX"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm mb-2 text-gray-700">
-                  Organization Type *
-                </label>
-                <select
-                  required
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                >
-                  <option value="">Select type</option>
-                  <option>College/University</option>
-                  <option>Corporate/Private Company</option>
-                  <option>Government Agency</option>
-                  <option>NGO/Foundation</option>
-                  <option>Other</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm mb-2 text-gray-700">
-                  Team Size
-                </label>
-                <select className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500">
-                  <option value="">Select team size</option>
-                  <option>10-25 people</option>
-                  <option>25-50 people</option>
-                  <option>50-100 people</option>
-                  <option>100+ people</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm mb-2 text-gray-700">
-                  Training Interests
-                </label>
-                <textarea
-                  rows={4}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500"
-                  placeholder="Tell us about your training needs, goals, and any specific areas of interest..."
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-gradient-to-r from-teal-500 to-blue-600 text-white px-8 py-4 rounded-lg hover:shadow-lg transition-all text-lg"
-              >
-                Request a Consultation
-              </button>
-            </form>
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <div className="grid md:grid-cols-2 gap-6 text-center md:text-left">
-                <div className="flex items-center justify-center md:justify-start gap-3">
-                  <Phone className="text-teal-600" size={24} />
-                  <div>
-                    <div className="text-sm text-gray-600">Enterprise Hotline</div>
-                    <div>+977-9XXXXXXXXX</div>
-                  </div>
-                </div>
-                <div className="flex items-center justify-center md:justify-start gap-3">
-                  <Mail className="text-teal-600" size={24} />
-                  <div>
-                    <div className="text-sm text-gray-600">Email Us</div>
-                    <div>enterprise@nextminds.edu.np</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
+          <AnimatedSection>
+            <motion.div variants={fadeUp} className="text-center mb-12">
+              <h2 className="text-4xl md:text-5xl font-bold mb-4">
+                Let&apos;s Transform Your{" "}
+                <span className="bg-gradient-to-r from-teal-500 to-blue-600 bg-clip-text text-transparent">
+                  Organization
+                </span>
+              </h2>
+              <p className="text-lg text-gray-500">
+                Book a free consultation to discuss your training needs
+              </p>
+            </motion.div>
+
+            <motion.div variants={fadeUp}>
+              <EnterpriseContactForm />
+            </motion.div>
+          </AnimatedSection>
         </div>
       </section>
 
-      <EnrollModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} />
+      <AnimatePresence>
+        {enrollOpen && (
+          <EnrollModal isOpen={enrollOpen} onClose={() => setEnrollOpen(false)} courses={courses} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
