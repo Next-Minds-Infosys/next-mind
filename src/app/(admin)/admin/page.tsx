@@ -10,7 +10,13 @@ import {
   Inbox,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
-import { Category, Course, Enrollment } from "@/db";
+import {
+  Category,
+  ContactSubmission,
+  Course,
+  Enrollment,
+  EnterpriseInquiry,
+} from "@/db";
 import { SubmissionStatus } from "@/lib/types";
 import { StatusBadge } from "@/components/admin/status-badge";
 import {
@@ -22,8 +28,6 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { ContactSubmission } from "@/db/models/contact-submission";
-import { EnterpriseInquiry } from "@/db/models/entrise-query";
 
 // Hairline surface. Tailwind v4 renders an uncoloured `border` as currentColor,
 // so cards use a light ring instead.

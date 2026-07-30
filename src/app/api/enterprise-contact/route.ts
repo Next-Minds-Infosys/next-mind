@@ -2,8 +2,7 @@ import { NextRequest, after } from "next/server";
 import { sendMail } from "@/lib/mailer";
 import { createId } from "@/db/id";
 import { enterpriseContactSchema, parseInput } from "@/lib/schemas";
-import { EnterpriseInquiry } from "@/db/models/entrise-query";
-// import { EnterpriseInquiry, createId } from "@/db";
+import { EnterpriseInquiry } from "@/db";
 
 export async function POST(request: NextRequest) {
   const parsed = parseInput(enterpriseContactSchema, await request.json().catch(() => null));

@@ -2,11 +2,22 @@
 
 import { useState } from "react";
 import { colors, gradient, heroGradient } from "@/lib/theme";
-import posts from "@/data/blog.json";
+
 
 const categories = ["All", "Career", "Technology", "Industry", "Tutorials"];
 
-export default function BlogPage() {
+export interface BlogPost {
+  id: string;
+  title: string;
+  excerpt: string;
+  category: string;
+  emoji: string;
+  author: string;
+  readTime: string;
+  featured: boolean;
+}
+
+export default function BlogPage({ posts }: { posts: BlogPost[] }) {
   const [category, setCategory] = useState("All");
   const filtered = category === "All" ? posts : posts.filter((p) => p.category === category);
 

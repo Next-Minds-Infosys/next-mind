@@ -16,6 +16,8 @@
     "db:sync": "tsx src/db/sync.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1096.0",
+    "@aws-sdk/s3-request-presigner": "^3.1096.0",
     "@hookform/resolvers": "^5.4.3",
     "@next/env": "^16.2.11",
     "@radix-ui/react-avatar": "^1.2.1",

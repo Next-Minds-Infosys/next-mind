@@ -1,6 +1,6 @@
 import { NextRequest, after } from "next/server";
 import { sendMail } from "@/lib/mailer";
-import { ContactSubmission } from "@/db/models";
+import { ContactSubmission } from "@/db";
 import { createId } from "@/db/id";
 import { contactSchema, parseInput } from "@/lib/schemas";
 

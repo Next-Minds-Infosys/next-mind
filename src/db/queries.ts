@@ -1,5 +1,7 @@
 import { cache } from "react";
-import { Category, Course, Mentor } from "./index";
+import { Op } from "sequelize";
+import { Category, Course, Mentor, User } from "./index";
+import { Role } from "@/lib/types";
 import type { CurriculumModule, Faq } from "./models/course";
 
 /**
@@ -84,3 +86,27 @@ export const getPublicCourseBySlug = cache(async (slug: string): Promise<PublicC
   });
   return course ? toPublicCourse(course) : null;
 });
+
+/**
+ * Option lists for admin forms, already flattened to plain objects.
+ *
+ * Sequelize returns Model instances, which carry a toJSON method - React
+ * refuses to serialise those across the server/client boundary ("Only plain
+ * objects can be passed to Client Components"). Returning them pre-mapped means
+ * a page cannot forget to convert, which is exactly how that bug got in.
+ */
+export const listCourseOptions = cache(async (): Promise<{ id: string; title: string }[]> => {
+  const rows = await Course.findAll({ attributes: ["id", "title"], order: [["title", "ASC"]] });
+  return rows.map((c) => ({ id: c.id, title: c.title }));
+});
+
+export const listInstructorOptions = cache(
+  async (): Promise<{ id: string; name: string | null; email: string }[]> => {
+    const rows = await User.findAll({
+      where: { role: { [Op.in]: [Role.INSTRUCTOR, Role.ADMIN] } },
+      attributes: ["id", "name", "email"],
+      order: [["name", "ASC"]],
+    });
+    return rows.map((u) => ({ id: u.id, name: u.name, email: u.email }));
+  },
+);

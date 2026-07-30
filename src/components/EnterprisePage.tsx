@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { contact } from "@/lib/contact";
 import {
   Award,
   Building2,
@@ -327,8 +328,8 @@ function EnterpriseContactForm() {
 
           <div className="mt-8 pt-8 border-t border-gray-100 grid md:grid-cols-2 gap-6">
             {[
-              { icon: Phone, label: "Enterprise Hotline", value: "+977-9XXXXXXXXX" },
-              { icon: Mail, label: "Email Us", value: "enterprise@nextminds.edu.np" },
+              { icon: Phone, label: "Enterprise Hotline", value: contact.phoneDisplay },
+              { icon: Mail, label: "Email Us", value: contact.email },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-gradient-to-br from-teal-500 to-blue-600 rounded-xl flex items-center justify-center text-white flex-shrink-0 shadow-md shadow-teal-200/40">

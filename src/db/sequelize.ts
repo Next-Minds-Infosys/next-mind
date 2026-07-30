@@ -48,6 +48,12 @@ export const sequelize =
   new Sequelize(connectionString, {
     dialect: "postgres",
     dialectModule: pg,
+    // Sequelize parses the URL itself and drops `?sslmode=`, so hosted
+    // Postgres (Neon, Supabase, RDS) must be told to use SSL explicitly or it
+    // rejects the connection as insecure. Local sockets stay plaintext.
+    ...(/(localhost|127\.0\.0\.1)/.test(connectionString)
+      ? {}
+      : { dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } }),
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     define: {
       freezeTableName: true,
