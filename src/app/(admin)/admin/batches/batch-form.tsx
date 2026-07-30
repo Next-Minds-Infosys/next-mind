@@ -21,6 +21,7 @@ const label = "text-sm font-medium text-gray-700";
 export function BatchForm({ courses, instructors, initial, onDone }: Props) {
   const router = useRouter();
   const [serverError, setServerError] = useState("");
+  const [saved, setSaved] = useState(false);
   const {
     register,
     handleSubmit,
@@ -41,13 +42,25 @@ export function BatchForm({ courses, instructors, initial, onDone }: Props) {
     },
   });
 
-  const onSubmit = handleSubmit(async (values) => {
-    setServerError("");
-    const result = initial ? await updateBatch(initial.id, values) : await createBatch(values);
-    if ("error" in result) return setServerError(result.error);
-    onDone?.();
-    router.refresh();
-  });
+  const onSubmit = handleSubmit(
+    async (values) => {
+      setServerError("");
+      setSaved(false);
+      const result = initial ? await updateBatch(initial.id, values) : await createBatch(values);
+      if ("error" in result) return setServerError(result.error);
+      setSaved(true);
+      onDone?.();
+      router.refresh();
+    },
+    // Most fields had no inline error slot, so a rejected value silently did
+    // nothing and the button looked broken. Surface whatever failed.
+    (invalid) => {
+      const first = Object.entries(invalid)[0];
+      setServerError(
+        first ? `${first[0]}: ${first[1]?.message ?? "invalid value"}` : "Please check the fields above.",
+      );
+    },
+  );
 
   const err = (name: keyof BatchFormValues) =>
     errors[name] && <p className="mt-1 text-xs text-red-600">{errors[name]?.message}</p>;
@@ -135,7 +148,12 @@ export function BatchForm({ courses, instructors, initial, onDone }: Props) {
         </div>
       </div>
 
-      {serverError && <p className="text-sm text-red-600">{serverError}</p>}
+      {serverError && (
+        <p className="rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{serverError}</p>
+      )}
+      {saved && !serverError && (
+        <p className="rounded-xl bg-teal-50 px-4 py-3 text-sm text-teal-700">Changes saved.</p>
+      )}
 
       <button
         type="submit"

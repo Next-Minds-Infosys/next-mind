@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { Op } from "sequelize";
-import { Category, Course, Mentor, User } from "./index";
+import { BatchStudent, Category, Course, Mentor, User } from "./index";
 import { Role } from "@/lib/types";
 import type { CurriculumModule, Faq } from "./models/course";
 
@@ -110,3 +110,21 @@ export const listInstructorOptions = cache(
     return rows.map((u) => ({ id: u.id, name: u.name, email: u.email }));
   },
 );
+
+/**
+ * Students who can still be added to a batch: STUDENT role, not already on its
+ * roster. Accounts are created in Users - the roster only picks from them.
+ */
+export async function listEnrollableStudents(batchId: string) {
+  const taken = await BatchStudent.findAll({ where: { batchId }, attributes: ["userId"] });
+  const takenIds = taken.map((t) => t.userId);
+  const rows = await User.findAll({
+    where: {
+      role: Role.STUDENT,
+      ...(takenIds.length ? { id: { [Op.notIn]: takenIds } } : {}),
+    },
+    attributes: ["id", "name", "email"],
+    order: [["name", "ASC"]],
+  });
+  return rows.map((u) => ({ id: u.id, name: u.name, email: u.email }));
+}

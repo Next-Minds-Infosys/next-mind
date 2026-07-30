@@ -4,8 +4,7 @@ import { revalidatePath } from "next/cache";
 import { Assignment, Batch, BatchStudent, Invoice, Lesson, Material, Message, User } from "@/db";
 import { getSession } from "@/lib/auth";
 import { Role } from "@/lib/types";
-import { batchSchema, createUserSchema, parseInput } from "@/lib/schemas";
-import { createUser } from "../users/actions";
+import { batchSchema, parseInput } from "@/lib/schemas";
 
 async function requireAdmin() {
   const session = await getSession();
@@ -153,53 +152,54 @@ export async function removeStudentFromBatch(
   return { success: true };
 }
 
-export type EnrolResult =
-  | { success: true; created: false }
-  /** A new account was made; the password is surfaced exactly as in createUser. */
-  | { success: true; created: true; email: string; password?: string; emailed?: boolean }
-  | { error: string };
-
-/**
- * Enrol in one step, creating the account first if the email is unknown.
- *
- * Previously an admin had to go to Users, create the person, come back to the
- * batch and retype the address. Account creation is delegated to createUser so
- * the one-time-password rules (hashing, mustChangePassword, single delivery
- * channel) stay in exactly one place.
- */
-export async function enrolStudent(
+export async function addStudentById(
   batchId: string,
-  data: unknown,
-): Promise<EnrolResult> {
+  userId: string,
+): Promise<{ success: true } | { error: string }> {
   if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!userId) return { error: "Select a student first." };
 
-  const parsed = parseInput(createUserSchema, data);
-  if (!parsed.success) return { error: parsed.error };
-  const { email } = parsed.data;
-
-  const existing = await User.findOne({ where: { email } });
-  if (existing) {
-    const added = await addStudentToBatch(batchId, email);
-    if ("error" in added) return { error: added.error };
-    return { success: true, created: false };
+  const user = await User.findByPk(userId, { attributes: ["id", "email", "role"] });
+  if (!user) return { error: "That user no longer exists." };
+  if (user.role !== Role.STUDENT) {
+    return { error: "Only student accounts can join a roster. Assign staff as the batch teacher." };
   }
 
-  const made = await createUser({ ...parsed.data, role: "STUDENT" });
-  if ("error" in made) return { error: made.error };
-
-  const added = await addStudentToBatch(batchId, email);
-  if ("error" in added) {
-    // The account exists now even though enrolment failed - say so, rather than
-    // letting the admin think nothing happened and create a duplicate.
-    return { error: `Account created, but enrolment failed: ${added.error}` };
-  }
+  // Reuse the existing path so the capacity and re-activation rules stay in one
+  // place rather than being duplicated here.
+  const added = await addStudentToBatch(batchId, user.email);
+  if ("error" in added) return added;
 
   revalidatePath(`/admin/batches/${batchId}`);
-  return {
-    success: true,
-    created: true,
-    email,
-    password: "password" in made ? made.password : undefined,
-    emailed: "emailed" in made ? made.emailed : undefined,
-  };
+  return { success: true };
+}
+
+/**
+ * Sets (or clears) the batch instructor on its own.
+ *
+ * Assigning a teacher previously meant opening the whole batch form and saving
+ * every field, which is both easy to miss and easy to get wrong. Only
+ * INSTRUCTOR or ADMIN accounts are accepted - a student cannot be made to teach.
+ */
+export async function assignInstructor(
+  batchId: string,
+  instructorId: string,
+): Promise<{ success: true } | { error: string }> {
+  if (!(await requireAdmin())) return { error: "Unauthorized" };
+
+  const batch = await Batch.findByPk(batchId);
+  if (!batch) return { error: "Batch not found." };
+
+  if (instructorId) {
+    const user = await User.findByPk(instructorId, { attributes: ["id", "role"] });
+    if (!user) return { error: "That user no longer exists." };
+    if (user.role !== Role.INSTRUCTOR && user.role !== Role.ADMIN) {
+      return { error: "Only instructors or admins can be assigned to a batch." };
+    }
+  }
+
+  await batch.update({ instructorId: instructorId || null });
+  revalidatePath(`/admin/batches/${batchId}`);
+  revalidatePath("/admin/batches");
+  return { success: true };
 }
