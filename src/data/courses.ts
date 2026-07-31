@@ -2,6 +2,7 @@ import coursesData from "./v2-courses.json";
 import testimonialsData from "./testimonials.json";
 import successStoriesData from "./success-stories.json";
 import instructorsData from "./instructors.json";
+import type { CourseBadge } from "@/lib/types";
 
 export interface CurriculumModule {
   title: string;
@@ -21,7 +22,7 @@ export interface Course {
   duration: string;
   level: string;
   price: number;
-  badge: string | null;
+  badge: CourseBadge | null;
   icon: string;
   color: string;
   students: number;

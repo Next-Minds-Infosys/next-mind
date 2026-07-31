@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CurriculumModule, Faq } from "@/db/models/course";
+import { CourseBadge } from "@/lib/types";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { createCourse, updateCourse } from "./actions";
 
@@ -20,7 +21,7 @@ export interface CourseFormInitial {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string | null;
   students: number;
   duration: string;
@@ -42,6 +43,7 @@ const inputClass =
 const labelClass = "text-sm font-medium text-gray-700";
 
 const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced", "All Levels"];
+const BADGE_OPTIONS = Object.values(CourseBadge);
 
 const STEPS = [
   { id: "basics", label: "Basics" },
@@ -73,7 +75,7 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
   const [skills, setSkills] = useState((initial?.skills ?? []).join("\n"));
   const [curriculum, setCurriculum] = useState<CurriculumModule[]>(initial?.curriculum ?? []);
   const [faqs, setFaqs] = useState<Faq[]>(initial?.faqs ?? []);
-  const [badge, setBadge] = useState(initial?.badge ?? "");
+  const [badge, setBadge] = useState<CourseBadge | "">(initial?.badge ?? "");
   const [color, setColor] = useState(initial?.color ?? "#00bdb8");
   const [students, setStudents] = useState(String(initial?.students ?? 0));
   const [duration, setDuration] = useState(initial?.duration ?? "");
@@ -278,13 +280,19 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
                 <label className={labelClass} htmlFor="badge">
                   Badge
                 </label>
-                <input
+                <select
                   id="badge"
                   value={badge}
-                  onChange={(e) => setBadge(e.target.value)}
-                  placeholder="Most Popular"
+                  onChange={(e) => setBadge(e.target.value as CourseBadge | "")}
                   className={inputClass}
-                />
+                >
+                  <option value="">No badge</option>
+                  {BADGE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <label className={labelClass} htmlFor="students">

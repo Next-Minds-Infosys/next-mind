@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { Category, Course, Mentor } from "./index";
 import type { CurriculumModule, Faq } from "./models/course";
+import type { CourseBadge } from "@/lib/types";
 
 /**
  * Shape the public marketing site renders. Joins Category to a plain name
@@ -21,7 +22,7 @@ export interface PublicCourse {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string;
   students: number;
   duration: string;

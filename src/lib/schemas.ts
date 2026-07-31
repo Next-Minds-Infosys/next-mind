@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CourseBadge } from "./types";
 
 /**
  * Single source of truth for every user-supplied input.
@@ -125,7 +126,11 @@ export const courseSchema = z.object({
   skills: z.array(z.string().trim().min(1)).max(40).default([]),
   curriculum: z.array(curriculumModuleSchema).max(50).default([]),
   faqs: z.array(faqSchema).max(50).default([]),
-  badge: optionalText(60),
+  badge: z
+    .enum(Object.values(CourseBadge) as [CourseBadge, ...CourseBadge[]])
+    .optional()
+    .or(z.literal(""))
+    .default(""),
   color: z
     .string()
     .trim()
