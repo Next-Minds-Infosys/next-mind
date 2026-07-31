@@ -2,6 +2,10 @@ import { requireRole } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { AdminShell } from "./admin-shell";
 
+// Belt and braces with robots.txt: nothing behind a login should be indexed.
+export const metadata = { robots: { index: false, follow: false } };
+
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   // Was a hand-rolled `role !== "ADMIN"` check. Going through requireRole keeps
   // this in step with the instructor and student portals: it also enforces the

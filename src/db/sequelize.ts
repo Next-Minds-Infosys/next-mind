@@ -53,7 +53,13 @@ export const sequelize =
     // rejects the connection as insecure. Local sockets stay plaintext.
     ...(/(localhost|127\.0\.0\.1)/.test(connectionString)
       ? {}
-      : { dialectOptions: { ssl: { require: true, rejectUnauthorized: false } } }),
+      : {
+          dialectOptions: {
+            ssl: process.env.DATABASE_CA_CERT
+              ? { require: true, ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
+              : { require: true, rejectUnauthorized: false },
+          },
+        }),
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     define: {
       freezeTableName: true,

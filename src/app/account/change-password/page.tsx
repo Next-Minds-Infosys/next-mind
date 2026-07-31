@@ -2,6 +2,10 @@ import { requireUser } from "@/lib/access";
 import { User } from "@/db";
 import { ChangePasswordForm } from "./form";
 
+// Belt and braces with robots.txt: nothing behind a login should be indexed.
+export const metadata = { robots: { index: false, follow: false } };
+
+
 export default async function ChangePasswordPage() {
   // requireUser, not requireRole - requireRole redirects here, which would loop.
   const session = await requireUser();

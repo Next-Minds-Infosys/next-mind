@@ -2,6 +2,10 @@ import { requireRole } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { PortalShell } from "@/components/lms/portal-shell";
 
+// Belt and braces with robots.txt: nothing behind a login should be indexed.
+export const metadata = { robots: { index: false, follow: false } };
+
+
 const nav = [
   { href: "/student", label: "Dashboard", icon: "🏠" },
   { href: "/student/batches", label: "My batches", icon: "📚" },

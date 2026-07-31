@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/admin";
+  // Only same-site paths. `next` comes from the query string, so an absolute
+  // URL here would turn the login page into an open redirect - a phishing link
+  // that genuinely starts on your domain.
+  const raw = searchParams.get("next") ?? "";
+  const next = /^\/(?!\/)[^\\]*$/.test(raw) ? raw : "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

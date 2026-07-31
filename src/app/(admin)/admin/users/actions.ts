@@ -68,8 +68,18 @@ const authContext = () =>
 /** Ambiguous characters (0/O, 1/l/I) are excluded - these get read aloud and retyped. */
 function generatePassword(length = 14) {
   const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789@#$%";
-  const bytes = crypto.getRandomValues(new Uint8Array(length));
-  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join("");
+  // Rejection sampling. `byte % alphabet.length` favours the first
+  // 256 % 59 = 20 characters; discarding the tail keeps the distribution flat.
+  const limit = Math.floor(256 / alphabet.length) * alphabet.length;
+  const out: string[] = [];
+  while (out.length < length) {
+    for (const b of crypto.getRandomValues(new Uint8Array(length))) {
+      if (b >= limit) continue;
+      out.push(alphabet[b % alphabet.length]);
+      if (out.length === length) break;
+    }
+  }
+  return out.join("");
 }
 
 export type CreateUserResult =

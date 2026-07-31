@@ -36,8 +36,16 @@ export async function GET(request: NextRequest, ctx: { params: Promise<{ key: st
     ? await presignDownload(key, owner.fileName ?? "download")
     : await presignView(key);
 
-  // 302 so the <video> element follows it; never cache the signed URL.
-  return Response.redirect(url, 302);
+  // 302 so the <video> element follows it. The Cache-Control is load-bearing:
+  // without it a proxy or CDN could hold the signed URL and hand it to someone
+  // who never passed the membership check above.
+  return new Response(null, {
+    status: 302,
+    headers: {
+      Location: url,
+      "Cache-Control": "private, no-store, max-age=0",
+    },
+  });
 }
 
 async function resolveOwner(key: string) {
