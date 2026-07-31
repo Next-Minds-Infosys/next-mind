@@ -7,6 +7,7 @@ export interface UserAttributes {
   name: string | null;
   email: string;
   emailVerified: boolean;
+  mustChangePassword: boolean;
   image: string | null;
   role: Role;
   createdAt: Date;
@@ -15,7 +16,7 @@ export interface UserAttributes {
 
 type UserCreation = Optional<
   UserAttributes,
-  "id" | "name" | "emailVerified" | "image" | "role" | "createdAt" | "updatedAt"
+  "mustChangePassword" | "id" | "name" | "emailVerified" | "image" | "role" | "createdAt" | "updatedAt"
 >;
 
 class UserModel extends Model<UserAttributes, UserCreation> implements UserAttributes {
@@ -23,6 +24,7 @@ class UserModel extends Model<UserAttributes, UserCreation> implements UserAttri
   declare name: string | null;
   declare email: string;
   declare emailVerified: boolean;
+  declare mustChangePassword: boolean;
   declare image: string | null;
   declare role: Role;
   declare createdAt: Date;
@@ -50,6 +52,11 @@ if (!sequelize.models.User) {
       name: { type: DataTypes.STRING, allowNull: true },
       email: { type: DataTypes.STRING, allowNull: false, unique: true },
       emailVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      mustChangePassword: {
+        type: DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+      },
       image: { type: DataTypes.STRING, allowNull: true },
       role: { type: DataTypes.STRING, allowNull: false, defaultValue: "STUDENT" },
       createdAt: { type: DataTypes.DATE, allowNull: false },

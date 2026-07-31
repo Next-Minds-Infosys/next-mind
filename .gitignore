@@ -42,6 +42,9 @@ yarn-error.log*
 next-env.d.ts
 .claude
 *.md
+# ...but planning and audit docs belong in the repo.
+!.planning/
+!.planning/**/*.md
 .agents
 CLAUDE.md
 AGENTS.md

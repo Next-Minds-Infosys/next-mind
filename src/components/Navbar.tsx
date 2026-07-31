@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { companyLinks } from "@/data/courses";
+import LoginModal from "./LoginModal";
 import { colors, gradient } from "@/lib/theme";
 
 const mainLinks = [
@@ -31,6 +32,7 @@ export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [companyOpen, setCompanyOpen] = useState(false);
   const [prevPathname, setPrevPathname] = useState(pathname);
+  const [loginOpen, setLoginOpen] = useState(false);
   const companyRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -73,8 +75,8 @@ export default function Navbar() {
           <Image
             src="/assets/logo-horizontal.png"
             alt="Next Minds Infosys"
-            width={1963}
-            height={359}
+            width={1959}
+            height={356}
             sizes="200px"
             priority
             className="h-9 w-auto object-contain"
@@ -200,8 +202,11 @@ export default function Navbar() {
         </div>
 
         <div className="hidden md:flex items-center gap-3">
+          {/* One entry point for students and instructors. Admins sign in at
+              /admin directly - deliberately unadvertised in the public nav. */}
           <button
             type="button"
+            onClick={() => setLoginOpen(true)}
             className="text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             style={{ color: colors.body }}
             onMouseEnter={(e) => {
@@ -262,6 +267,17 @@ export default function Navbar() {
               {l.label}
             </Link>
           ))}
+          <button
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              setLoginOpen(true);
+            }}
+            className="py-2.5 text-base font-medium rounded-lg px-3 text-left"
+            style={{ color: colors.body }}
+          >
+            Sign In
+          </button>
           <Link
             href="/courses"
             className="font-bold px-6 py-3 rounded-xl mt-3 text-white text-center block"
@@ -271,6 +287,7 @@ export default function Navbar() {
           </Link>
         </div>
       </div>
+      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
     </nav>
   );
 }

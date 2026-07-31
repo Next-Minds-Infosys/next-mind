@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { contact } from "@/lib/contact";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -9,8 +10,8 @@ import { contactSchema, type ContactInput, type ContactFormValues } from "@/lib/
 
 const contactInfo = [
   { icon: "📍", label: "Address", value: "New Baneshwor, Kathmandu, Nepal" },
-  { icon: "📞", label: "Phone", value: "+977-98XXXXXXXX" },
-  { icon: "📧", label: "Email", value: "info@nextminds.com.np" },
+  { icon: "📞", label: "Phone", value: contact.phoneDisplay },
+  { icon: "📧", label: "Email", value: contact.email },
   { icon: "🕐", label: "Hours", value: "Sun–Fri: 7 AM – 8 PM" },
 ];
 

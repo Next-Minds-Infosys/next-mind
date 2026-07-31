@@ -5,3 +5,13 @@ export { EmailJob } from "./email-job";
 export { Enrollment } from "./enrollment";
 export { EnterpriseInquiry } from "./entrise-query";
 export { User } from "./user";
+export { Batch } from "./batch"
+export { BatchStudent } from "./batch-student"
+export { Post } from "./post"
+export { Lesson } from "./lesson"
+export { Material } from "./material"
+export { Assignment } from "./assignment"
+export { Submission } from "./submission"
+export { Message } from "./message"
+export { Invoice } from "./invoice"
+export { Expense } from "./expense"

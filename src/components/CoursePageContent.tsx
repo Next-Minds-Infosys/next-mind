@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { contact, mailtoHref, telHref } from "@/lib/contact";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -181,9 +182,25 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
             </div>
 
             <div className="bg-white rounded-2xl shadow-xl p-6 h-fit sticky top-24">
-              <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
-                <BookOpen size={48} />
-              </div>
+              {/* The gradient + book icon stays as the fallback: imageUrl is
+                  optional, so a course with no cover set must still look
+                  finished rather than leaving a hole in the card. */}
+              {course.imageUrl ? (
+                <div className="relative aspect-video mb-4 overflow-hidden rounded-lg">
+                  <Image
+                    src={course.imageUrl}
+                    alt={`${course.title} course cover`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 380px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
+                  <BookOpen size={48} />
+                </div>
+              )}
               <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">{course.title}</h3>
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 text-nm-body">
@@ -496,14 +513,20 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 <Users size={56} />
               </div>
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-2 text-nm-body">
+                <a
+                  href={telHref}
+                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
+                >
                   <Phone size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm">+977-9XXXXXXXXX</span>
-                </div>
-                <div className="flex items-center gap-2 text-nm-body">
+                  <span className="text-sm">{contact.phoneDisplay}</span>
+                </a>
+                <a
+                  href={mailtoHref}
+                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
+                >
                   <Mail size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm">counseling@nextmindsinfosys.com</span>
-                </div>
+                  <span className="text-sm break-all">{contact.email}</span>
+                </a>
               </div>
               <button
                 type="button"

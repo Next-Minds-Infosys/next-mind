@@ -13,7 +13,11 @@ import { Button } from "@/components/ui/button";
 export default function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") || "/admin";
+  // Only same-site paths. `next` comes from the query string, so an absolute
+  // URL here would turn the login page into an open redirect - a phishing link
+  // that genuinely starts on your domain.
+  const raw = searchParams.get("next") ?? "";
+  const next = /^\/(?!\/)[^\\]*$/.test(raw) ? raw : "/admin";
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,9 +38,12 @@ export default function LoginForm() {
       return;
     }
 
-    // Route based on role
+    // Only an admin may be sent to an /admin destination; everyone else goes to
+    // /account, which resolves instructor vs student server-side. Dropping a
+    // non-admin on "/" made a successful sign-in look like a failure now that
+    // instructors and students have portals of their own.
     const role = (data?.user as Record<string, unknown>)?.role;
-    router.push(role === "ADMIN" ? next : "/");
+    router.push(role === "ADMIN" ? next : "/account");
     router.refresh();
   }
 
@@ -54,10 +61,10 @@ export default function LoginForm() {
       <div className="flex justify-center mb-8">
         <Link href="/">
           <Image
-            src="/next-minds-logo.png"
+            src="/assets/logo-horizontal.png"
             alt="Next Minds"
-            width={140}
-            height={56}
+            width={1959}
+            height={356}
             className="h-14 w-auto"
           />
         </Link>
@@ -89,7 +96,7 @@ export default function LoginForm() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@nextminds.edu.np"
+                placeholder="you@nextmindsinfosys.com"
                 className="w-full px-4 py-3 bg-gray-50 rounded-xl border-0 text-sm focus:outline-none focus:ring-2 focus:ring-teal-500 transition-shadow"
               />
             </div>
