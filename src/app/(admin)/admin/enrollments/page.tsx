@@ -8,7 +8,8 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
-import { updateEnrollmentStatus } from "./actions";
+import { DeleteRow } from "@/components/admin/delete-row-button";
+import { updateEnrollmentStatus, deleteEnrollment } from "./actions";
 
 export default async function AdminEnrollmentsPage() {
   const enrollments = await Enrollment.findAll({
@@ -32,7 +33,8 @@ export default async function AdminEnrollmentsPage() {
             <TableHead>Has Laptop</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Submitted</TableHead>
-          </TableRow>
+            <TableHead></TableHead>
+            </TableRow>
         </TableHeader>
         <TableBody>
           {enrollments.map((enrollment) => (
@@ -53,6 +55,9 @@ export default async function AdminEnrollmentsPage() {
                 />
               </TableCell>
               <TableCell>{enrollment.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell>
+                <DeleteRow id={enrollment.id} label={enrollment.fullName} action={deleteEnrollment} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

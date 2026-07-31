@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PublicCourse } from "@/db/queries";
 import { colors, gradient } from "@/lib/theme";
+import { contact } from "@/lib/contact";
 import { socialLinks, whatsappPath } from "./SocialIcons";
 
 const companyFooterLinks = [
@@ -17,7 +18,7 @@ const companyFooterLinks = [
 
 const contactRows = [
   { icon: "📍", text: "New Baneshwor, Kathmandu, Nepal" },
-  { icon: "✉️", text: "info@nextmindsinfosys.com" },
+  { icon: "✉️", text: contact.email },
   { icon: "🕐", text: "Sun–Fri: 9 AM – 6 PM" },
 ];
 
@@ -33,8 +34,8 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
             <Image
               src="/assets/logo-horizontal.png"
               alt="Next Minds Infosys"
-              width={1963}
-              height={359}
+              width={1959}
+              height={356}
               sizes="240px"
               className="h-11 w-auto object-contain mb-5"
             />
@@ -135,7 +136,7 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
                 </div>
               ))}
               <a
-                href="https://wa.me/9779XXXXXXXX"
+                href={contact.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg transition-all mt-2"

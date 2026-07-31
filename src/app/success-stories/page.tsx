@@ -1,6 +1,14 @@
 import SiteLayout from "@/components/SiteLayout";
 import SuccessStoriesPage from "./success-stories-content";
 
+export const metadata = {
+  title: "Success Stories",
+  description:
+    "Graduates of Next Minds Infosys and where their careers went next.",
+  openGraph: { title: "Success Stories", description: "Graduates of Next Minds Infosys and where their careers went next." },
+};
+
+
 // SiteLayout queries Postgres for footer course links; force dynamic
 // rendering so that query runs per-request, not against a build-time
 // placeholder connection (see src/db/sequelize.ts).
