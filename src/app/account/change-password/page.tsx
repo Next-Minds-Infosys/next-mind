@@ -2,6 +2,9 @@ import { requireUser } from "@/lib/access";
 import { User } from "@/db";
 import { ChangePasswordForm } from "./form";
 
+// Session-dependent: never prerender.
+export const dynamic = "force-dynamic";
+
 // Belt and braces with robots.txt: nothing behind a login should be indexed.
 export const metadata = { robots: { index: false, follow: false } };
 
