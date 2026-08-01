@@ -17,39 +17,52 @@ import {
   Newspaper,
   ReceiptText,
   Wallet,
+  ShieldCheck,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RESOURCES, canAccess, type PermissionMap } from "@/lib/policies";
 
 /** Grouped so the finance section reads as its own area of the business. */
 const navGroups = [
   {
     heading: null,
-    links: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard }],
+    links: [{ href: "/admin", label: "Dashboard", icon: LayoutDashboard, resource: RESOURCES.DASHBOARD }],
   },
   {
     heading: "Teaching",
     links: [
-      { href: "/admin/categories", label: "Categories", icon: Tags },
-      { href: "/admin/courses", label: "Courses", icon: BookOpen },
-      { href: "/admin/batches", label: "Batches", icon: GraduationCap },
-      { href: "/admin/mentors", label: "Mentors", icon: Users },
-      { href: "/admin/users", label: "Users", icon: UserCog },
+      { href: "/admin/categories", label: "Categories", icon: Tags, resource: RESOURCES.CATEGORIES },
+      { href: "/admin/courses", label: "Courses", icon: BookOpen, resource: RESOURCES.COURSES },
+      { href: "/admin/batches", label: "Batches", icon: GraduationCap, resource: RESOURCES.BATCHES },
+      { href: "/admin/mentors", label: "Mentors", icon: Users, resource: RESOURCES.MENTORS },
     ],
   },
   {
     heading: "Next Minds",
     links: [
-      { href: "/admin/billing", label: "Billing", icon: ReceiptText },
-      { href: "/admin/expenses", label: "Expenses", icon: Wallet },
+      { href: "/admin/billing", label: "Billing", icon: ReceiptText, resource: RESOURCES.BILLING },
+      { href: "/admin/expenses", label: "Expenses", icon: Wallet, resource: RESOURCES.EXPENSES },
     ],
   },
   {
     heading: "Content & leads",
     links: [
-      { href: "/admin/blog", label: "Blog", icon: Newspaper },
-      { href: "/admin/enrollments", label: "Enrollments", icon: ClipboardList },
-      { href: "/admin/contacts", label: "Contacts", icon: Mail },
-      { href: "/admin/enterprise-inquiries", label: "Enterprise Inquiries", icon: Building2 },
+      { href: "/admin/blog", label: "Blog", icon: Newspaper, resource: RESOURCES.BLOG },
+      { href: "/admin/enrollments", label: "Enrollments", icon: ClipboardList, resource: RESOURCES.ENROLLMENTS },
+      { href: "/admin/contacts", label: "Contacts", icon: Mail, resource: RESOURCES.CONTACTS },
+      {
+        href: "/admin/enterprise-inquiries",
+        label: "Enterprise Inquiries",
+        icon: Building2,
+        resource: RESOURCES.ENTERPRISE_INQUIRIES,
+      },
+    ],
+  },
+  {
+    heading: "System",
+    links: [
+      { href: "/admin/users", label: "Users", icon: UserCog, resource: RESOURCES.USERS },
+      { href: "/admin/policies", label: "Policies", icon: ShieldCheck, resource: RESOURCES.POLICIES },
     ],
   },
 ];
@@ -57,10 +70,17 @@ const navGroups = [
 interface SidebarProps {
   open: boolean;
   onClose: () => void;
+  permissions: PermissionMap;
 }
 
-export function Sidebar({ open, onClose }: SidebarProps) {
+export function Sidebar({ open, onClose, permissions }: SidebarProps) {
   const pathname = usePathname();
+  const visibleGroups = navGroups
+    .map((group) => ({
+      ...group,
+      links: group.links.filter((link) => canAccess(permissions, link.resource)),
+    }))
+    .filter((group) => group.links.length > 0);
 
   return (
     <>
@@ -94,7 +114,7 @@ export function Sidebar({ open, onClose }: SidebarProps) {
         </div>
 
         <nav className="flex flex-col gap-1 overflow-y-auto p-3 pb-8" style={{ maxHeight: "calc(100vh - 4rem)" }}>
-          {navGroups.map((group) => (
+          {visibleGroups.map((group) => (
             <div key={group.heading ?? "root"} className={group.heading ? "mt-4" : ""}>
               {group.heading && (
                 <p className="px-3 pb-1.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">

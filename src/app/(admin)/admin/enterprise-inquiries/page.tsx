@@ -10,8 +10,11 @@ import {
 import { StatusSelect } from "@/components/admin/status-select";
 import { DeleteRow } from "@/components/admin/delete-row-button";
 import { updateEnterpriseInquiryStatus, deleteEnterpriseInquiry } from "./actions";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminEnterpriseInquiriesPage() {
+  await requireResource(RESOURCES.ENTERPRISE_INQUIRIES);
   const inquiries = await EnterpriseInquiry.findAll({
     order: [["createdAt", "DESC"]],
   });

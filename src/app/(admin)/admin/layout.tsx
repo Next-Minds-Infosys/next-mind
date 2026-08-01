@@ -1,4 +1,4 @@
-import { requireRole } from "@/lib/access";
+import { requireRole, getRolePermissions } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { AdminShell } from "./admin-shell";
 
@@ -16,14 +16,17 @@ export const metadata = { robots: { index: false, follow: false } };
 
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Was a hand-rolled `role !== "ADMIN"` check. Going through requireRole keeps
-  // this in step with the instructor and student portals: it also enforces the
-  // must-change-password rule, which the local check silently skipped, and it
-  // sends a wrong-role visitor to their own dashboard instead of the homepage.
-  const session = await requireRole(Role.ADMIN);
+  // ADMIN and EDITOR both reach the shell; which sections they see is decided
+  // by permissions below and enforced per-page by requireResource().
+  const session = await requireRole(Role.ADMIN, Role.EDITOR);
+  const permissions = await getRolePermissions(session.user.role);
 
   return (
-    <AdminShell userName={session.user.name ?? session.user.email} userEmail={session.user.email}>
+    <AdminShell
+      userName={session.user.name ?? session.user.email}
+      userEmail={session.user.email}
+      permissions={permissions}
+    >
       {children}
     </AdminShell>
   );

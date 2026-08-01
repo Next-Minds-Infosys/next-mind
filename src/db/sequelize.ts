@@ -1,6 +1,6 @@
 import { Sequelize } from "sequelize";
-import pg from 'pg';
-import { loadEnvConfig } from "@next/env"
+import pg from "pg";
+import { loadEnvConfig } from "@next/env";
 
 // Load environment variables from the root .env file
 loadEnvConfig(process.cwd());
@@ -34,12 +34,11 @@ if (!databaseUrl) {
 
   console.warn(
     "[db] DATABASE_URL is not set - using a placeholder connection string. " +
-      "Database queries will fail until it is configured (see .env.example)."
+      "Database queries will fail until it is configured (see .env.example).",
   );
 }
 
-const connectionString =
-  databaseUrl ?? "postgres://nextmind_user:nextmind_db@127.0.0.1:5432/placeholder";
+const connectionString = databaseUrl ?? "postgresql://nextmind:nextmind@127.0.0.1:5432/nextminds";
 
 const globalForSequelize = globalThis as unknown as { sequelize?: Sequelize };
 

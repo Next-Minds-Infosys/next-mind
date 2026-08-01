@@ -1,8 +1,8 @@
 {
   "development": {
-    "username": "nextmind_user",
+    "username": "nextmind",
     "password": "nextmind",
-    "database": "nextmind_db",
+    "database": "nextminds",
     "host": "127.0.0.1",
     "port": 5432,
     "dialect": "postgres"

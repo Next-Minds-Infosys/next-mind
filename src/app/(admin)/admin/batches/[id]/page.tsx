@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { Batch, BatchStudent, Course, User } from "@/db";
 import { listCourseOptions, listEnrollableStudents, listInstructorOptions } from "@/db/queries";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { BatchForm } from "../batch-form";
 import { Roster } from "./roster";
 import { InstructorPicker } from "./instructor-picker";
@@ -11,6 +13,7 @@ export default async function AdminBatchDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
+  await requireResource(RESOURCES.BATCHES);
   const { id } = await params;
 
   const [batch, courses, instructors, candidates, memberships] = await Promise.all([

@@ -30,7 +30,7 @@ export function AddLesson({ batchId }: { batchId: string }) {
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Lesson title" className={input} />
         <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="What this covers (optional)" className={input} />
         <FileUpload
-          batchId={batchId}
+          resourceId={batchId}
           scope="lesson"
           accept="video/mp4,video/webm"
           label={video ? `Replace video (${video.fileName})` : "Upload video"}
@@ -83,7 +83,7 @@ export function AddMaterial({ batchId }: { batchId: string }) {
       <div className="space-y-3">
         <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g. Week 1 slides" className={input} />
         <FileUpload
-          batchId={batchId}
+          resourceId={batchId}
           scope="material"
           label={file ? `Replace (${file.fileName})` : "Upload file"}
           onUploaded={setFile}
@@ -145,7 +145,7 @@ export function AddAssignment({ batchId }: { batchId: string }) {
           </div>
         </div>
         <FileUpload
-          batchId={batchId}
+          resourceId={batchId}
           scope="assignment"
           label={file ? `Replace brief (${file.fileName})` : "Attach a brief (optional)"}
           onUploaded={setFile}

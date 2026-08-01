@@ -4,6 +4,8 @@ import {
 } from "@/components/ui/table";
 import { DeleteExpense, EditExpense, NewExpense } from "./expense-client";
 import { EXPENSE_CATEGORIES, type ExpenseInput } from "@/lib/schemas";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 // The column is TEXT, so a row written before a category was retired (or edited
 // straight in SQL) can hold a value the enum no longer accepts. Narrow it here
@@ -17,6 +19,7 @@ const RING = "ring-1 ring-gray-950/5";
 const npr = (n: number) => `NPR ${n.toLocaleString("en-NP")}`;
 
 export default async function ExpensesPage() {
+  await requireResource(RESOURCES.EXPENSES);
   const expenses = await Expense.findAll({ order: [["spentAt", "DESC"]] });
 
   const total = expenses.reduce((n, e) => n + e.amount, 0);
