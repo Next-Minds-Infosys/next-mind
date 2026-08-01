@@ -1,23 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSession } from "@/lib/auth";
 import { Category, Course } from "@/db";
 import { categorySchema, parseInput, type CategoryInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
+import { RESOURCES, type Action } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
 export type { CategoryInput };
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return null;
-  return session;
+async function requireCategories(action: Action) {
+  const { allowed } = await sessionCan(RESOURCES.CATEGORIES, action);
+  return allowed;
 }
 
 export async function createCategory(
   data: CategoryInput,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireCategories("create"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(categorySchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -45,7 +45,7 @@ export async function updateCategory(
   id: string,
   data: CategoryInput,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireCategories("update"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(categorySchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -73,7 +73,7 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: string): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireCategories("delete"))) return { error: "Unauthorized" };
 
   const courseCount = await Course.count({ where: { categoryId: id } });
   if (courseCount > 0) {

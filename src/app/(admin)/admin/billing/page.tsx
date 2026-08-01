@@ -1,5 +1,7 @@
 import { Batch, Invoice, User } from "@/db";
 import { Role } from "@/lib/types";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
@@ -9,6 +11,7 @@ import { DeleteInvoice, EditInvoice, InvoiceActions, NewInvoice } from "./billin
 const RING = "ring-1 ring-gray-950/5";
 
 export default async function BillingPage() {
+  await requireResource(RESOURCES.BILLING);
   const [invoices, students, batches] = await Promise.all([
     Invoice.findAll({
       include: [

@@ -1,5 +1,6 @@
 import { DataTypes, Model, Optional, Sequelize } from "sequelize";
 import { sequelize } from "../sequelize";
+import type { CourseBadge } from "@/lib/types";
 
 export interface CurriculumModule {
   /**
@@ -33,7 +34,7 @@ export interface CourseAttributes {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string | null;
   students: number;
   duration: string;
@@ -79,7 +80,7 @@ class CourseModel extends Model<CourseAttributes, CourseCreation> implements Cou
   declare skills: string[];
   declare curriculum: CurriculumModule[];
   declare faqs: Faq[];
-  declare badge: string | null;
+  declare badge: CourseBadge | null;
   declare color: string | null;
   declare students: number;
   declare duration: string;

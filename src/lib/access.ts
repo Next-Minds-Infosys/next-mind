@@ -1,8 +1,16 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 import { Op } from "sequelize";
 import { getSession } from "@/lib/auth";
-import { Batch, BatchStudent, User } from "@/db";
+import { Batch, BatchStudent, Policy, RolePolicy, User } from "@/db";
 import { Role } from "@/lib/types";
+import {
+  adminLandingFor,
+  canAccess,
+  type Action,
+  type PermissionMap,
+  type Resource,
+} from "@/lib/policies";
 
 /**
  * Server-side authorisation.
@@ -19,14 +27,49 @@ export async function requireUser() {
   return session;
 }
 
+const getMustChangePassword = cache(async (userId: string) => {
+  const user = await User.findByPk(userId, { attributes: ["mustChangePassword"] });
+  return user?.mustChangePassword ?? false;
+});
+
 /**
  * Every portal entry point goes through here. An admin-issued password is known
  * to at least one other person, so the account is unusable until it is changed
  * - enforced server-side, not by hiding a link.
  */
 export async function requirePasswordChanged(userId: string) {
-  const user = await User.findByPk(userId, { attributes: ["mustChangePassword"] });
-  if (user?.mustChangePassword) redirect("/account/change-password");
+  if (await getMustChangePassword(userId)) redirect("/account/change-password");
+}
+
+/** Union of every policy attached to the role. Cached per request (see src/db/queries.ts). */
+export const getRolePermissions = cache(async (role: string): Promise<PermissionMap> => {
+  const rows = await RolePolicy.findAll({
+    where: { role },
+    include: [{ model: Policy, as: "policy" }],
+  });
+
+  const merged: PermissionMap = {};
+  for (const row of rows) {
+    const permissions = row.policy?.permissions ?? {};
+    for (const resource of Object.keys(permissions) as Resource[]) {
+      const actions = permissions[resource] ?? [];
+      merged[resource] = Array.from(new Set([...(merged[resource] ?? []), ...actions]));
+    }
+  }
+  return merged;
+});
+
+type Session = Awaited<ReturnType<typeof getSession>>;
+
+/** requireResource() for server actions - returns a checkable result instead of redirecting. */
+export async function sessionCan(
+  resource: Resource,
+  action: Action = "read",
+): Promise<{ session: NonNullable<Session>; allowed: boolean } | { session: null; allowed: false }> {
+  const session = await getSession();
+  if (!session) return { session: null, allowed: false };
+  const permissions = await getRolePermissions(session.user.role);
+  return { session, allowed: canAccess(permissions, resource, action) };
 }
 
 export async function requireRole(...roles: Role[]) {
@@ -40,8 +83,21 @@ export async function requireRole(...roles: Role[]) {
   return session;
 }
 
+/** Per-resource gate inside /admin, layered under requireRole(ADMIN, EDITOR) in the layout. */
+export async function requireResource(resource: Resource, action: Action = "read") {
+  const session = await requireUser();
+  await requirePasswordChanged(session.user.id);
+  const permissions = await getRolePermissions(session.user.role);
+  if (!canAccess(permissions, resource, action)) {
+    redirect(adminLandingFor(permissions));
+  }
+  return session;
+}
+
 export function landingFor(role: Role) {
-  if (role === Role.ADMIN) return "/admin";
+  // ADMIN and EDITOR both land in the admin shell; requireResource() then
+  // sends EDITOR on to whatever their policy actually grants (e.g. /admin/blog).
+  if (role === Role.ADMIN || role === Role.EDITOR) return "/admin";
   if (role === Role.INSTRUCTOR) return "/instructor";
   return "/student";
 }

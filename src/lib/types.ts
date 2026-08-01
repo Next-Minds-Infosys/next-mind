@@ -1,5 +1,6 @@
 export const Role = {
   ADMIN: "ADMIN",
+  EDITOR: "EDITOR",
   INSTRUCTOR: "INSTRUCTOR",
   STUDENT: "STUDENT",
 } as const;
@@ -19,3 +20,12 @@ export const EmailJobStatus = {
   FAILED: "FAILED",
 } as const;
 export type EmailJobStatus = (typeof EmailJobStatus)[keyof typeof EmailJobStatus];
+
+export const CourseBadge = {
+  NEW: "New",
+  TRENDING: "Trending",
+  MOST_POPULAR: "Most Popular",
+  HIGH_DEMAND: "High Demand",
+  PREMIUM: "Premium",
+} as const;
+export type CourseBadge = (typeof CourseBadge)[keyof typeof CourseBadge];

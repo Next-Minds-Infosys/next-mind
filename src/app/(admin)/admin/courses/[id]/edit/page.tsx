@@ -1,8 +1,11 @@
 import { notFound } from "next/navigation";
 import { Category, Course, Mentor } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { CourseForm } from "../../course-form";
 
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
+  await requireResource(RESOURCES.COURSES, "update");
   const { id } = await params;
 
   const [course, categories, mentors] = await Promise.all([

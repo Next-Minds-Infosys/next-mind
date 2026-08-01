@@ -11,8 +11,11 @@ import {
 import { RoleSelect } from "./role-select";
 import { CreateUser } from "./create-user";
 import { UserRowActions } from "./user-actions";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminUsersPage() {
+  await requireResource(RESOURCES.USERS);
   const session = await getSession();
   const users = await User.findAll({ order: [["createdAt", "DESC"]] });
 

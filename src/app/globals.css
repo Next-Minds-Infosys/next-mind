@@ -86,3 +86,73 @@ body {
 .nm-hero-panel {
   background: linear-gradient(135deg, var(--nm-navy), #0a3d6e);
 }
+
+.nm-dark-panel {
+  background: linear-gradient(135deg, #030712, #0f172a 55%, #030712);
+}
+
+@keyframes blob-drift-a {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(4%, 6%) scale(1.08);
+  }
+  66% {
+    transform: translate(-3%, 3%) scale(0.95);
+  }
+}
+
+@keyframes blob-drift-b {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(-5%, -4%) scale(0.92);
+  }
+  66% {
+    transform: translate(3%, -5%) scale(1.06);
+  }
+}
+
+@keyframes blob-drift-c {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-4%, 5%) scale(1.1);
+  }
+}
+
+.animate-blob-a {
+  animation: blob-drift-a 14s ease-in-out infinite;
+}
+
+.animate-blob-b {
+  animation: blob-drift-b 18s ease-in-out infinite;
+}
+
+.animate-blob-c {
+  animation: blob-drift-c 11s ease-in-out infinite;
+}
+
+.nm-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-blob-a,
+  .animate-blob-b,
+  .animate-blob-c,
+  .animate-marquee {
+    animation: none;
+  }
+}

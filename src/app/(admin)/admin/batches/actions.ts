@@ -2,18 +2,18 @@
 
 import { revalidatePath } from "next/cache";
 import { Assignment, Batch, BatchStudent, Invoice, Lesson, Material, Message, User } from "@/db";
-import { getSession } from "@/lib/auth";
 import { Role } from "@/lib/types";
 import { batchSchema, parseInput } from "@/lib/schemas";
+import { RESOURCES, type Action } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return null;
-  return session;
+async function requireBatches(action: Action) {
+  const { allowed } = await sessionCan(RESOURCES.BATCHES, action);
+  return allowed;
 }
 
 export async function createBatch(data: unknown): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("create"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(batchSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -44,7 +44,7 @@ export async function updateBatch(
   id: string,
   data: unknown,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("update"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(batchSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -92,7 +92,7 @@ export interface BatchImpact {
  * SET NULL, so they survive but lose the batch link - counted separately.
  */
 export async function batchImpact(id: string): Promise<BatchImpact | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("delete"))) return { error: "Unauthorized" };
   const [students, lessons, materials, assignments, messages, invoices] = await Promise.all([
     BatchStudent.count({ where: { batchId: id } }),
     Lesson.count({ where: { batchId: id } }),
@@ -105,7 +105,7 @@ export async function batchImpact(id: string): Promise<BatchImpact | { error: st
 }
 
 export async function deleteBatch(id: string): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("delete"))) return { error: "Unauthorized" };
   const batch = await Batch.findByPk(id);
   if (!batch) return { error: "Batch not found." };
   await batch.destroy();
@@ -117,7 +117,7 @@ export async function addStudentToBatch(
   batchId: string,
   email: string,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("update"))) return { error: "Unauthorized" };
 
   const user = await User.findOne({ where: { email: email.trim().toLowerCase() } });
   if (!user) return { error: "No user with that email. Create them under Users first." };
@@ -146,7 +146,7 @@ export async function removeStudentFromBatch(
   membershipId: string,
   batchId: string,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("update"))) return { error: "Unauthorized" };
   await BatchStudent.update({ status: "DROPPED" }, { where: { id: membershipId } });
   revalidatePath(`/admin/batches/${batchId}`);
   return { success: true };
@@ -156,7 +156,7 @@ export async function addStudentById(
   batchId: string,
   userId: string,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("update"))) return { error: "Unauthorized" };
   if (!userId) return { error: "Select a student first." };
 
   const user = await User.findByPk(userId, { attributes: ["id", "email", "role"] });
@@ -185,7 +185,7 @@ export async function assignInstructor(
   batchId: string,
   instructorId: string,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBatches("update"))) return { error: "Unauthorized" };
 
   const batch = await Batch.findByPk(batchId);
   if (!batch) return { error: "Batch not found." };

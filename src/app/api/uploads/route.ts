@@ -19,24 +19,57 @@ const ALLOWED: Record<string, RegExp> = {
   material: /^(application\/(pdf|zip|vnd\.openxmlformats-officedocument\.[\w.-]+|vnd\.ms-\w+|msword)|image\/(png|jpeg|webp|gif)|text\/plain)$/,
   assignment: /^(application\/(pdf|zip|vnd\.openxmlformats-officedocument\.[\w.-]+|msword)|image\/(png|jpeg|webp)|text\/plain)$/,
   submission: /^(application\/(pdf|zip|vnd\.openxmlformats-officedocument\.[\w.-]+|msword)|image\/(png|jpeg|webp)|text\/plain)$/,
+  courseImage: /^image\/(png|jpeg|webp)$/,
+  mentorPhoto: /^image\/(png|jpeg|webp)$/,
+  postCover: /^image\/(png|jpeg|webp)$/,
 };
 
-/** 2 GB for a recording, 25 MB for anything else. */
+/** 2 GB for a recording, 25 MB for documents, 8 MB for a course cover image or mentor photo. */
 const MAX_BYTES: Record<string, number> = {
   lesson: 2 * 1024 * 1024 * 1024,
   material: 25 * 1024 * 1024,
   assignment: 25 * 1024 * 1024,
   submission: 25 * 1024 * 1024,
+  courseImage: 8 * 1024 * 1024,
+  mentorPhoto: 8 * 1024 * 1024,
+  postCover: 8 * 1024 * 1024,
 };
 
+/**
+ * S3 key prefix per scope. Batch-scoped uploads use the scope name itself
+ * (`lesson/<batchId>/...`); "courseImage"/"mentorPhoto" aren't batch-scoped,
+ * so they share a fixed folder instead - both are teacher-side marketing
+ * content (a course's cover, a mentor's own photo), not per-batch content.
+ */
+const KEY_PREFIX: Record<string, string> = {
+  courseImage: "videos/teacher",
+  mentorPhoto: "videos/teacher",
+  postCover: "videos/teacher",
+};
+
+/** Scopes that are admin-only and not tied to a batch. */
+const ADMIN_ONLY_SCOPES = new Set(["courseImage", "mentorPhoto", "postCover"]);
+
 const bodySchema = z.object({
-  batchId: z.string().trim().min(1),
+  // Batch id for batch-scoped uploads, or the course/mentor id (or a
+  // client-generated draft id while a new row hasn't been saved yet) for the
+  // admin-only scopes.
+  resourceId: z.string().trim().min(1),
   filename: z.string().trim().min(1).max(200),
   contentType: z.string().trim().min(1).max(120),
   /** Optional so existing callers keep working; enforced when supplied. */
   sizeBytes: z.coerce.number().int().positive().optional(),
-  // "lesson"/"material"/"assignment" are instructor-only; "submission" is a student.
-  scope: z.enum(["lesson", "material", "assignment", "submission"]),
+  // "lesson"/"material"/"assignment" are instructor-only; "submission" is a
+  // student; "courseImage"/"mentorPhoto"/"postCover" are admin-only.
+  scope: z.enum([
+    "lesson",
+    "material",
+    "assignment",
+    "submission",
+    "courseImage",
+    "mentorPhoto",
+    "postCover",
+  ]),
 });
 
 /**
@@ -56,7 +89,7 @@ export async function POST(request: NextRequest) {
   const parsed = parseInput(bodySchema, await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: parsed.error }, { status: 400 });
 
-  const { batchId, filename, contentType, sizeBytes, scope } = parsed.data;
+  const { resourceId, filename, contentType, sizeBytes, scope } = parsed.data;
   const role = session.user.role as Role;
 
   if (!ALLOWED[scope].test(contentType)) {
@@ -72,20 +105,22 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Authorise against the batch before handing out a writable URL.
+  // Authorise before handing out a writable URL.
   if (scope === "submission") {
     const member = await BatchStudent.findOne({
-      where: { batchId, userId: session.user.id, status: "ACTIVE" },
+      where: { batchId: resourceId, userId: session.user.id, status: "ACTIVE" },
     });
     if (!member) return Response.json({ error: "Forbidden" }, { status: 403 });
+  } else if (ADMIN_ONLY_SCOPES.has(scope)) {
+    if (role !== Role.ADMIN) return Response.json({ error: "Forbidden" }, { status: 403 });
   } else {
     const owns =
       role === Role.ADMIN ||
-      (await Batch.findOne({ where: { id: batchId, instructorId: session.user.id } }));
+      (await Batch.findOne({ where: { id: resourceId, instructorId: session.user.id } }));
     if (!owns) return Response.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const key = buildKey(scope, batchId, filename);
+  const key = buildKey(KEY_PREFIX[scope] ?? scope, resourceId, filename);
   const url = await presignUpload(key, contentType);
   return Response.json({ url, key });
 }

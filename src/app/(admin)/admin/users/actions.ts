@@ -1,21 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { Batch, BatchStudent, Invoice, Message, Submission, User } from "@/db";
-import { sequelize } from "@/db/sequelize";
-import { getSession } from "@/lib/auth";
 import { Role } from "@/lib/types";
 import { createUserSchema, parseInput, roleSchema, updateUserSchema } from "@/lib/schemas";
 import { auth } from "@/lib/auth";
 import { sendMail } from "@/lib/mailer";
-import { hashPassword } from "better-auth/crypto";
+import { RESOURCES } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
 export async function updateUserRole(
   userId: string,
   role: string,
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { session, allowed } = await sessionCan(RESOURCES.USERS, "update");
+  if (!session || !allowed) return { error: "Unauthorized" };
 
   const parsed = parseInput(roleSchema, role);
   if (!parsed.success) return { error: parsed.error };
@@ -96,8 +96,8 @@ export type CreateUserResult =
  * caller must copy it or have it emailed.
  */
 export async function createUser(data: unknown): Promise<CreateUserResult> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { session, allowed } = await sessionCan(RESOURCES.USERS, "create");
+  if (!session || !allowed) return { error: "Unauthorized" };
 
   const parsed = parseInput(createUserSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -186,8 +186,8 @@ export async function updateUser(
   userId: string,
   data: unknown,
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { session, allowed } = await sessionCan(RESOURCES.USERS, "update");
+  if (!session || !allowed) return { error: "Unauthorized" };
 
   const parsed = parseInput(updateUserSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -215,30 +215,26 @@ export type ResetPasswordResult =
   | { error: string };
 
 export async function resetUserPassword(userId: string): Promise<ResetPasswordResult> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { allowed } = await sessionCan(RESOURCES.USERS, "update");
+  if (!allowed) return { error: "Unauthorized" };
 
   const target = await User.findByPk(userId);
   if (!target) return { error: "User not found." };
 
   const password = generatePassword();
-  const hash = await hashPassword(password);
+  const requestHeaders = await headers();
 
-  // Account and Session are better-auth's tables - there is no Sequelize model
-  // for them, so they are touched with raw SQL rather than inventing one.
-  const [, meta] = await sequelize.query(
-    `UPDATE "Account" SET password = :hash, "updatedAt" = now()
-     WHERE "userId" = :userId AND "providerId" = 'credential'`,
-    { replacements: { hash, userId } },
-  );
-  if (((meta as { rowCount?: number }).rowCount ?? 0) !== 1) {
-    return { error: "That account has no password login to reset." };
+  try {
+    // better-auth's own admin plugin, not hand-rolled SQL against its tables.
+    await auth.api.setUserPassword({
+      body: { userId, newPassword: password },
+      headers: requestHeaders,
+    });
+    await auth.api.revokeUserSessions({ body: { userId }, headers: requestHeaders });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Could not reset the password." };
   }
 
-  // Old sessions were issued against the previous credential - drop them.
-  await sequelize.query(`DELETE FROM "Session" WHERE "userId" = :userId`, {
-    replacements: { userId },
-  });
   await target.update({ mustChangePassword: true });
 
   revalidatePath("/admin/users");
@@ -255,8 +251,8 @@ export interface UserImpact {
 
 /** What deleting this account destroys. Submissions and messages cascade. */
 export async function userImpact(userId: string): Promise<UserImpact | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { allowed } = await sessionCan(RESOURCES.USERS, "delete");
+  if (!allowed) return { error: "Unauthorized" };
   const [batchesTaught, enrolledIn, submissions, messages, invoices] = await Promise.all([
     Batch.count({ where: { instructorId: userId } }),
     BatchStudent.count({ where: { userId } }),
@@ -268,8 +264,8 @@ export async function userImpact(userId: string): Promise<UserImpact | { error: 
 }
 
 export async function deleteUser(userId: string): Promise<{ success: true } | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return { error: "Unauthorized" };
+  const { session, allowed } = await sessionCan(RESOURCES.USERS, "delete");
+  if (!session || !allowed) return { error: "Unauthorized" };
 
   if (userId === session.user.id) return { error: "You cannot delete your own account." };
 

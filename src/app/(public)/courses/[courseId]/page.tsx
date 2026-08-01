@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
 import CoursePageContent from "@/components/CoursePageContent";
 import { getPublicCourseBySlug, getPublicCourses } from "@/db/queries";
+import { publicMediaSrc } from "@/lib/media-image";
 
 // No generateStaticParams already makes this dynamic in practice, but this
 // makes it explicit rather than relying on Next's inference.
@@ -25,6 +26,7 @@ export async function generateMetadata({
 
   const description =
     course.shortDesc || course.description.slice(0, 160) || `Learn ${course.title} at Next Minds.`;
+  const imageSrc = publicMediaSrc(course.imageUrl);
 
   return {
     title: course.title,
@@ -35,13 +37,13 @@ export async function generateMetadata({
       title: course.title,
       description,
       url: `/courses/${course.slug}`,
-      ...(course.imageUrl ? { images: [{ url: course.imageUrl }] } : {}),
+      ...(imageSrc ? { images: [{ url: imageSrc }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
       title: course.title,
       description,
-      ...(course.imageUrl ? { images: [course.imageUrl] } : {}),
+      ...(imageSrc ? { images: [imageSrc] } : {}),
     },
   };
 }

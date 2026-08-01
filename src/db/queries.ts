@@ -1,7 +1,7 @@
 import { cache } from "react";
 import { Op } from "sequelize";
 import { BatchStudent, Category, Course, Mentor, User } from "./index";
-import { Role } from "@/lib/types";
+import { Role, type CourseBadge } from "@/lib/types";
 import type { CurriculumModule, Faq } from "./models/course";
 
 /**
@@ -23,7 +23,7 @@ export interface PublicCourse {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string;
   students: number;
   duration: string;

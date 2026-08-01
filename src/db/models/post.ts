@@ -16,6 +16,14 @@ export interface PostAttributes {
   featured: boolean;
   published: boolean;
   publishedAt: Date | null;
+  /** SEO title tag - falls back to `title` when empty. */
+  metaTitle: string | null;
+  /** SEO meta description - falls back to `excerpt` when empty. */
+  metaDescription: string | null;
+  /** Target keyword the admin SEO checklist scores against. */
+  focusKeyword: string | null;
+  /** Canonical URL override, for posts republished from elsewhere. */
+  canonicalUrl: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +42,10 @@ type PostCreation = Optional<
   | "featured"
   | "published"
   | "publishedAt"
+  | "metaTitle"
+  | "metaDescription"
+  | "focusKeyword"
+  | "canonicalUrl"
   | "createdAt"
   | "updatedAt"
 >;
@@ -53,6 +65,10 @@ class PostModel extends Model<PostAttributes, PostCreation> implements PostAttri
   declare featured: boolean;
   declare published: boolean;
   declare publishedAt: Date | null;
+  declare metaTitle: string | null;
+  declare metaDescription: string | null;
+  declare focusKeyword: string | null;
+  declare canonicalUrl: string | null;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -81,6 +97,10 @@ if (!sequelize.models.Post) {
       featured: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
       published: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
       publishedAt: { type: DataTypes.DATE, allowNull: true },
+      metaTitle: { type: DataTypes.TEXT, allowNull: true },
+      metaDescription: { type: DataTypes.TEXT, allowNull: true },
+      focusKeyword: { type: DataTypes.TEXT, allowNull: true },
+      canonicalUrl: { type: DataTypes.TEXT, allowNull: true },
       createdAt: { type: DataTypes.DATE, allowNull: false },
       updatedAt: { type: DataTypes.DATE, allowNull: false },
     },

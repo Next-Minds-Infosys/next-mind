@@ -1,5 +1,7 @@
 import { Plus } from "lucide-react";
 import { Category, Course, Enrollment } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import {
   Table,
   TableHeader,
@@ -12,6 +14,7 @@ import { DeleteCategoryButton } from "./delete-button";
 import { CategoryDialog } from "./category-dialog";
 
 export default async function AdminCategoriesPage() {
+  await requireResource(RESOURCES.CATEGORIES);
   const categories = await Category.findAll({
     order: [["name", "ASC"]],
     include: [

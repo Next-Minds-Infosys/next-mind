@@ -10,8 +10,11 @@ import { StatusSelect } from "@/components/admin/status-select";
 import { DeleteRow } from "@/components/admin/delete-row-button";
 import { updateContactStatus, deleteContact } from "./actions";
 import { ContactSubmission } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminContactsPage() {
+  await requireResource(RESOURCES.CONTACTS);
   const contacts = await ContactSubmission.findAll({
     order: [["createdAt", "DESC"]],
   });

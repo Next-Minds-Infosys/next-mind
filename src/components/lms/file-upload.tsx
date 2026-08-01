@@ -16,14 +16,15 @@ export interface UploadedFile {
  * would cap out at Vercel's ~4.5 MB request body limit.
  */
 export function FileUpload({
-  batchId,
+  resourceId,
   scope,
   accept,
   label = "Choose file",
   onUploaded,
 }: {
-  batchId: string;
-  scope: "lesson" | "material" | "assignment" | "submission";
+  /** Batch id for batch-scoped uploads, course/mentor id for the admin-only scopes. */
+  resourceId: string;
+  scope: "lesson" | "material" | "assignment" | "submission" | "courseImage" | "mentorPhoto" | "postCover";
   accept?: string;
   label?: string;
   onUploaded: (file: UploadedFile) => void;
@@ -40,7 +41,7 @@ export function FileUpload({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          batchId,
+          resourceId,
           scope,
           filename: file.name,
           contentType: file.type || "application/octet-stream",

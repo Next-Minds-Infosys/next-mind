@@ -7,6 +7,7 @@ import { ConfirmDeleteDialog } from "@/components/admin/confirm-delete-dialog";
 import { CategorySelect } from "./category-select";
 import { PublishToggle } from "./publish-toggle";
 import type { CurriculumModule, Faq } from "@/db/models/course";
+import type { CourseBadge } from "@/lib/types";
 import { deleteCourse } from "./actions";
 
 export interface CourseRow {
@@ -21,7 +22,7 @@ export interface CourseRow {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string | null;
   students: number;
   duration: string;
