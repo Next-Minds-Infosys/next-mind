@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { GoogleTagManager } from "@next/third-parties/google";
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
+
+const GTM_ID = "GTM-59LSJGH8";
 
 export const metadata: Metadata = {
   // Resolves relative OG/canonical URLs against the real domain instead of the
@@ -42,7 +45,18 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">{children}</body>
+      <GoogleTagManager gtmId={GTM_ID} />
+      <body className="antialiased font-sans">
+        <noscript>
+          <iframe
+            src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+        {children}
+      </body>
     </html>
   );
 }
