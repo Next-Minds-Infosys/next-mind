@@ -1,7 +1,9 @@
+import { Calendar, Tag, Wallet } from "lucide-react";
 import { Expense } from "@/db";
 import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { DeleteExpense, EditExpense, NewExpense } from "./expense-client";
 import { EXPENSE_CATEGORIES, type ExpenseInput } from "@/lib/schemas";
 import { requireResource } from "@/lib/access";
@@ -33,6 +35,7 @@ export default async function ExpensesPage() {
     return acc;
   }, {});
   const top = Object.entries(byCategory).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const categoryTints = ["bg-violet-50 text-violet-600", "bg-rose-50 text-rose-600"];
 
   return (
     <div className="space-y-8">
@@ -41,20 +44,37 @@ export default async function ExpensesPage() {
         <p className="mt-1 text-sm text-gray-500">What the institute spends, and on what.</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <div className={`rounded-2xl bg-white p-5 ${RING}`}>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{npr(thisMonth)}</p>
-          <p className="mt-0.5 text-sm text-gray-500">This month</p>
-        </div>
-        <div className={`rounded-2xl bg-white p-5 ${RING}`}>
-          <p className="text-2xl font-semibold tabular-nums text-gray-900">{npr(total)}</p>
-          <p className="mt-0.5 text-sm text-gray-500">All time</p>
-        </div>
-        {top.slice(0, 2).map(([cat, amt]) => (
-          <div key={cat} className={`rounded-2xl bg-white p-5 ${RING}`}>
-            <p className="text-2xl font-semibold tabular-nums text-gray-900">{npr(amt)}</p>
-            <p className="mt-0.5 text-sm text-gray-500">{cat}</p>
-          </div>
+      <div className="grid grid-cols-2 gap-5 lg:grid-cols-4">
+        <Card className={RING}>
+          <CardContent className="p-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-teal-50 text-teal-600">
+              <Calendar size={18} />
+            </span>
+            <p className="mt-5 text-2xl font-semibold tabular-nums text-gray-900">{npr(thisMonth)}</p>
+            <p className="mt-1 text-sm text-gray-500">This month</p>
+          </CardContent>
+        </Card>
+        <Card className={RING}>
+          <CardContent className="p-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+              <Wallet size={18} />
+            </span>
+            <p className="mt-5 text-2xl font-semibold tabular-nums text-gray-900">{npr(total)}</p>
+            <p className="mt-1 text-sm text-gray-500">All time</p>
+          </CardContent>
+        </Card>
+        {top.slice(0, 2).map(([cat, amt], i) => (
+          <Card key={cat} className={RING}>
+            <CardContent className="p-6">
+              <span
+                className={`flex h-10 w-10 items-center justify-center rounded-xl ${categoryTints[i]}`}
+              >
+                <Tag size={18} />
+              </span>
+              <p className="mt-5 text-2xl font-semibold tabular-nums text-gray-900">{npr(amt)}</p>
+              <p className="mt-1 text-sm text-gray-500">{cat}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
