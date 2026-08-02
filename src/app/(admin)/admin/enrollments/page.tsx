@@ -10,8 +10,11 @@ import {
 import { StatusSelect } from "@/components/admin/status-select";
 import { DeleteRow } from "@/components/admin/delete-row-button";
 import { updateEnrollmentStatus, deleteEnrollment } from "./actions";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminEnrollmentsPage() {
+  await requireResource(RESOURCES.ENROLLMENTS);
   const enrollments = await Enrollment.findAll({
     order: [["createdAt", "DESC"]],
     include: [{ model: Course, as: "course", attributes: ["title"] }],

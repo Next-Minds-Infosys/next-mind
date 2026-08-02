@@ -3,15 +3,15 @@
 import { revalidatePath } from "next/cache";
 import { Op } from "sequelize";
 import { Invoice } from "@/db";
-import { getSession } from "@/lib/auth";
-import { Role } from "@/lib/types";
 import { invoiceSchema, parseInput } from "@/lib/schemas";
+import { RESOURCES, type Action } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
 type Result = { success: true } | { error: string };
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.user.role !== Role.ADMIN) return null;
+async function requireBilling(action: Action) {
+  const { session, allowed } = await sessionCan(RESOURCES.BILLING, action);
+  if (!session || !allowed) return null;
   return session;
 }
 
@@ -41,7 +41,7 @@ function derive(amount: number, discount: number, paidAmount: number, status: st
 }
 
 export async function createInvoice(data: unknown): Promise<Result> {
-  const session = await requireAdmin();
+  const session = await requireBilling("create");
   if (!session) return { error: "Unauthorized" };
 
   const parsed = parseInput(invoiceSchema, data);
@@ -72,7 +72,7 @@ export async function createInvoice(data: unknown): Promise<Result> {
 }
 
 export async function recordPayment(id: string, amount: number, method: string): Promise<Result> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBilling("update"))) return { error: "Unauthorized" };
   if (!Number.isInteger(amount) || amount <= 0) return { error: "Enter a whole amount above 0." };
 
   const invoice = await Invoice.findByPk(id);
@@ -94,14 +94,14 @@ export async function recordPayment(id: string, amount: number, method: string):
 }
 
 export async function cancelInvoice(id: string): Promise<Result> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBilling("update"))) return { error: "Unauthorized" };
   await Invoice.update({ status: "CANCELLED" }, { where: { id } });
   revalidatePath("/admin/billing");
   return { success: true };
 }
 
 export async function updateInvoice(id: string, data: unknown): Promise<Result> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBilling("update"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(invoiceSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -138,7 +138,7 @@ export async function updateInvoice(id: string, data: unknown): Promise<Result> 
  * a real invoice that is no longer payable - it keeps the number in the ledger.
  */
 export async function deleteInvoice(id: string): Promise<Result> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireBilling("delete"))) return { error: "Unauthorized" };
 
   const invoice = await Invoice.findByPk(id);
   if (!invoice) return { error: "Invoice not found." };

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { updateUserRole } from "./actions";
 
-const ROLES = ["ADMIN", "INSTRUCTOR", "STUDENT"] as const;
+const ROLES = ["ADMIN", "EDITOR", "INSTRUCTOR", "STUDENT"] as const;
 
 export function RoleSelect({
   userId,

@@ -135,6 +135,7 @@ export function CreateUser() {
         <select {...register("role")} className={input}>
           <option value="STUDENT">Student</option>
           <option value="INSTRUCTOR">Instructor</option>
+          <option value="EDITOR">Editor</option>
         </select>
         <p className="mt-1 text-xs text-gray-500">
           Admins are not created here — promote an existing user in the table instead.

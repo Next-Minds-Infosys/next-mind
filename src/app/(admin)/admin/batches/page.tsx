@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { Batch, BatchStudent, Course, User } from "@/db";
 import { listCourseOptions, listInstructorOptions } from "@/db/queries";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { BatchForm } from "./batch-form";
 import { BatchRowActions } from "./batch-actions";
 import {
@@ -13,6 +15,7 @@ import {
 } from "@/components/ui/table";
 
 export default async function AdminBatchesPage() {
+  await requireResource(RESOURCES.BATCHES);
   const [batches, courses, instructors] = await Promise.all([
     Batch.findAll({
       include: [

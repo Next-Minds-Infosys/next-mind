@@ -3,7 +3,6 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicCourse } from "@/db/queries";
-import { colors, gradient } from "@/lib/theme";
 import { contact } from "@/lib/contact";
 import { socialLinks, whatsappPath } from "./SocialIcons";
 
@@ -24,12 +23,14 @@ const contactRows = [
 
 export default function Footer({ courses }: { courses: PublicCourse[] }) {
   return (
-    <footer
-      className="border-t pt-14 pb-8 px-6"
-      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 mb-12">
+    <footer className="relative overflow-hidden border-t border-nm-border bg-nm-surface px-6 pt-14 pb-8">
+      <div
+        className="pointer-events-none absolute -top-40 left-1/2 h-72 w-[40rem] -translate-x-1/2 rounded-full bg-gradient-to-r from-nm-teal/20 to-nm-blue/20 blur-3xl"
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-7xl">
+        <div className="mb-12 grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
           <div className="lg:col-span-2">
             <Image
               src="/assets/logo-horizontal.png"
@@ -37,9 +38,9 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
               width={1959}
               height={356}
               sizes="240px"
-              className="h-11 w-auto object-contain mb-5"
+              className="mb-5 h-11 w-auto object-contain"
             />
-            <p className="text-sm leading-relaxed mb-6 max-w-xs" style={{ color: colors.muted }}>
+            <p className="mb-6 max-w-xs text-sm leading-relaxed text-nm-muted">
               Empowering Nepal&apos;s future tech leaders with world-class IT training, mentorship,
               and career support.
             </p>
@@ -51,22 +52,7 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={s.name}
-                  className="w-9 h-9 rounded-xl flex items-center justify-center transition-all cursor-pointer"
-                  style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.border}`,
-                    color: colors.muted,
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = gradient;
-                    e.currentTarget.style.color = "#fff";
-                    e.currentTarget.style.borderColor = "transparent";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = colors.card;
-                    e.currentTarget.style.color = colors.muted;
-                    e.currentTarget.style.borderColor = colors.border;
-                  }}
+                  className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-nm-border bg-nm-card text-nm-muted transition-all hover:border-transparent hover:bg-gradient-to-br hover:from-nm-teal hover:to-nm-blue hover:text-white"
                 >
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d={s.path} />
@@ -77,22 +63,13 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
           </div>
 
           <div>
-            <div className="font-semibold mb-4 text-sm" style={{ color: colors.navy }}>
-              Courses
-            </div>
+            <div className="mb-4 text-sm font-semibold text-nm-navy">Courses</div>
             <div className="space-y-2.5">
               {courses.slice(0, 6).map((c) => (
                 <Link
                   key={c.id}
                   href={`/courses/${c.slug}`}
-                  className="block text-sm transition-colors"
-                  style={{ color: colors.muted }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.teal;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = colors.muted;
-                  }}
+                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal"
                 >
                   {c.title}
                 </Link>
@@ -101,22 +78,13 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
           </div>
 
           <div>
-            <div className="font-semibold mb-4 text-sm" style={{ color: colors.navy }}>
-              Company
-            </div>
+            <div className="mb-4 text-sm font-semibold text-nm-navy">Company</div>
             <div className="space-y-2.5">
               {companyFooterLinks.map((l) => (
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="block text-sm transition-colors"
-                  style={{ color: colors.muted }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = colors.teal;
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = colors.muted;
-                  }}
+                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal"
                 >
                   {l.label}
                 </Link>
@@ -125,12 +93,10 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
           </div>
 
           <div>
-            <div className="font-semibold mb-4 text-sm" style={{ color: colors.navy }}>
-              Contact
-            </div>
+            <div className="mb-4 text-sm font-semibold text-nm-navy">Contact</div>
             <div className="space-y-3">
               {contactRows.map((r) => (
-                <div key={r.text} className="flex gap-3 text-sm" style={{ color: colors.muted }}>
+                <div key={r.text} className="flex gap-3 text-sm text-nm-muted">
                   <span className="flex-shrink-0">{r.icon}</span>
                   <span>{r.text}</span>
                 </div>
@@ -139,12 +105,7 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
                 href={contact.whatsapp}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-2 rounded-lg transition-all mt-2"
-                style={{
-                  backgroundColor: "#25d36615",
-                  border: "1px solid #25d36630",
-                  color: "#25d366",
-                }}
+                className="mt-2 inline-flex items-center gap-2 rounded-lg border border-[#25d36630] bg-[#25d36615] px-3 py-2 text-xs font-semibold text-[#25d366] transition-all"
               >
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                   <path d={whatsappPath} />
@@ -155,26 +116,13 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
           </div>
         </div>
 
-        <div
-          className="border-t pt-6 flex flex-col sm:flex-row justify-between items-center gap-4"
-          style={{ borderColor: colors.border }}
-        >
-          <div className="text-sm" style={{ color: colors.muted }}>
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-nm-border pt-6 sm:flex-row">
+          <div className="text-sm text-nm-muted">
             © 2025 Next Minds Infosys Pvt. Ltd. All rights reserved.
           </div>
-          <div className="flex gap-6 text-sm" style={{ color: colors.muted }}>
+          <div className="flex gap-6 text-sm text-nm-muted">
             {["Privacy Policy", "Terms of Service"].map((t) => (
-              <a
-                key={t}
-                href="#"
-                className="transition-colors"
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.color = colors.teal;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.color = colors.muted;
-                }}
-              >
+              <a key={t} href="#" className="transition-colors hover:text-nm-teal">
                 {t}
               </a>
             ))}

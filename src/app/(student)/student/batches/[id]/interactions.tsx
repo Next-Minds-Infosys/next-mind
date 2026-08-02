@@ -32,7 +32,7 @@ export function SubmitAssignment({
   return (
     <div className="mt-3 space-y-2">
       <FileUpload
-        batchId={batchId}
+        resourceId={batchId}
         scope="submission"
         label={file ? `Replace (${file.fileName})` : "Attach your work"}
         onUploaded={setFile}

@@ -6,7 +6,7 @@ import type { Course as StaticCourse } from "../data/courses";
 import { auth } from "../lib/auth";
 import { slugify } from "../lib/utils";
 import { sequelize } from "./sequelize";
-import { User } from ".";
+import { User, Batch, BatchStudent } from ".";
 
 /**
  * Skills, whoIsItFor, curriculum and faqs now have their own columns, so
@@ -18,6 +18,24 @@ function toContentMd(course: StaticCourse): string {
   return course.description;
 }
 
+/**
+ * Shared by admin/instructor/student seeding: sign up through better-auth
+ * (so a real Account/password hash exists, not just a User row), then force
+ * the role and mark it verified. mustChangePassword stays false here since
+ * these are dev/test logins, not admin-issued accounts for real people.
+ */
+async function ensureUser(email: string, password: string, name: string, role: "ADMIN" | "INSTRUCTOR" | "STUDENT") {
+  let user = await User.findOne({ where: { email } });
+  if (!user) {
+    const result = await auth.api.signUpEmail({ body: { email, password, name } });
+    await User.update({ role, emailVerified: true }, { where: { id: result.user.id } });
+    user = await User.findByPk(result.user.id);
+  } else if (user.role !== role) {
+    await user.update({ role, emailVerified: true });
+  }
+  return user!;
+}
+
 async function main() {
   await sequelize.authenticate();
 
@@ -27,17 +45,18 @@ async function main() {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD must be set in .env before seeding");
   }
 
-  let admin = await User.findOne({ where: { email: adminEmail } });
-  if (!admin) {
-    const result = await auth.api.signUpEmail({
-      body: { email: adminEmail, password: adminPassword, name: "Admin" },
-    });
-    await User.update({ role: "ADMIN", emailVerified: true }, { where: { id: result.user.id } });
-    admin = await User.findByPk(result.user.id);
-  } else if (admin.role !== "ADMIN") {
-    await admin.update({ role: "ADMIN", emailVerified: true });
-  }
-  console.log(`Admin user ready: ${admin!.email}`);
+  const admin = await ensureUser(adminEmail, adminPassword, "Admin", "ADMIN");
+  console.log(`Admin user ready: ${admin.email}`);
+
+  const instructorEmail = process.env.INSTRUCTOR_EMAIL ?? "instructor@nextmindsinfosys.com";
+  const instructorPassword = process.env.INSTRUCTOR_PASSWORD ?? "Instructor@123";
+  const instructor = await ensureUser(instructorEmail, instructorPassword, "Test Instructor", "INSTRUCTOR");
+  console.log(`Instructor user ready: ${instructor.email} / ${instructorPassword}`);
+
+  const studentEmail = process.env.STUDENT_EMAIL ?? "student@nextmindsinfosys.com";
+  const studentPassword = process.env.STUDENT_PASSWORD ?? "Student@123";
+  const student = await ensureUser(studentEmail, studentPassword, "Test Student", "STUDENT");
+  console.log(`Student user ready: ${student.email} / ${studentPassword}`);
 
   const categoryNames = Array.from(new Set(courses.map((c) => c.category)));
   const categoryIdByName = new Map<string, string>();
@@ -90,6 +109,33 @@ async function main() {
       });
     }
     console.log(`Seeded course: ${course.slug}`);
+  }
+
+  // Give the seeded instructor/student a batch to log into instead of an
+  // empty dashboard - the first seeded course, one running batch, one
+  // enrollment.
+  const firstCourse = await Course.findOne({ where: { slug: courses[0].slug } });
+  if (firstCourse) {
+    const [batch] = await Batch.findOrCreate({
+      where: { code: "TEST-BATCH-01" },
+      defaults: {
+        courseId: firstCourse.id,
+        instructorId: instructor.id,
+        name: `${firstCourse.title} - Test Batch`,
+        code: "TEST-BATCH-01",
+        mode: "Online",
+        capacity: 30,
+        status: "RUNNING",
+      },
+    });
+    if (batch.instructorId !== instructor.id) {
+      await batch.update({ instructorId: instructor.id });
+    }
+    await BatchStudent.findOrCreate({
+      where: { batchId: batch.id, userId: student.id },
+      defaults: { batchId: batch.id, userId: student.id, status: "ACTIVE" },
+    });
+    console.log(`Seeded batch: ${batch.code} (instructor: ${instructor.email}, student: ${student.email})`);
   }
 
   await sequelize.close();

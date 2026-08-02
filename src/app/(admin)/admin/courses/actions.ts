@@ -2,21 +2,22 @@
 
 import { revalidatePath } from "next/cache";
 import { Op } from "sequelize";
-import { getSession } from "@/lib/auth";
 import { Course } from "@/db";
 import { courseSchema, parseInput, type CourseInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
+import { RESOURCES, type Action } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return null;
+async function requireCourses(action: Action) {
+  const { session, allowed } = await sessionCan(RESOURCES.COURSES, action);
+  if (!session || !allowed) return null;
   return session;
 }
 
 export async function createCourse(
   data: CourseInput,
 ): Promise<{ success: true } | { error: string }> {
-  const session = await requireAdmin();
+  const session = await requireCourses("create");
   if (!session) return { error: "Unauthorized" };
 
   const parsed = parseInput(courseSchema, data);
@@ -44,7 +45,7 @@ export async function createCourse(
     skills: data.skills,
     curriculum: data.curriculum,
     faqs: data.faqs,
-    badge: data.badge.trim() || null,
+    badge: data.badge || null,
     color: data.color.trim() || null,
     students: data.students,
     duration: data.duration.trim(),
@@ -65,7 +66,7 @@ export async function updateCourse(
   id: string,
   data: CourseInput,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireCourses("update"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(courseSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -98,7 +99,7 @@ export async function updateCourse(
     skills: data.skills,
     curriculum: data.curriculum,
     faqs: data.faqs,
-    badge: data.badge.trim() || null,
+    badge: data.badge || null,
     color: data.color.trim() || null,
     students: data.students,
     duration: data.duration.trim(),
@@ -115,7 +116,7 @@ export async function updateCourse(
 }
 
 export async function deleteCourse(id: string): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireCourses("delete"))) return { error: "Unauthorized" };
 
   await Course.destroy({ where: { id } });
   revalidatePath("/admin/courses");
@@ -127,8 +128,7 @@ export async function toggleCoursePublished(
   id: string,
   published: boolean,
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
+  if (!(await requireCourses("update"))) return { error: "Unauthorized" };
 
   await Course.update({ published }, { where: { id } });
   revalidatePath("/admin/courses");
@@ -139,8 +139,7 @@ export async function updateCourseCategory(
   id: string,
   categoryId: string,
 ): Promise<{ success: true } | { error: string }> {
-  const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return { error: "Unauthorized" };
+  if (!(await requireCourses("update"))) return { error: "Unauthorized" };
 
   await Course.update({ categoryId }, { where: { id } });
   revalidatePath("/admin/courses");

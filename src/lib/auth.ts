@@ -1,14 +1,14 @@
 import { cache } from "react";
 import { headers } from "next/headers";
 import { betterAuth } from "better-auth";
+import { admin } from "better-auth/plugins/admin";
+import { adminAc } from "better-auth/plugins/admin/access";
 import { nextCookies } from "better-auth/next-js";
 import { loadEnvConfig } from "@next/env";
 import { Pool } from "pg";
 
-// This module builds its pool at import time, so it cannot rely on something
-// else having populated process.env first. Next does it for the app, but a
-// plain `tsx` script only gets it because src/db/sequelize.ts happens to be
-// imported earlier - and that ordering is not something to depend on.
+// Builds the pool at import time, so process.env must already be populated -
+// a plain `tsx` script can't rely on Next having done it first.
 loadEnvConfig(process.cwd());
 
 const globalForPool = globalThis as unknown as { authPool?: Pool };
@@ -16,14 +16,7 @@ const globalForPool = globalThis as unknown as { authPool?: Pool };
 const connectionString = process.env.DATABASE_URL;
 const isLocal = /(localhost|127\.0\.0\.1)/.test(connectionString ?? "");
 
-/**
- * TLS for hosted Postgres.
- *
- * With DATABASE_CA_CERT set, the server certificate is verified properly. Without
- * it we still encrypt but cannot validate the chain - managed providers use CAs
- * that are not in Node's default trust store - which leaves an active
- * man-in-the-middle possible. Set the variable in production; see .env.example.
- */
+/** TLS for hosted Postgres - verified if DATABASE_CA_CERT is set, encrypted-only otherwise. */
 export const pgSsl = isLocal
   ? undefined
   : process.env.DATABASE_CA_CERT
@@ -84,12 +77,21 @@ export const auth = betterAuth({
   verification: {
     modelName: "Verification",
   },
-  // Must stay last. When a server action calls auth.api.*, better-auth returns
-  // its Set-Cookie on a Response object that never reaches the browser. This
-  // plugin writes those cookies into Next's cookie store instead. Without it,
-  // changePassword({ revokeOtherSessions: true }) rotates the session server-
-  // side and the browser is left holding a token that no longer exists.
-  plugins: [nextCookies()],
+  plugins: [
+    // Only setUserPassword/revokeUserSessions are used (see resetUserPassword
+    // in admin/users/actions.ts). Roles are remapped to our own role strings
+    // ("ADMIN" etc) since the plugin's access control defaults to lowercase.
+    admin({
+      roles: { ADMIN: adminAc },
+      adminRoles: ["ADMIN"],
+      // Otherwise its create-user hook stamps new sign-ups with "user", which
+      // isn't a valid Role enum value here.
+      defaultRole: "STUDENT",
+    }),
+    // Must stay last - forwards auth.api.* Set-Cookie responses into Next's
+    // cookie store, which a plain Response object never reaches.
+    nextCookies(),
+  ],
 });
 
 // Deduplicates within a single request - layout + page both need the

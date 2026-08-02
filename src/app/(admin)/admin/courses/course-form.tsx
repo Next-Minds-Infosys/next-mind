@@ -5,7 +5,10 @@ import { useRouter } from "next/navigation";
 import { Check, Loader2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { CurriculumModule, Faq } from "@/db/models/course";
+import { CourseBadge } from "@/lib/types";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
+import { FileUpload } from "@/components/lms/file-upload";
+import { publicMediaSrc } from "@/lib/media-image";
 import { createCourse, updateCourse } from "./actions";
 
 export interface CourseFormInitial {
@@ -20,7 +23,7 @@ export interface CourseFormInitial {
   skills: string[];
   curriculum: CurriculumModule[];
   faqs: Faq[];
-  badge: string | null;
+  badge: CourseBadge | null;
   color: string | null;
   students: number;
   duration: string;
@@ -42,6 +45,7 @@ const inputClass =
 const labelClass = "text-sm font-medium text-gray-700";
 
 const LEVEL_OPTIONS = ["Beginner", "Intermediate", "Advanced", "All Levels"];
+const BADGE_OPTIONS = Object.values(CourseBadge);
 
 const STEPS = [
   { id: "basics", label: "Basics" },
@@ -73,7 +77,7 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
   const [skills, setSkills] = useState((initial?.skills ?? []).join("\n"));
   const [curriculum, setCurriculum] = useState<CurriculumModule[]>(initial?.curriculum ?? []);
   const [faqs, setFaqs] = useState<Faq[]>(initial?.faqs ?? []);
-  const [badge, setBadge] = useState(initial?.badge ?? "");
+  const [badge, setBadge] = useState<CourseBadge | "">(initial?.badge ?? "");
   const [color, setColor] = useState(initial?.color ?? "#00bdb8");
   const [students, setStudents] = useState(String(initial?.students ?? 0));
   const [duration, setDuration] = useState(initial?.duration ?? "");
@@ -83,6 +87,9 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
   const [published, setPublished] = useState(initial?.published ?? true);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // A new course has no id yet to namespace the S3 upload under; a stable
+  // per-form draft id fills that role until the course is actually saved.
+  const [draftId] = useState(() => initial?.id ?? crypto.randomUUID());
 
   const isLastStep = step === STEPS.length - 1;
 
@@ -278,13 +285,19 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
                 <label className={labelClass} htmlFor="badge">
                   Badge
                 </label>
-                <input
+                <select
                   id="badge"
                   value={badge}
-                  onChange={(e) => setBadge(e.target.value)}
-                  placeholder="Most Popular"
+                  onChange={(e) => setBadge(e.target.value as CourseBadge | "")}
                   className={inputClass}
-                />
+                >
+                  <option value="">No badge</option>
+                  {BADGE_OPTIONS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="space-y-1.5">
                 <label className={labelClass} htmlFor="students">
@@ -324,15 +337,34 @@ export function CourseForm({ initial, categories, mentors }: CourseFormProps) {
 
             <div className="space-y-1.5">
               <label className={labelClass} htmlFor="imageUrl">
-                Image URL
+                Course image
               </label>
-              <input
-                id="imageUrl"
-                value={imageUrl}
-                onChange={(e) => setImageUrl(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
-                className={inputClass}
-              />
+              <div className="flex items-start gap-3">
+                {publicMediaSrc(imageUrl || null) && (
+                  // eslint-disable-next-line @next/next/no-img-element -- small admin preview, source may be an arbitrary external URL not in next.config's remotePatterns
+                  <img
+                    src={publicMediaSrc(imageUrl || null)!}
+                    alt="Course cover preview"
+                    className="h-16 w-28 shrink-0 rounded-lg object-cover ring-1 ring-gray-950/5"
+                  />
+                )}
+                <div className="flex-1 space-y-2">
+                  <input
+                    id="imageUrl"
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://images.unsplash.com/... or upload below"
+                    className={inputClass}
+                  />
+                  <FileUpload
+                    resourceId={draftId}
+                    scope="courseImage"
+                    accept="image/png,image/jpeg,image/webp"
+                    label="Upload image"
+                    onUploaded={(file) => setImageUrl(file.key)}
+                  />
+                </div>
+              </div>
             </div>
 
             <label className="flex items-center gap-2 text-sm font-medium text-gray-700">

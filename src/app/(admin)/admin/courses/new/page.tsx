@@ -1,7 +1,10 @@
 import { Category, Mentor } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { CourseForm } from "../course-form";
 
 export default async function NewCoursePage() {
+  await requireResource(RESOURCES.COURSES, "create");
   const [categories, mentors] = await Promise.all([
     Category.findAll({ order: [["name", "ASC"]], attributes: ["id", "name"] }),
     Mentor.findAll({ order: [["name", "ASC"]], attributes: ["id", "name"] }),

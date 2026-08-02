@@ -18,6 +18,8 @@ import {
   EnterpriseInquiry,
 } from "@/db";
 import { SubmissionStatus } from "@/lib/types";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { StatusBadge } from "@/components/admin/status-badge";
 import {
   Table,
@@ -44,6 +46,7 @@ function relativeDate(date: Date) {
 }
 
 export default async function AdminDashboardPage() {
+  await requireResource(RESOURCES.DASHBOARD);
   const session = await getSession();
 
   const [

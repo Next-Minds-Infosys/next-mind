@@ -7,6 +7,8 @@ import { Mentor } from "./models/mentor";
 import { Batch } from "./models/batch";
 import { BatchStudent } from "./models/batch-student";
 import { Post } from "./models/post";
+import { Policy } from "./models/policy";
+import { RolePolicy } from "./models/role-policy";
 import { Lesson } from "./models/lesson";
 import { LessonProgress } from "./models/lesson-progress";
 import { Material } from "./models/material";
@@ -62,6 +64,9 @@ if (!Course.associations.category) {
   User.hasMany(Post, { foreignKey: "authorId", as: "posts" });
   Post.belongsTo(User, { foreignKey: "authorId", as: "author" });
 
+  Policy.hasMany(RolePolicy, { foreignKey: "policyId", as: "roleAttachments" });
+  RolePolicy.belongsTo(Policy, { foreignKey: "policyId", as: "policy" });
+
   // Everything below hangs off Batch, which is the access boundary.
   Batch.hasMany(Lesson, { foreignKey: "batchId", as: "lessons" });
   Lesson.belongsTo(Batch, { foreignKey: "batchId", as: "batch" });
@@ -107,6 +112,8 @@ export {
   Batch,
   BatchStudent,
   Post,
+  Policy,
+  RolePolicy,
   Lesson,
   LessonProgress,
   Material,

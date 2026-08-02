@@ -1,5 +1,6 @@
 import { Plus, Users } from "lucide-react";
 import { Course, Mentor } from "@/db";
+import { publicMediaSrc } from "@/lib/media-image";
 import {
   Table,
   TableHeader,
@@ -10,8 +11,11 @@ import {
 } from "@/components/ui/table";
 import { DeleteMentorButton } from "./delete-button";
 import { MentorDialog } from "./mentor-dialog";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminMentorsPage() {
+  await requireResource(RESOURCES.MENTORS);
   const mentors = await Mentor.findAll({
     order: [["name", "ASC"]],
     include: [{ model: Course, as: "coursesMentored", attributes: ["id"] }],
@@ -62,7 +66,7 @@ export default async function AdminMentorsPage() {
                         {mentor.photo ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={mentor.photo}
+                            src={publicMediaSrc(mentor.photo)!}
                             alt={mentor.name}
                             className="h-full w-full object-cover"
                           />

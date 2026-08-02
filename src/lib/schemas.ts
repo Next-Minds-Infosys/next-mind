@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { CourseBadge } from "./types";
+import { ACTIONS } from "./policies";
 
 /**
  * Single source of truth for every user-supplied input.
@@ -125,7 +127,11 @@ export const courseSchema = z.object({
   skills: z.array(z.string().trim().min(1)).max(40).default([]),
   curriculum: z.array(curriculumModuleSchema).max(50).default([]),
   faqs: z.array(faqSchema).max(50).default([]),
-  badge: optionalText(60),
+  badge: z
+    .enum(Object.values(CourseBadge) as [CourseBadge, ...CourseBadge[]])
+    .optional()
+    .or(z.literal(""))
+    .default(""),
   color: z
     .string()
     .trim()
@@ -162,7 +168,7 @@ export type MentorFormValues = z.input<typeof mentorSchema>;
 
 // ---------------------------------------------------------------------- LMS
 
-export const roleSchema = z.enum(["ADMIN", "INSTRUCTOR", "STUDENT"]);
+export const roleSchema = z.enum(["ADMIN", "EDITOR", "INSTRUCTOR", "STUDENT"]);
 
 export const batchSchema = z.object({
   courseId: z.string().trim().min(1, "Course is required."),
@@ -236,14 +242,21 @@ export type MessageInput = z.infer<typeof messageSchema>;
 
 export const postSchema = z.object({
   title: trimmed(2, 200, "Title"),
+  // Permalink override - slugified server-side regardless, so free text here is safe.
+  slug: optionalText(200),
   excerpt: optionalText(500),
   contentMd: z.string().trim().max(100_000).default(""),
   category: optionalText(80),
   emoji: optionalText(8),
-  readTime: optionalText(40),
+  coverKey: optionalText(500),
   authorName: optionalText(120),
   featured: z.boolean().default(false),
   published: z.boolean().default(false),
+  // SEO panel - all optional, each falls back to a content field when empty.
+  metaTitle: optionalText(70),
+  metaDescription: optionalText(160),
+  focusKeyword: optionalText(80),
+  canonicalUrl: optionalText(300),
 });
 export type PostInput = z.infer<typeof postSchema>;
 export type PostFormValues = z.input<typeof postSchema>;
@@ -256,7 +269,7 @@ export type PostFormValues = z.input<typeof postSchema>;
 export const createUserSchema = z.object({
   name: trimmed(2, 120, "Name"),
   email,
-  role: z.enum(["INSTRUCTOR", "STUDENT"]),
+  role: z.enum(["EDITOR", "INSTRUCTOR", "STUDENT"]),
   /** Where the one-time password goes. It is revealed through exactly one of these. */
   delivery: z.enum(["email", "hand"]).default("email"),
 });
@@ -329,6 +342,22 @@ export const expenseSchema = z.object({
 });
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 export type ExpenseFormValues = z.input<typeof expenseSchema>;
+
+// ------------------------------------------------------------------ policies
+
+/** Resource keys aren't restricted here - createPolicy/updatePolicy filter against RESOURCE_VALUES. */
+export const policySchema = z.object({
+  name: trimmed(2, 60, "Name").regex(
+    /^[a-z0-9-]+$/,
+    "Use lowercase letters, numbers and hyphens only.",
+  ),
+  label: trimmed(2, 80, "Label"),
+  description: optionalText(300),
+  permissions: z.record(z.string(), z.array(z.enum(ACTIONS))).default({}),
+  roles: z.array(z.enum(["ADMIN", "EDITOR"])).min(1, "Select at least one role."),
+});
+export type PolicyInput = z.infer<typeof policySchema>;
+export type PolicyFormValues = z.input<typeof policySchema>;
 
 // ------------------------------------------------------------------ helpers
 

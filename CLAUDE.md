@@ -101,6 +101,7 @@ docker-compose.yml         # local Postgres (next-mind-postgres, port 5434)
 - **Design tokens:** teal-500 → blue-600 gradient for all primary CTAs and icon backgrounds; `max-w-7xl mx-auto` for page containers; `rounded-full` for pill buttons
 - **Forms:** validated with Zod schemas from `src/lib/schemas.ts` via `zodResolver`, submitted to real API routes/server actions — no more UI-only `console.log`/`alert` stubs. Server-side code must re-`parseInput` even if the client already validated.
 - **Route groups:** `(public)` and `(admin)` split public marketing pages from the authenticated dashboard; a handful of public pages (about, blog, contact, partners, success-stories, testimonials) live directly under `app/` outside the group — follow the existing placement for a given page type rather than moving things between groups.
+- **UI components:** before adding or editing a button, input, textarea, select, or form, check `.claude/skills/` for the `ui-components` skill (atoms/molecules/elements breakdown of `src/components/ui/` and existing form patterns) and the `design-system` skill (color/spacing/typography tokens). If a skill already covers the primitive you're about to build, use it instead of inventing a new styling convention.
 
 ## Development Commands
 ```bash
