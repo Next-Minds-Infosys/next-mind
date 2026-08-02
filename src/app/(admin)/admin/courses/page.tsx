@@ -1,9 +1,12 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Category, Course, Enrollment } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { CoursesTable } from "./courses-table";
 
 export default async function AdminCoursesPage() {
+  await requireResource(RESOURCES.COURSES);
   const [courses, categories] = await Promise.all([
     Course.findAll({
       order: [["createdAt", "DESC"]],

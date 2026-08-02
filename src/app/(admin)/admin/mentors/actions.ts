@@ -1,20 +1,20 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getSession } from "@/lib/auth";
 import { Course, Mentor } from "@/db";
 import { mentorSchema, parseInput, type MentorInput } from "@/lib/schemas";
+import { RESOURCES, type Action } from "@/lib/policies";
+import { sessionCan } from "@/lib/access";
 
-async function requireAdmin() {
-  const session = await getSession();
-  if (!session || session.user.role !== "ADMIN") return null;
-  return session;
+async function requireMentors(action: Action) {
+  const { allowed } = await sessionCan(RESOURCES.MENTORS, action);
+  return allowed;
 }
 
 export async function createMentor(
   data: MentorInput,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireMentors("create"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(mentorSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -37,7 +37,7 @@ export async function updateMentor(
   id: string,
   data: MentorInput,
 ): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireMentors("update"))) return { error: "Unauthorized" };
 
   const parsed = parseInput(mentorSchema, data);
   if (!parsed.success) return { error: parsed.error };
@@ -59,7 +59,7 @@ export async function updateMentor(
 }
 
 export async function deleteMentor(id: string): Promise<{ success: true } | { error: string }> {
-  if (!(await requireAdmin())) return { error: "Unauthorized" };
+  if (!(await requireMentors("delete"))) return { error: "Unauthorized" };
 
   const courseCount = await Course.count({ where: { mentorId: id } });
   if (courseCount > 0) {

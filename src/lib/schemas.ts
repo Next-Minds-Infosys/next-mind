@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { CourseBadge } from "./types";
+import { ACTIONS } from "./policies";
 
 /**
  * Single source of truth for every user-supplied input.
@@ -163,6 +164,200 @@ export const mentorSchema = z.object({
 });
 export type MentorInput = z.infer<typeof mentorSchema>;
 export type MentorFormValues = z.input<typeof mentorSchema>;
+
+
+// ---------------------------------------------------------------------- LMS
+
+export const roleSchema = z.enum(["ADMIN", "EDITOR", "INSTRUCTOR", "STUDENT"]);
+
+export const batchSchema = z.object({
+  courseId: z.string().trim().min(1, "Course is required."),
+  instructorId: z.string().trim().optional().or(z.literal("")).default(""),
+  name: trimmed(2, 120, "Batch name"),
+  code: trimmed(2, 40, "Batch code"),
+  startDate: z.string().trim().optional().or(z.literal("")).default(""),
+  endDate: z.string().trim().optional().or(z.literal("")).default(""),
+  schedule: optionalText(200),
+  mode: z.enum(["Physical", "Online", "Hybrid"]).default("Physical"),
+  capacity: z.coerce.number().int().min(0).default(0),
+  status: z.enum(["UPCOMING", "RUNNING", "COMPLETED"]).default("UPCOMING"),
+});
+export type BatchInput = z.infer<typeof batchSchema>;
+export type BatchFormValues = z.input<typeof batchSchema>;
+
+export const lessonSchema = z.object({
+  title: trimmed(2, 200, "Title"),
+  description: optionalText(2000),
+  orderIndex: z.coerce.number().int().min(0).default(0),
+  videoKey: z.string().trim().optional().or(z.literal("")).default(""),
+  videoMime: z.string().trim().optional().or(z.literal("")).default(""),
+  videoSizeBytes: z.coerce.number().int().min(0).optional(),
+  published: z.boolean().default(false),
+});
+export type LessonInput = z.infer<typeof lessonSchema>;
+
+export const materialSchema = z.object({
+  lessonId: z.string().trim().optional().or(z.literal("")).default(""),
+  title: trimmed(2, 200, "Title"),
+  storageKey: z.string().trim().min(1),
+  fileName: z.string().trim().min(1),
+  mimeType: z.string().trim().optional().or(z.literal("")).default(""),
+  sizeBytes: z.coerce.number().int().min(0).optional(),
+  downloadable: z.boolean().default(true),
+});
+export type MaterialInput = z.infer<typeof materialSchema>;
+
+export const assignmentSchema = z.object({
+  title: trimmed(2, 200, "Title"),
+  briefMd: z.string().trim().max(20_000).default(""),
+  attachmentKey: z.string().trim().optional().or(z.literal("")).default(""),
+  attachmentName: z.string().trim().optional().or(z.literal("")).default(""),
+  dueAt: z.string().trim().optional().or(z.literal("")).default(""),
+  maxScore: z.coerce.number().int().min(1).max(1000).default(100),
+  published: z.boolean().default(true),
+});
+export type AssignmentInput = z.infer<typeof assignmentSchema>;
+
+export const submissionSchema = z.object({
+  assignmentId: z.string().trim().min(1),
+  storageKey: z.string().trim().optional().or(z.literal("")).default(""),
+  fileName: z.string().trim().optional().or(z.literal("")).default(""),
+  note: optionalText(2000),
+});
+export type SubmissionInput = z.infer<typeof submissionSchema>;
+
+export const gradeSchema = z.object({
+  submissionId: z.string().trim().min(1),
+  score: z.coerce.number().int().min(0),
+  feedback: optionalText(4000),
+});
+export type GradeInput = z.infer<typeof gradeSchema>;
+
+export const messageSchema = z.object({
+  batchId: z.string().trim().min(1),
+  body: trimmed(1, 4000, "Message"),
+  parentId: z.string().trim().optional().or(z.literal("")).default(""),
+});
+export type MessageInput = z.infer<typeof messageSchema>;
+
+export const postSchema = z.object({
+  title: trimmed(2, 200, "Title"),
+  // Permalink override - slugified server-side regardless, so free text here is safe.
+  slug: optionalText(200),
+  excerpt: optionalText(500),
+  contentMd: z.string().trim().max(100_000).default(""),
+  category: optionalText(80),
+  emoji: optionalText(8),
+  coverKey: optionalText(500),
+  authorName: optionalText(120),
+  featured: z.boolean().default(false),
+  published: z.boolean().default(false),
+  // SEO panel - all optional, each falls back to a content field when empty.
+  metaTitle: optionalText(70),
+  metaDescription: optionalText(160),
+  focusKeyword: optionalText(80),
+  canonicalUrl: optionalText(300),
+});
+export type PostInput = z.infer<typeof postSchema>;
+export type PostFormValues = z.input<typeof postSchema>;
+
+/**
+ * Admin-created accounts. ADMIN is deliberately not creatable here - a new
+ * admin has to be promoted deliberately from the users table, so a mis-click on
+ * a create form cannot mint one.
+ */
+export const createUserSchema = z.object({
+  name: trimmed(2, 120, "Name"),
+  email,
+  role: z.enum(["EDITOR", "INSTRUCTOR", "STUDENT"]),
+  /** Where the one-time password goes. It is revealed through exactly one of these. */
+  delivery: z.enum(["email", "hand"]).default("email"),
+});
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type CreateUserFormValues = z.input<typeof createUserSchema>;
+
+/**
+ * Editing an existing account. Role is deliberately absent - it has its own
+ * action (updateUserRole) with the last-admin and self-demotion guards, and
+ * routing it through here would bypass them.
+ */
+export const updateUserSchema = z.object({
+  name: trimmed(2, 120, "Name"),
+  email,
+});
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
+// ------------------------------------------------------- Next Minds (finance)
+
+/** Money is whole rupees. Never a float - decimal cents do not survive binary FP. */
+const rupees = (labelText: string) =>
+  z.coerce.number().int(`${labelText} must be a whole number.`).min(0, `${labelText} cannot be negative.`);
+
+export const invoiceSchema = z
+  .object({
+    userId: z.string().trim().min(1, "Student is required."),
+    batchId: z.string().trim().optional().or(z.literal("")).default(""),
+    description: trimmed(2, 300, "Description"),
+    amount: rupees("Amount"),
+    discount: rupees("Discount").default(0),
+    paidAmount: rupees("Paid amount").default(0),
+    status: z.enum(["UNPAID", "PARTIAL", "PAID", "CANCELLED"]).default("UNPAID"),
+    method: optionalText(40),
+    issuedAt: z.string().trim().optional().or(z.literal("")).default(""),
+    dueAt: z.string().trim().optional().or(z.literal("")).default(""),
+    note: optionalText(1000),
+  })
+  .refine((d) => d.discount <= d.amount, {
+    message: "Discount cannot exceed the amount.",
+    path: ["discount"],
+  })
+  .refine((d) => d.paidAmount <= d.amount - d.discount, {
+    message: "Paid amount cannot exceed the total.",
+    path: ["paidAmount"],
+  });
+export type InvoiceInput = z.infer<typeof invoiceSchema>;
+export type InvoiceFormValues = z.input<typeof invoiceSchema>;
+
+export const EXPENSE_CATEGORIES = [
+  "Rent",
+  "Salaries",
+  "Utilities",
+  "Internet",
+  "Equipment",
+  "Marketing",
+  "Supplies",
+  "Maintenance",
+  "Other",
+] as const;
+
+export const expenseSchema = z.object({
+  title: trimmed(2, 200, "Title"),
+  category: z.enum(EXPENSE_CATEGORIES).default("Other"),
+  amount: rupees("Amount"),
+  vendor: optionalText(160),
+  spentAt: z.string().trim().min(1, "Date is required."),
+  note: optionalText(1000),
+  receiptKey: z.string().trim().optional().or(z.literal("")).default(""),
+  receiptName: z.string().trim().optional().or(z.literal("")).default(""),
+});
+export type ExpenseInput = z.infer<typeof expenseSchema>;
+export type ExpenseFormValues = z.input<typeof expenseSchema>;
+
+// ------------------------------------------------------------------ policies
+
+/** Resource keys aren't restricted here - createPolicy/updatePolicy filter against RESOURCE_VALUES. */
+export const policySchema = z.object({
+  name: trimmed(2, 60, "Name").regex(
+    /^[a-z0-9-]+$/,
+    "Use lowercase letters, numbers and hyphens only.",
+  ),
+  label: trimmed(2, 80, "Label"),
+  description: optionalText(300),
+  permissions: z.record(z.string(), z.array(z.enum(ACTIONS))).default({}),
+  roles: z.array(z.enum(["ADMIN", "EDITOR"])).min(1, "Select at least one role."),
+});
+export type PolicyInput = z.infer<typeof policySchema>;
+export type PolicyFormValues = z.input<typeof policySchema>;
 
 // ------------------------------------------------------------------ helpers
 

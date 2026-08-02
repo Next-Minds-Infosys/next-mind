@@ -1,4 +1,4 @@
-import { EnterpriseInquiry } from "@/db/models";
+import { EnterpriseInquiry } from "@/db";
 import {
   Table,
   TableHeader,
@@ -8,9 +8,13 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
-import { updateEnterpriseInquiryStatus } from "./actions";
+import { DeleteRow } from "@/components/admin/delete-row-button";
+import { updateEnterpriseInquiryStatus, deleteEnterpriseInquiry } from "./actions";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminEnterpriseInquiriesPage() {
+  await requireResource(RESOURCES.ENTERPRISE_INQUIRIES);
   const inquiries = await EnterpriseInquiry.findAll({
     order: [["createdAt", "DESC"]],
   });
@@ -35,7 +39,8 @@ export default async function AdminEnterpriseInquiriesPage() {
             <TableHead>Training Interests</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Submitted</TableHead>
-          </TableRow>
+            <TableHead></TableHead>
+            </TableRow>
         </TableHeader>
         <TableBody>
           {inquiries.map((inquiry) => (
@@ -60,6 +65,9 @@ export default async function AdminEnterpriseInquiriesPage() {
                 />
               </TableCell>
               <TableCell>{inquiry.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell>
+                <DeleteRow id={inquiry.id} label={inquiry.name} action={deleteEnterpriseInquiry} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

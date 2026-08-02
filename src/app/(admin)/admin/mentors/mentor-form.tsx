@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { FileUpload } from "@/components/lms/file-upload";
+import { publicMediaSrc } from "@/lib/media-image";
 import { createMentor, updateMentor } from "./actions";
 
 interface MentorFormProps {
@@ -20,6 +22,9 @@ export function MentorForm({ initial, onSuccess }: MentorFormProps) {
   const [photo, setPhoto] = useState(initial?.photo ?? "");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // A new mentor has no id yet to namespace the S3 upload under; a stable
+  // per-form draft id fills that role until the mentor is actually saved.
+  const [draftId] = useState(() => initial?.id ?? crypto.randomUUID());
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -91,17 +96,36 @@ export function MentorForm({ initial, onSuccess }: MentorFormProps) {
 
       <div className="space-y-1.5">
         <label className="text-sm font-medium text-gray-700" htmlFor="photo">
-          Photo URL
+          Photo
         </label>
-        <input
-          id="photo"
-          name="photo"
-          type="text"
-          value={photo}
-          onChange={(e) => setPhoto(e.target.value)}
-          placeholder="https://images.unsplash.com/..."
-          className={inputClass}
-        />
+        <div className="flex items-start gap-3">
+          {publicMediaSrc(photo || null) && (
+            // eslint-disable-next-line @next/next/no-img-element -- small admin preview, source may be an arbitrary external URL not in next.config's remotePatterns
+            <img
+              src={publicMediaSrc(photo || null)!}
+              alt="Mentor photo preview"
+              className="h-16 w-16 shrink-0 rounded-full object-cover ring-1 ring-gray-950/5"
+            />
+          )}
+          <div className="flex-1 space-y-2">
+            <input
+              id="photo"
+              name="photo"
+              type="text"
+              value={photo}
+              onChange={(e) => setPhoto(e.target.value)}
+              placeholder="https://images.unsplash.com/... or upload below"
+              className={inputClass}
+            />
+            <FileUpload
+              resourceId={draftId}
+              scope="mentorPhoto"
+              accept="image/png,image/jpeg,image/webp"
+              label="Upload photo"
+              onUploaded={(file) => setPhoto(file.key)}
+            />
+          </div>
+        </div>
         <p className="text-xs text-gray-400">Optional</p>
       </div>
 

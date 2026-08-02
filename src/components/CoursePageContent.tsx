@@ -1,12 +1,26 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { contact, mailtoHref, telHref } from "@/lib/contact";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Award, BookOpen, CheckCircle2, Clock, Layers, Mail, Phone, Users } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Award,
+  BookOpen,
+  CheckCircle2,
+  ChevronDown,
+  Clock,
+  Layers,
+  Mail,
+  Phone,
+  Users,
+} from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
-import { colors } from "@/lib/theme";
+import { publicMediaSrc } from "@/lib/media-image";
+import { BlobBackground } from "@/components/ui/blob-background";
+import { SpotlightCard } from "@/components/ui/spotlight-card";
 import EnrollModal from "./EnrollModal";
 
 const sections = [
@@ -87,7 +101,11 @@ interface CoursePageContentProps {
 export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [active, setActive] = useState("overview");
+  // Curriculum accordion: one module open at a time, all collapsed on load.
+  const [openModule, setOpenModule] = useState<number | null>(null);
   const instructor = course.mentor;
+  const courseCoverSrc = publicMediaSrc(course.imageUrl);
+  const instructorPhotoSrc = instructor ? publicMediaSrc(instructor.photo) : null;
   const navRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -121,18 +139,13 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8">
             <div className="md:col-span-2">
-              <div
-                className="text-sm text-nm-teal px-3 py-1 rounded-full inline-block mb-4"
-                style={{ backgroundColor: `${colors.teal}25` }}
-              >
+              <div className="mb-4 inline-block rounded-full bg-nm-teal/15 px-3 py-1 text-sm text-nm-teal">
                 {course.category}
               </div>
               <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
                 {course.title}
               </h1>
-              <p className="text-xl mb-6" style={{ color: "rgba(255,255,255,0.70)" }}>
-                {course.description}
-              </p>
+              <p className="text-xl mb-6 text-white/70">{course.description}</p>
 
               <div className="flex flex-wrap gap-4 mb-8">
                 <button
@@ -168,10 +181,27 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl p-6 h-fit sticky top-24">
-              <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
-                <BookOpen size={48} />
-              </div>
+            <div className="h-fit sticky top-24 rounded-2xl bg-gradient-to-br from-nm-teal to-nm-blue p-[1px] shadow-xl">
+            <div className="rounded-[15px] bg-white p-6">
+              {/* The gradient + book icon stays as the fallback: imageUrl is
+                  optional, so a course with no cover set must still look
+                  finished rather than leaving a hole in the card. */}
+              {courseCoverSrc ? (
+                <div className="relative aspect-video mb-4 overflow-hidden rounded-lg">
+                  <Image
+                    src={courseCoverSrc}
+                    alt={`${course.title} course cover`}
+                    fill
+                    sizes="(max-width: 768px) 100vw, 380px"
+                    className="object-cover"
+                    priority
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
+                  <BookOpen size={48} />
+                </div>
+              )}
               <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">{course.title}</h3>
               <div className="space-y-3 mb-6">
                 <div className="flex items-center gap-2 text-nm-body">
@@ -213,6 +243,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 </button>
               </div>
             </div>
+            </div>
           </div>
         </div>
       </section>
@@ -232,7 +263,10 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
       </section>
 
       {/* Sticky section nav */}
-      <div ref={navRef} className="sticky top-16 bg-white border-b border-nm-border z-40">
+      <div
+        ref={navRef}
+        className="sticky top-16 z-40 border-b border-nm-border bg-white/70 backdrop-blur-md"
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex gap-6 overflow-x-auto py-4 scrollbar-none">
             {sections
@@ -344,22 +378,63 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 practical, job-ready skills.
               </p>
               <div className="space-y-3">
-                {course.curriculum.map((mod, i) => (
-                  <div
-                    key={mod.title}
-                    className="border border-nm-border rounded-lg p-4 hover:bg-nm-light transition-all"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="w-10 h-10 nm-gradient rounded-full flex items-center justify-center text-white flex-shrink-0 text-sm font-bold">
-                        {String(i + 1).padStart(2, "0")}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-lg font-semibold text-nm-navy">{mod.title}</h4>
-                        <p className="text-sm text-nm-muted mt-1">{mod.topics.join(" · ")}</p>
-                      </div>
+                {course.curriculum.map((mod, i) => {
+                  const open = openModule === i;
+                  return (
+                    <div
+                      key={mod.id ?? `${mod.title}-${i}`}
+                      className="border border-nm-border rounded-lg overflow-hidden"
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenModule(open ? null : i)}
+                        aria-expanded={open}
+                        aria-controls={`curriculum-panel-${i}`}
+                        className="w-full flex items-start gap-4 p-4 text-left hover:bg-nm-light transition-all"
+                      >
+                        <span className="w-10 h-10 nm-gradient rounded-full flex items-center justify-center text-white flex-shrink-0 text-sm font-bold">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="flex-1 min-w-0">
+                          <span className="block text-lg font-semibold text-nm-navy">
+                            {mod.title}
+                          </span>
+                          {mod.topics.length > 0 && (
+                            <span className="block text-sm text-nm-muted mt-1">
+                              {mod.topics.length} {mod.topics.length === 1 ? "topic" : "topics"}
+                            </span>
+                          )}
+                        </span>
+                        <ChevronDown
+                          size={18}
+                          aria-hidden="true"
+                          className={`flex-shrink-0 mt-2.5 text-nm-muted transition-transform duration-200 ${
+                            open ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      <AnimatePresence initial={false}>
+                        {open && mod.topics.length > 0 && (
+                          <motion.div
+                            id={`curriculum-panel-${i}`}
+                            initial={{ height: 0, opacity: 0 }}
+                            animate={{ height: "auto", opacity: 1 }}
+                            exit={{ height: 0, opacity: 0 }}
+                            transition={{ duration: 0.25, ease: "easeInOut" }}
+                            className="overflow-hidden border-t border-nm-border"
+                          >
+                            <ul className="list-disc space-y-1.5 px-4 py-4 pl-9 text-sm text-nm-muted">
+                              {mod.topics.map((topic) => (
+                                <li key={topic}>{topic}</li>
+                              ))}
+                            </ul>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
 
@@ -378,9 +453,9 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                     className="relative w-full sm:w-[150px] flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center nm-gradient text-white"
                     style={{ aspectRatio: "3 / 4" }}
                   >
-                    {instructor.photo ? (
+                    {instructorPhotoSrc ? (
                       <Image
-                        src={instructor.photo}
+                        src={instructorPhotoSrc}
                         alt={instructor.name}
                         fill
                         sizes="150px"
@@ -409,13 +484,13 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 {whyUs.map((w) => {
                   const Icon = w.icon;
                   return (
-                    <div key={w.title} className="bg-white border border-nm-border rounded-lg p-6">
+                    <SpotlightCard key={w.title} className="p-6">
                       <div className="w-12 h-12 nm-gradient rounded-full flex items-center justify-center text-white mb-4">
                         <Icon size={22} />
                       </div>
                       <h3 className="text-xl font-semibold mb-2 text-nm-navy">{w.title}</h3>
                       <p className="">{w.desc}</p>
-                    </div>
+                    </SpotlightCard>
                   );
                 })}
               </div>
@@ -449,14 +524,20 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 <Users size={56} />
               </div>
               <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-2 text-nm-body">
+                <a
+                  href={telHref}
+                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
+                >
                   <Phone size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm">+977-9XXXXXXXXX</span>
-                </div>
-                <div className="flex items-center gap-2 text-nm-body">
+                  <span className="text-sm">{contact.phoneDisplay}</span>
+                </a>
+                <a
+                  href={mailtoHref}
+                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
+                >
                   <Mail size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm">counseling@nextmindsinfosys.com</span>
-                </div>
+                  <span className="text-sm break-all">{contact.email}</span>
+                </a>
               </div>
               <button
                 type="button"
@@ -482,15 +563,16 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
       </div>
 
       {/* Final CTA */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 nm-hero-panel">
-        <div className="max-w-4xl mx-auto text-center">
+      <section className="nm-dark-panel relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
+        <BlobBackground variant="dark" />
+        <div className="relative max-w-4xl mx-auto text-center">
           <div className="w-20 h-20 mx-auto mb-6 nm-gradient rounded-full flex items-center justify-center text-white">
             <Award size={36} />
           </div>
           <h2 className="font-display text-4xl font-bold mb-6 text-white">
             Ready to Start Your Journey?
           </h2>
-          <p className="text-xl mb-8" style={{ color: "rgba(255,255,255,0.65)" }}>
+          <p className="text-xl mb-8 text-white/65">
             Join thousands of students who have transformed their careers with Next Minds
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

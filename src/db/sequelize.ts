@@ -16,6 +16,22 @@ const databaseUrl = process.env.DATABASE_URL;
 // a placeholder keeps the build working while any real query still fails
 // loudly at runtime if the variable was never configured.
 if (!databaseUrl) {
+  // `next build` still has to evaluate this module to collect route metadata,
+  // so the build is allowed to proceed on the placeholder below. A running
+  // production server is different: every page here is dynamic and queries the
+  // database, so a missing URL means every request fails. Fail loudly at boot
+  // with a message you can actually read, instead of letting React swallow a
+  // connection error into "the specific message is omitted in production".
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
+  if (process.env.NODE_ENV === "production" && !isBuildPhase) {
+    throw new Error(
+      "DATABASE_URL is not set. Point it at a database this deployment can " +
+        "actually reach - a localhost URL works locally but never from a " +
+        "hosted environment such as Vercel. See .env.example."
+    );
+  }
+
   console.warn(
     "[db] DATABASE_URL is not set - using a placeholder connection string. " +
       "Database queries will fail until it is configured (see .env.example).",
@@ -31,6 +47,18 @@ export const sequelize =
   new Sequelize(connectionString, {
     dialect: "postgres",
     dialectModule: pg,
+    // Sequelize parses the URL itself and drops `?sslmode=`, so hosted
+    // Postgres (Neon, Supabase, RDS) must be told to use SSL explicitly or it
+    // rejects the connection as insecure. Local sockets stay plaintext.
+    ...(/(localhost|127\.0\.0\.1)/.test(connectionString)
+      ? {}
+      : {
+          dialectOptions: {
+            ssl: process.env.DATABASE_CA_CERT
+              ? { require: true, ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
+              : { require: true, rejectUnauthorized: false },
+          },
+        }),
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     define: {
       freezeTableName: true,

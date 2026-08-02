@@ -1,6 +1,14 @@
 import SiteLayout from "@/components/SiteLayout";
 import ContactPage from "./contact-content";
 
+export const metadata = {
+  title: "Contact",
+  description:
+    "Talk to a course advisor at Next Minds Infosys, New Baneshwor, Kathmandu.",
+  openGraph: { title: "Contact", description: "Talk to a course advisor at Next Minds Infosys, New Baneshwor, Kathmandu." },
+};
+
+
 // SiteLayout queries Postgres for footer course links; force dynamic
 // rendering so that query runs per-request, not against a build-time
 // placeholder connection (see src/db/sequelize.ts).

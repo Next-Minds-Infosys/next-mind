@@ -7,10 +7,14 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { StatusSelect } from "@/components/admin/status-select";
-import { updateContactStatus } from "./actions";
-import { ContactSubmission } from "@/db/models";
+import { DeleteRow } from "@/components/admin/delete-row-button";
+import { updateContactStatus, deleteContact } from "./actions";
+import { ContactSubmission } from "@/db";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 
 export default async function AdminContactsPage() {
+  await requireResource(RESOURCES.CONTACTS);
   const contacts = await ContactSubmission.findAll({
     order: [["createdAt", "DESC"]],
   });
@@ -31,7 +35,8 @@ export default async function AdminContactsPage() {
             <TableHead>Message</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Submitted</TableHead>
-          </TableRow>
+            <TableHead></TableHead>
+            </TableRow>
         </TableHeader>
         <TableBody>
           {contacts.map((contact) => (
@@ -51,6 +56,9 @@ export default async function AdminContactsPage() {
                 />
               </TableCell>
               <TableCell>{contact.createdAt.toLocaleDateString()}</TableCell>
+              <TableCell>
+                <DeleteRow id={contact.id} label={contact.name} action={deleteContact} />
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>

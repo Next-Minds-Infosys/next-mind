@@ -10,8 +10,16 @@ import {
   Inbox,
 } from "lucide-react";
 import { getSession } from "@/lib/auth";
-import { Category, Course, Enrollment } from "@/db";
+import {
+  Category,
+  ContactSubmission,
+  Course,
+  Enrollment,
+  EnterpriseInquiry,
+} from "@/db";
 import { SubmissionStatus } from "@/lib/types";
+import { requireResource } from "@/lib/access";
+import { RESOURCES } from "@/lib/policies";
 import { StatusBadge } from "@/components/admin/status-badge";
 import {
   Table,
@@ -22,8 +30,6 @@ import {
   TableCell,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { ContactSubmission } from "@/db/models/contact-submission";
-import { EnterpriseInquiry } from "@/db/models/entrise-query";
 
 // Hairline surface. Tailwind v4 renders an uncoloured `border` as currentColor,
 // so cards use a light ring instead.
@@ -40,6 +46,7 @@ function relativeDate(date: Date) {
 }
 
 export default async function AdminDashboardPage() {
+  await requireResource(RESOURCES.DASHBOARD);
   const session = await getSession();
 
   const [
@@ -67,20 +74,40 @@ export default async function AdminDashboardPage() {
   ]);
 
   const stats = [
-    { href: "/admin/categories", label: "Categories", icon: Tags, count: categoryCount },
-    { href: "/admin/courses", label: "Courses", icon: BookOpen, count: courseCount },
+    {
+      href: "/admin/categories",
+      label: "Categories",
+      icon: Tags,
+      count: categoryCount,
+      tint: "bg-violet-50 text-violet-600",
+    },
+    {
+      href: "/admin/courses",
+      label: "Courses",
+      icon: BookOpen,
+      count: courseCount,
+      tint: "bg-teal-50 text-teal-600",
+    },
     {
       href: "/admin/enrollments",
       label: "Enrollments",
       icon: ClipboardList,
       count: enrollmentCount,
+      tint: "bg-blue-50 text-blue-600",
     },
-    { href: "/admin/contacts", label: "Contacts", icon: Mail, count: contactCount },
+    {
+      href: "/admin/contacts",
+      label: "Contacts",
+      icon: Mail,
+      count: contactCount,
+      tint: "bg-amber-50 text-amber-600",
+    },
     {
       href: "/admin/enterprise-inquiries",
       label: "Enterprise",
       icon: Building2,
       count: enterpriseCount,
+      tint: "bg-rose-50 text-rose-600",
     },
   ];
 
@@ -104,7 +131,7 @@ export default async function AdminDashboardPage() {
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-10">
       <header>
         <p className="text-sm font-medium text-teal-600">Next Minds Admin</p>
         <h1 className="mt-1 text-2xl font-semibold tracking-tight text-gray-900">
@@ -116,24 +143,26 @@ export default async function AdminDashboardPage() {
       </header>
 
       {/* Overview */}
-      <section aria-labelledby="overview-heading">
-        <h2 id="overview-heading" className="sr-only">
+      <section aria-labelledby="overview-heading" className="space-y-3">
+        <h2 id="overview-heading" className="text-sm font-semibold text-gray-900">
           Overview
         </h2>
-        <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-5">
           {stats.map((stat) => (
             <Link key={stat.href} href={stat.href} className={`group block rounded-2xl ${FOCUS}`}>
               <Card
-                className={`${RING} transition hover:shadow-[0_6px_24px_rgba(20,184,166,0.10)] hover:ring-teal-500/30`}
+                className={`${RING} h-full transition hover:-translate-y-0.5 hover:shadow-[0_6px_24px_rgba(20,184,166,0.10)] hover:ring-teal-500/30`}
               >
-                <CardContent className="p-5">
-                  <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-teal-500 to-blue-600 text-white">
+                <CardContent className="flex h-full flex-col p-6">
+                  <span
+                    className={`flex h-10 w-10 items-center justify-center rounded-xl ${stat.tint}`}
+                  >
                     <stat.icon size={18} />
                   </span>
-                  <p className="mt-4 text-3xl font-semibold tabular-nums tracking-tight text-gray-900">
+                  <p className="mt-5 text-3xl font-semibold tabular-nums tracking-tight text-gray-900">
                     {stat.count.toLocaleString()}
                   </p>
-                  <p className="mt-0.5 text-sm text-gray-500">{stat.label}</p>
+                  <p className="mt-1 text-sm text-gray-500">{stat.label}</p>
                 </CardContent>
               </Card>
             </Link>
