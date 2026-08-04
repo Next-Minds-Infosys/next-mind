@@ -287,6 +287,21 @@ export const updateUserSchema = z.object({
 });
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
+/**
+ * Self-service profile editor (staff only - see /admin/profile,
+ * /instructor/profile). Only the
+ * display name is editable here; the primary/login email has its own admin
+ * flow (updateUserSchema above) and a secondary email goes through its own
+ * verify-before-it-counts action instead of this schema.
+ */
+export const profileSchema = z.object({
+  name: trimmed(2, 120, "Name"),
+});
+export type ProfileInput = z.infer<typeof profileSchema>;
+
+export const secondaryEmailSchema = z.object({ secondaryEmail: email });
+export type SecondaryEmailInput = z.infer<typeof secondaryEmailSchema>;
+
 // ------------------------------------------------------- Next Minds (finance)
 
 /** Money is whole rupees. Never a float - decimal cents do not survive binary FP. */
@@ -358,6 +373,21 @@ export const policySchema = z.object({
 });
 export type PolicyInput = z.infer<typeof policySchema>;
 export type PolicyFormValues = z.input<typeof policySchema>;
+
+// -------------------------------------------------------------- custom code
+
+/**
+ * Rendered as-is on the public site only (src/components/SiteLayout.tsx) - see
+ * CustomCodeInjector. customScript may contain full <script> tag(s) (external
+ * src and/or inline body); customCss is raw CSS rules, no wrapping <style> tag.
+ * Generous limits: embed codes and small stylesheets fit comfortably under 20kb.
+ */
+export const siteSettingSchema = z.object({
+  customScript: optionalText(20000),
+  customCss: optionalText(20000),
+});
+export type SiteSettingInput = z.infer<typeof siteSettingSchema>;
+export type SiteSettingFormValues = z.input<typeof siteSettingSchema>;
 
 // ------------------------------------------------------------------ helpers
 

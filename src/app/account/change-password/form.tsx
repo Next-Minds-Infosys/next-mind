@@ -1,10 +1,58 @@
 "use client";
 
 import { useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
 import { changePassword } from "./actions";
 
 const input =
-  "w-full rounded-xl bg-gray-50 px-4 py-2.5 text-sm ring-1 ring-gray-950/5 focus:outline-none focus:ring-2 focus:ring-teal-500";
+  "w-full rounded-xl bg-gray-50 px-4 py-2.5 pr-11 text-sm ring-1 ring-gray-950/5 focus:outline-none focus:ring-2 focus:ring-teal-500";
+
+/** Same reveal-toggle pattern as login-form.tsx - each field gets its own button/state. */
+function PasswordField({
+  id,
+  label,
+  value,
+  onChange,
+  autoComplete,
+  minLength,
+}: {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  autoComplete: string;
+  minLength?: number;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  return (
+    <div>
+      <label className="text-sm font-medium text-gray-700" htmlFor={id}>
+        {label}
+      </label>
+      <div className="relative mt-1">
+        <input
+          id={id}
+          type={visible ? "text" : "password"}
+          autoComplete={autoComplete}
+          required
+          minLength={minLength}
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className={input}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
+          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 transition-colors hover:text-gray-600"
+        >
+          {visible ? <EyeOff size={18} /> : <Eye size={18} />}
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export function ChangePasswordForm({ forced }: { forced: boolean }) {
   const [current, setCurrent] = useState("");
@@ -28,40 +76,31 @@ export function ChangePasswordForm({ forced }: { forced: boolean }) {
         setError(result.error);
       }}
     >
+      <PasswordField
+        id="current-password"
+        label={forced ? "Temporary password" : "Current password"}
+        value={current}
+        onChange={setCurrent}
+        autoComplete="current-password"
+      />
       <div>
-        <label className="text-sm font-medium text-gray-700">
-          {forced ? "Temporary password" : "Current password"}
-        </label>
-        <input
-          type="password"
-          required
-          value={current}
-          onChange={(e) => setCurrent(e.target.value)}
-          className={input}
-        />
-      </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700">New password</label>
-        <input
-          type="password"
-          required
-          minLength={8}
+        <PasswordField
+          id="new-password"
+          label="New password"
           value={next}
-          onChange={(e) => setNext(e.target.value)}
-          className={input}
+          onChange={setNext}
+          autoComplete="new-password"
+          minLength={8}
         />
         <p className="mt-1 text-xs text-gray-500">At least 8 characters.</p>
       </div>
-      <div>
-        <label className="text-sm font-medium text-gray-700">Confirm new password</label>
-        <input
-          type="password"
-          required
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          className={input}
-        />
-      </div>
+      <PasswordField
+        id="confirm-password"
+        label="Confirm new password"
+        value={confirm}
+        onChange={setConfirm}
+        autoComplete="new-password"
+      />
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 

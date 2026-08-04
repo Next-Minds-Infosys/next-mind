@@ -15,6 +15,7 @@ export const RESOURCES = {
   CONTACTS: "contacts",
   ENTERPRISE_INQUIRIES: "enterpriseInquiries",
   POLICIES: "policies",
+  CUSTOM_CODE: "customCode",
 } as const;
 export type Resource = (typeof RESOURCES)[keyof typeof RESOURCES];
 export const RESOURCE_VALUES = Object.values(RESOURCES) as Resource[];
@@ -39,6 +40,7 @@ const ADMIN_LANDING_ROUTES: { resource: Resource; href: string }[] = [
   { resource: RESOURCES.EXPENSES, href: "/admin/expenses" },
   { resource: RESOURCES.USERS, href: "/admin/users" },
   { resource: RESOURCES.POLICIES, href: "/admin/policies" },
+  { resource: RESOURCES.CUSTOM_CODE, href: "/admin/custom-code" },
 ];
 
 export function canAccess(

@@ -10,13 +10,30 @@ export interface UserAttributes {
   mustChangePassword: boolean;
   image: string | null;
   role: Role;
+  /** Unverified until the token link below is clicked. Staff-only profile feature. */
+  secondaryEmail: string | null;
+  secondaryEmailVerified: boolean;
+  /** sha256 hex digest of the emailed token - never the raw value, in case the row leaks. */
+  secondaryEmailToken: string | null;
+  secondaryEmailTokenExpires: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
 type UserCreation = Optional<
   UserAttributes,
-  "mustChangePassword" | "id" | "name" | "emailVerified" | "image" | "role" | "createdAt" | "updatedAt"
+  | "mustChangePassword"
+  | "id"
+  | "name"
+  | "emailVerified"
+  | "image"
+  | "role"
+  | "secondaryEmail"
+  | "secondaryEmailVerified"
+  | "secondaryEmailToken"
+  | "secondaryEmailTokenExpires"
+  | "createdAt"
+  | "updatedAt"
 >;
 
 class UserModel extends Model<UserAttributes, UserCreation> implements UserAttributes {
@@ -27,6 +44,10 @@ class UserModel extends Model<UserAttributes, UserCreation> implements UserAttri
   declare mustChangePassword: boolean;
   declare image: string | null;
   declare role: Role;
+  declare secondaryEmail: string | null;
+  declare secondaryEmailVerified: boolean;
+  declare secondaryEmailToken: string | null;
+  declare secondaryEmailTokenExpires: Date | null;
   declare createdAt: Date;
   declare updatedAt: Date;
 }
@@ -59,6 +80,10 @@ if (!sequelize.models.User) {
       },
       image: { type: DataTypes.STRING, allowNull: true },
       role: { type: DataTypes.STRING, allowNull: false, defaultValue: "STUDENT" },
+      secondaryEmail: { type: DataTypes.STRING, allowNull: true },
+      secondaryEmailVerified: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+      secondaryEmailToken: { type: DataTypes.STRING, allowNull: true },
+      secondaryEmailTokenExpires: { type: DataTypes.DATE, allowNull: true },
       createdAt: { type: DataTypes.DATE, allowNull: false },
       updatedAt: { type: DataTypes.DATE, allowNull: false },
     },

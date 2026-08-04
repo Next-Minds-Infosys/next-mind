@@ -25,6 +25,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <AdminShell
       userName={session.user.name ?? session.user.email}
       userEmail={session.user.email}
+      userImage={session.user.image ?? null}
       permissions={permissions}
     >
       {children}

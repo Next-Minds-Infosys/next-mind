@@ -18,6 +18,7 @@ import {
   ReceiptText,
   Wallet,
   ShieldCheck,
+  Code2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RESOURCES, canAccess, type PermissionMap } from "@/lib/policies";
@@ -63,6 +64,7 @@ const navGroups = [
     links: [
       { href: "/admin/users", label: "Users", icon: UserCog, resource: RESOURCES.USERS },
       { href: "/admin/policies", label: "Policies", icon: ShieldCheck, resource: RESOURCES.POLICIES },
+      { href: "/admin/custom-code", label: "Custom Code", icon: Code2, resource: RESOURCES.CUSTOM_CODE },
     ],
   },
 ];
