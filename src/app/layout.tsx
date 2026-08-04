@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
+<<<<<<< HEAD
 import { GoogleTagManager } from "@next/third-parties/google";
+=======
+import Script from "next/script";
+>>>>>>> c4a774f80ef50887176e0a2c2da958be1044a18f
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
+import { GTM_ID, analyticsEnabled } from "@/lib/analytics";
 
 const GTM_ID = "GTM-59LSJGH8";
 
@@ -45,6 +50,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+<<<<<<< HEAD
       <GoogleTagManager gtmId={GTM_ID} />
       <body className="antialiased font-sans">
         <noscript>
@@ -55,6 +61,38 @@ export default function RootLayout({
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+=======
+      <body className="antialiased font-sans">
+        {/*
+          Google Tag Manager, using next/script rather than the
+          @next/third-parties package so this adds no dependency.
+
+          `afterInteractive` is the right strategy for GTM: it loads once the
+          page is interactive, so the tag never blocks first paint, but still
+          runs early enough to catch the pageview. The <noscript> iframe is the
+          fallback GTM requires and must sit at the top of <body>.
+        */}
+        {analyticsEnabled && (
+          <>
+            <noscript>
+              <iframe
+                src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+                height="0"
+                width="0"
+                style={{ display: "none", visibility: "hidden" }}
+                title="Google Tag Manager"
+              />
+            </noscript>
+            <Script id="gtm-init" strategy="afterInteractive">
+              {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','${GTM_ID}');`}
+            </Script>
+          </>
+        )}
+>>>>>>> c4a774f80ef50887176e0a2c2da958be1044a18f
         {children}
       </body>
     </html>
