@@ -26,6 +26,7 @@ export default async function Page() {
 
   const posts = rows.map((p) => ({
     id: p.id,
+    slug: p.slug,
     title: p.title,
     excerpt: p.excerpt ?? "",
     category: p.category ?? "Career",

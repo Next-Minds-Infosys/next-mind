@@ -34,22 +34,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // static routes instead.
   let courses: Array<{ slug: string; updatedAt: Date }> = [];
   let blogUpdatedAt: Date | null = null;
+  let posts: Array<{ slug: string; updatedAt: Date }> = [];
 
   try {
-    const [courseRows, latestPost] = await Promise.all([
+    const [courseRows, postRows] = await Promise.all([
       Course.findAll({
         where: { published: true },
         attributes: ["slug", "updatedAt"],
         order: [["updatedAt", "DESC"]],
       }),
-      Post.findOne({
+      Post.findAll({
         where: { published: true },
-        attributes: ["updatedAt"],
+        attributes: ["slug", "updatedAt"],
         order: [["updatedAt", "DESC"]],
       }),
     ]);
     courses = courseRows.map((c) => ({ slug: c.slug, updatedAt: c.updatedAt }));
-    blogUpdatedAt = latestPost?.updatedAt ?? null;
+    posts = postRows.map((p) => ({ slug: p.slug, updatedAt: p.updatedAt }));
+    blogUpdatedAt = postRows[0]?.updatedAt ?? null;
   } catch (error) {
     console.error("[sitemap] falling back to static routes:", error);
   }
@@ -67,6 +69,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.6,
     },
+    // Individual posts now have real pages, so they belong in the sitemap.
+    ...posts.map((p) => ({
+      url: absoluteUrl(`/blog/${p.slug}`),
+      lastModified: p.updatedAt,
+      changeFrequency: "monthly" as const,
+      priority: 0.5,
+    })),
     ...courses.map((c) => ({
       url: absoluteUrl(`/courses/${c.slug}`),
       lastModified: c.updatedAt,

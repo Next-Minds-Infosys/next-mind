@@ -3,7 +3,6 @@ import { Op } from "sequelize";
 import { BatchStudent, Category, Course, Mentor, User } from "./index";
 import { Role, type CourseBadge } from "@/lib/types";
 import type { CurriculumModule, Faq } from "./models/course";
-import type { CourseBadge } from "@/lib/types";
 
 /**
  * Shape the public marketing site renders. Joins Category to a plain name

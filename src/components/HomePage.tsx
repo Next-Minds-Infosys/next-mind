@@ -144,7 +144,7 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
                 className="w-2 h-2 rounded-full animate-pulse"
                 style={{ backgroundColor: colors.green }}
               />
-              New Batches Starting August 2025 — Limited Seats
+              {`New Batches Starting ${nextIntakeLabel()} — Limited Seats`}
             </div>
 
             <h1
@@ -839,7 +839,7 @@ function FinalCta({ courses }: { courses: PublicCourse[] }) {
                 color: colors.teal,
               }}
             >
-              🎓 August 2025 Batch — Limited Seats Remaining
+              {`🎓 ${nextIntakeLabel()} Batch — Limited Seats Remaining`}
             </div>
             <h2
               className="font-display font-bold mb-4 leading-tight text-white"
@@ -882,6 +882,20 @@ function FinalCta({ courses }: { courses: PublicCourse[] }) {
       <EnrollModal isOpen={modalOpen} onClose={() => setModalOpen(false)} courses={courses} />
     </section>
   );
+}
+
+
+/**
+ * Next intake label, derived from today rather than hardcoded.
+ *
+ * The hero badge read "New Batches Starting August 2025" for roughly a year.
+ * Deriving it means it can never go stale again: before the 20th we advertise
+ * this month, after it the next one.
+ */
+function nextIntakeLabel() {
+  const now = new Date();
+  const target = new Date(now.getFullYear(), now.getMonth() + (now.getDate() >= 20 ? 1 : 0), 1);
+  return target.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
 export default function HomePage({ courses }: { courses: PublicCourse[] }) {

@@ -139,7 +139,7 @@ export default function RegisterForm() {
                   required
                   value={form.email}
                   onChange={handleChange}
-                  placeholder="admin@nextminds.edu.np"
+                  placeholder="you@nextmindsinfosys.com"
                   className={inputClass}
                 />
               </div>

@@ -70,6 +70,11 @@ const nextConfig: NextConfig = {
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },
+  async redirects() {
+    // /about-us was 404ing; the canonical page is /about. Permanent so link
+    // equity from anywhere pointing at the old path transfers.
+    return [{ source: "/about-us", destination: "/about", permanent: true }];
+  },
 };
 
 export default nextConfig;
