@@ -30,6 +30,7 @@ export default async function InstructorLayout({ children }: { children: React.R
       name={session.user.name ?? session.user.email}
       email={session.user.email}
       nav={nav}
+      profileHref="/instructor/profile"
     >
       {children}
     </PortalShell>

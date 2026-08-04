@@ -54,3 +54,7 @@ skill.md
 /src/generated/prisma
 
 .next
+
+design-system
+
+.claude

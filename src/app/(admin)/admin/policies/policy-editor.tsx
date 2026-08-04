@@ -31,6 +31,7 @@ const RESOURCE_LABELS: Record<Resource, string> = {
   [RESOURCES.CONTACTS]: "Contacts",
   [RESOURCES.ENTERPRISE_INQUIRIES]: "Enterprise Inquiries",
   [RESOURCES.POLICIES]: "Policies",
+  [RESOURCES.CUSTOM_CODE]: "Custom Code",
 };
 
 // Only these two roles reach /admin at all - see src/app/(admin)/admin/layout.tsx.

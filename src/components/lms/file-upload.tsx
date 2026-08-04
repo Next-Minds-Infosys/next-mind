@@ -22,9 +22,17 @@ export function FileUpload({
   label = "Choose file",
   onUploaded,
 }: {
-  /** Batch id for batch-scoped uploads, course/mentor id for the admin-only scopes. */
+  /** Batch id for batch-scoped uploads, course/mentor id for the admin-only scopes, own user id for "avatar". */
   resourceId: string;
-  scope: "lesson" | "material" | "assignment" | "submission" | "courseImage" | "mentorPhoto" | "postCover";
+  scope:
+    | "lesson"
+    | "material"
+    | "assignment"
+    | "submission"
+    | "courseImage"
+    | "mentorPhoto"
+    | "postCover"
+    | "avatar";
   accept?: string;
   label?: string;
   onUploaded: (file: UploadedFile) => void;

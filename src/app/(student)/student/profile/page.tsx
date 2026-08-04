@@ -5,6 +5,7 @@ import { User } from "@/db";
 import { myBatchCards, myDashboardStats } from "@/db/student-queries";
 import { npr } from "@/lib/utils";
 import { PageHeader, Stat, fmtDate, panel } from "@/components/lms/ui";
+import { ChangePasswordDialog } from "@/components/account/change-password-dialog";
 
 export default async function StudentProfilePage() {
   const session = await requireRole(Role.STUDENT, Role.ADMIN);
@@ -46,12 +47,16 @@ export default async function StudentProfilePage() {
           Contact the office to change your name or email — they are used on your invoices and
           certificates.
         </p>
-        <Link
-          href="/account/change-password"
-          className="mt-4 inline-block rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white"
-        >
-          Change password
-        </Link>
+        <ChangePasswordDialog
+          trigger={
+            <button
+              type="button"
+              className="mt-4 inline-block rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white"
+            >
+              Change password
+            </button>
+          }
+        />
       </section>
 
       <section className={panel}>

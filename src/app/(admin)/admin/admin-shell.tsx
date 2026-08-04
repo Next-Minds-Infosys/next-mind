@@ -8,11 +8,12 @@ import { Topbar } from "./topbar";
 interface AdminShellProps {
   userName: string;
   userEmail: string;
+  userImage: string | null;
   permissions: PermissionMap;
   children: React.ReactNode;
 }
 
-export function AdminShell({ userName, userEmail, permissions, children }: AdminShellProps) {
+export function AdminShell({ userName, userEmail, userImage, permissions, children }: AdminShellProps) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -27,6 +28,7 @@ export function AdminShell({ userName, userEmail, permissions, children }: Admin
           onToggleSidebar={() => setSidebarOpen((v) => !v)}
           userName={userName}
           userEmail={userEmail}
+          userImage={userImage}
         />
         <main className="mx-auto max-w-6xl p-6">{children}</main>
       </div>

@@ -2,9 +2,9 @@
 
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { LogOut, UserPlus } from "lucide-react";
+import { LogOut, UserCircle, UserPlus } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -13,10 +13,12 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { publicMediaSrc } from "@/lib/media-image";
 
 interface UserMenuProps {
   userName: string;
   userEmail: string;
+  userImage: string | null;
 }
 
 function getInitials(name: string, email: string) {
@@ -26,8 +28,9 @@ function getInitials(name: string, email: string) {
   return source.slice(0, 2).toUpperCase();
 }
 
-export function UserMenu({ userName, userEmail }: UserMenuProps) {
+export function UserMenu({ userName, userEmail, userImage }: UserMenuProps) {
   const router = useRouter();
+  const avatarSrc = publicMediaSrc(userImage);
 
   async function handleSignOut() {
     await signOut();
@@ -38,6 +41,7 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
     <DropdownMenu>
       <DropdownMenuTrigger className="flex items-center gap-2 rounded-full outline-none focus-visible:ring-2 focus-visible:ring-teal-500">
         <Avatar>
+          {avatarSrc && <AvatarImage src={avatarSrc} alt={userName} />}
           <AvatarFallback>{getInitials(userName, userEmail)}</AvatarFallback>
         </Avatar>
       </DropdownMenuTrigger>
@@ -47,6 +51,12 @@ export function UserMenu({ userName, userEmail }: UserMenuProps) {
           <p className="truncate text-xs text-gray-400">{userEmail}</p>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link href="/admin/profile" className="flex items-center gap-2">
+            <UserCircle size={15} />
+            Profile
+          </Link>
+        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/register" className="flex items-center gap-2">
             <UserPlus size={15} />
