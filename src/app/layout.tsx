@@ -3,6 +3,8 @@ import Script from "next/script";
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
 import { GTM_ID, analyticsEnabled } from "@/lib/analytics";
+import { JsonLd } from "@/components/JsonLd";
+import { organizationSchema, websiteSchema } from "@/lib/schema-org";
 
 export const metadata: Metadata = {
   // Resolves relative OG/canonical URLs against the real domain instead of the
@@ -45,6 +47,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="antialiased font-sans">
+        {/* Identity graph: every other schema on the site references these by @id. */}
+        <JsonLd data={organizationSchema()} />
+        <JsonLd data={websiteSchema()} />
         {/*
           Google Tag Manager, using next/script rather than the
           @next/third-parties package so this adds no dependency.

@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useState } from "react";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 
@@ -8,6 +10,7 @@ const categories = ["All", "Career", "Technology", "Industry", "Tutorials"];
 
 export interface BlogPost {
   id: string;
+  slug: string;
   title: string;
   excerpt: string;
   category: string;
@@ -127,13 +130,13 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
                     <div className="text-xs" style={{ color: colors.muted }}>
                       {filtered[0].author} · {filtered[0].readTime}
                     </div>
-                    <button
-                      type="button"
-                      className="text-xs font-bold px-4 py-2 rounded-lg text-white"
-                      style={{ background: gradient }}
-                    >
-                      Read More →
-                    </button>
+                    <Link
+                        href={`/blog/${filtered[0].slug}`}
+                        className="text-xs font-bold px-4 py-2 rounded-lg text-white"
+                        style={{ background: gradient }}
+                      >
+                        Read More →
+                      </Link>
                   </div>
                 </div>
               </div>
@@ -142,8 +145,9 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
             {filtered.length > 1 && (
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filtered.slice(1).map((post) => (
-                  <div
+                  <Link
                     key={post.id}
+                    href={`/blog/${post.slug}`}
                     className="rounded-2xl overflow-hidden transition-all hover:-translate-y-1 flex flex-col"
                     style={{
                       backgroundColor: colors.card,
@@ -202,7 +206,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
                         </button>
                       </div>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}

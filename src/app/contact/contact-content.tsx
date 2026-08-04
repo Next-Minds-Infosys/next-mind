@@ -9,10 +9,10 @@ import { colors, gradient, heroGradient } from "@/lib/theme";
 import { contactSchema, type ContactInput, type ContactFormValues } from "@/lib/schemas";
 
 const contactInfo = [
-  { icon: "📍", label: "Address", value: "New Baneshwor, Kathmandu, Nepal" },
+  { icon: "📍", label: "Address", value: contact.address.full },
   { icon: "📞", label: "Phone", value: contact.phoneDisplay },
   { icon: "📧", label: "Email", value: contact.email },
-  { icon: "🕐", label: "Hours", value: "Sun–Fri: 7 AM – 8 PM" },
+  { icon: "🕐", label: "Hours", value: contact.hours },
 ];
 
 const quickLinks = [

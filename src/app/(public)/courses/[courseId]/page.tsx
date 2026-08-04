@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import SiteLayout from "@/components/SiteLayout";
+import { JsonLd } from "@/components/JsonLd";
+import { breadcrumbSchema, courseSchema, faqSchema } from "@/lib/schema-org";
 import CoursePageContent from "@/components/CoursePageContent";
 import { getPublicCourseBySlug, getPublicCourses } from "@/db/queries";
 import { publicMediaSrc } from "@/lib/media-image";
@@ -61,6 +63,27 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
 
   return (
     <SiteLayout>
+      {/* Course rich result: price, duration, provider and delivery mode. */}
+      <JsonLd
+        data={courseSchema({
+          slug: course.slug,
+          title: course.title,
+          description: course.shortDesc || course.description,
+          price: course.price,
+          duration: course.duration,
+          level: course.level,
+          imageUrl: course.imageUrl,
+          category: course.category,
+        })}
+      />
+      <JsonLd
+        data={breadcrumbSchema([
+          { name: "Home", path: "/" },
+          { name: "Courses", path: "/courses" },
+          { name: course.title, path: `/courses/${course.slug}` },
+        ])}
+      />
+      {course.faqs.length > 0 && <JsonLd data={faqSchema(course.faqs)} />}
       <CoursePageContent course={course} courses={courses} />
     </SiteLayout>
   );

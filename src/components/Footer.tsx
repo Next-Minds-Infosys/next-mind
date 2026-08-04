@@ -16,9 +16,9 @@ const companyFooterLinks = [
 ];
 
 const contactRows = [
-  { icon: "📍", text: "New Baneshwor, Kathmandu, Nepal" },
+  { icon: "📍", text: contact.address.full },
   { icon: "✉️", text: contact.email },
-  { icon: "🕐", text: "Sun–Fri: 9 AM – 6 PM" },
+  { icon: "🕐", text: contact.hours },
 ];
 
 export default function Footer({ courses }: { courses: PublicCourse[] }) {
