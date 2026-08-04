@@ -13,14 +13,32 @@ import type { NextConfig } from "next";
  * the site. Report-Only lets violations be observed first; switch the header
  * name to Content-Security-Policy once the reports are clean.
  */
+/**
+ * Hosts Google Tag Manager needs. GTM itself serves the container, then loads
+ * whatever tags are configured inside it - Google Analytics and Ads are the
+ * common ones, so they are allowed here too. Add any other vendor you enable in
+ * the GTM console, or its tag will be blocked once the policy is enforced.
+ */
+const gtm = [
+  "https://www.googletagmanager.com",
+  "https://tagmanager.google.com",
+  "https://www.google-analytics.com",
+  "https://*.google-analytics.com",
+  "https://*.analytics.google.com",
+  "https://www.googleadservices.com",
+  "https://googleads.g.doubleclick.net",
+].join(" ");
+
 const csp = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https://images.unsplash.com",
+  `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${gtm}`,
+  "style-src 'self' 'unsafe-inline' https://tagmanager.google.com https://fonts.googleapis.com",
+  `img-src 'self' data: blob: https://images.unsplash.com ${gtm} https://www.google.com https://ssl.gstatic.com`,
   "media-src 'self' blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self' https:",
+  "font-src 'self' data: https://fonts.gstatic.com",
+  `connect-src 'self' https: ${gtm}`,
+  // The GTM noscript fallback is an iframe from googletagmanager.com.
+  "frame-src https://www.googletagmanager.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",
