@@ -6,6 +6,9 @@ import { Role } from "@/lib/types";
 import { buildKey, isStorageConfigured, presignUpload } from "@/lib/s3";
 import { parseInput } from "@/lib/schemas";
 
+/** Staff roles allowed to upload their own profile photo. See "avatar" scope below. */
+const STAFF_ROLES = new Set<string>([Role.ADMIN, Role.EDITOR, Role.INSTRUCTOR]);
+
 /**
  * What each scope is allowed to put in the bucket.
  *
@@ -22,6 +25,7 @@ const ALLOWED: Record<string, RegExp> = {
   courseImage: /^image\/(png|jpeg|webp)$/,
   mentorPhoto: /^image\/(png|jpeg|webp)$/,
   postCover: /^image\/(png|jpeg|webp)$/,
+  avatar: /^image\/(png|jpeg|webp)$/,
 };
 
 /** 2 GB for a recording, 25 MB for documents, 8 MB for a course cover image or mentor photo. */
@@ -33,34 +37,39 @@ const MAX_BYTES: Record<string, number> = {
   courseImage: 8 * 1024 * 1024,
   mentorPhoto: 8 * 1024 * 1024,
   postCover: 8 * 1024 * 1024,
+  avatar: 5 * 1024 * 1024,
 };
 
 /**
  * S3 key prefix per scope. Batch-scoped uploads use the scope name itself
- * (`lesson/<batchId>/...`); "courseImage"/"mentorPhoto" aren't batch-scoped,
- * so they share a fixed folder instead - both are teacher-side marketing
- * content (a course's cover, a mentor's own photo), not per-batch content.
+ * (`lesson/<batchId>/...`); "courseImage"/"mentorPhoto"/"avatar" aren't
+ * batch-scoped, so they share a fixed folder instead - all are teacher-side
+ * public content (a course's cover, a mentor's own photo, a staff member's
+ * own avatar), not per-batch content. `publicMediaSrc` in
+ * src/lib/media-image.ts only recognises this exact prefix.
  */
 const KEY_PREFIX: Record<string, string> = {
   courseImage: "videos/teacher",
   mentorPhoto: "videos/teacher",
   postCover: "videos/teacher",
+  avatar: "videos/teacher",
 };
 
 /** Scopes that are admin-only and not tied to a batch. */
 const ADMIN_ONLY_SCOPES = new Set(["courseImage", "mentorPhoto", "postCover"]);
 
 const bodySchema = z.object({
-  // Batch id for batch-scoped uploads, or the course/mentor id (or a
+  // Batch id for batch-scoped uploads, the course/mentor id (or a
   // client-generated draft id while a new row hasn't been saved yet) for the
-  // admin-only scopes.
+  // admin-only scopes, or the caller's own user id for "avatar".
   resourceId: z.string().trim().min(1),
   filename: z.string().trim().min(1).max(200),
   contentType: z.string().trim().min(1).max(120),
   /** Optional so existing callers keep working; enforced when supplied. */
   sizeBytes: z.coerce.number().int().positive().optional(),
   // "lesson"/"material"/"assignment" are instructor-only; "submission" is a
-  // student; "courseImage"/"mentorPhoto"/"postCover" are admin-only.
+  // student; "courseImage"/"mentorPhoto"/"postCover" are admin-only;
+  // "avatar" is any staff member uploading their own profile photo.
   scope: z.enum([
     "lesson",
     "material",
@@ -69,6 +78,7 @@ const bodySchema = z.object({
     "courseImage",
     "mentorPhoto",
     "postCover",
+    "avatar",
   ]),
 });
 
@@ -111,6 +121,13 @@ export async function POST(request: NextRequest) {
       where: { batchId: resourceId, userId: session.user.id, status: "ACTIVE" },
     });
     if (!member) return Response.json({ error: "Forbidden" }, { status: 403 });
+  } else if (scope === "avatar") {
+    // A profile photo has no owning row to check against - the caller may
+    // only ever mint a key under their own user id, and only staff have a
+    // profile page that offers this.
+    if (resourceId !== session.user.id || !STAFF_ROLES.has(role)) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
   } else if (ADMIN_ONLY_SCOPES.has(scope)) {
     if (role !== Role.ADMIN) return Response.json({ error: "Forbidden" }, { status: 403 });
   } else {

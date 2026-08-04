@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { getSession } from "@/lib/auth";
-import { Assignment, Batch, BatchStudent, Course, Lesson, Material, Mentor, Post, Submission } from "@/db";
+import { Assignment, Batch, BatchStudent, Course, Lesson, Material, Mentor, Post, Submission, User } from "@/db";
 import { Role } from "@/lib/types";
 import { isStorageConfigured, presignDownload, presignView } from "@/lib/s3";
 
@@ -12,8 +12,8 @@ import { isStorageConfigured, presignDownload, presignView } from "@/lib/s3";
  * bucket itself is private, so a key alone is worthless without this check.
  *
  * Video is served inline (watch-only); documents get a download disposition.
- * Course/mentor/post images are the exception - public marketing content, so
- * they skip the session/batch check entirely.
+ * Course/mentor/post images and staff avatars are the exception - public
+ * content, so they skip the session/batch check entirely.
  */
 export async function GET(request: NextRequest, ctx: { params: Promise<{ key: string[] }> }) {
   if (!isStorageConfigured()) return new Response("Storage not configured", { status: 503 });
@@ -121,6 +121,12 @@ async function resolveOwner(key: string): Promise<Owner | null> {
 
   const mentor = await Mentor.findOne({ where: { photo: key }, attributes: ["id"] });
   if (mentor) {
+    return { public: true, download: false, fileName: null } as const;
+  }
+
+  // Staff profile photo - public like a mentor's, just self-managed.
+  const avatarOwner = await User.findOne({ where: { image: key }, attributes: ["id"] });
+  if (avatarOwner) {
     return { public: true, download: false, fileName: null } as const;
   }
 

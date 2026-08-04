@@ -7,9 +7,10 @@ interface TopbarProps {
   onToggleSidebar: () => void;
   userName: string;
   userEmail: string;
+  userImage: string | null;
 }
 
-export function Topbar({ onToggleSidebar, userName, userEmail }: TopbarProps) {
+export function Topbar({ onToggleSidebar, userName, userEmail, userImage }: TopbarProps) {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center justify-between border-b border-gray-950/5 bg-white/80 px-4 backdrop-blur-sm sm:px-6">
       <button
@@ -20,7 +21,7 @@ export function Topbar({ onToggleSidebar, userName, userEmail }: TopbarProps) {
         <Menu size={22} />
       </button>
       <div className="hidden lg:block" />
-      <UserMenu userName={userName} userEmail={userEmail} />
+      <UserMenu userName={userName} userEmail={userEmail} userImage={userImage} />
     </header>
   );
 }

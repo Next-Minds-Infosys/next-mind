@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS "User" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
     "role" "Role" NOT NULL DEFAULT 'STUDENT',
+    "secondaryEmail" TEXT,
+    "secondaryEmailVerified" BOOLEAN NOT NULL DEFAULT false,
+    "secondaryEmailToken" TEXT,
+    "secondaryEmailTokenExpires" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
@@ -159,6 +163,17 @@ CREATE TABLE IF NOT EXISTS "EmailJob" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "sentAt" TIMESTAMP(3),
     CONSTRAINT "EmailJob_pkey" PRIMARY KEY ("id")
+);
+
+-- Single row (id 'default'). Public-site-only script/CSS injection, see
+-- src/app/(admin)/admin/custom-code and src/components/SiteLayout.tsx.
+CREATE TABLE IF NOT EXISTS "SiteSetting" (
+    "id" TEXT NOT NULL DEFAULT 'default',
+    "customScript" TEXT,
+    "customCss" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT "SiteSetting_pkey" PRIMARY KEY ("id")
 );
 
 CREATE UNIQUE INDEX IF NOT EXISTS "User_email_key" ON "User"("email");

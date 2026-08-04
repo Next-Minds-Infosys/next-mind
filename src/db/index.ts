@@ -17,6 +17,7 @@ import { Submission } from "./models/submission";
 import { Message } from "./models/message";
 import { Invoice } from "./models/invoice";
 import { Expense } from "./models/expense";
+import { SiteSetting } from "./models/site-setting";
 import { User } from "./models/user";
 // Re-exported here too so every runtime import can go through "@/db". Importing
 // a model straight from "@/db/models/*" skips this file, and with it the
@@ -122,6 +123,7 @@ export {
   Message,
   Invoice,
   Expense,
+  SiteSetting,
   ContactSubmission,
   EnterpriseInquiry,
   EmailJob,

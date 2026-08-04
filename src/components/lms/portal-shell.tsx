@@ -25,12 +25,15 @@ export function PortalShell({
   name,
   email,
   nav,
+  profileHref,
   children,
 }: {
   role: string;
   name: string;
   email: string;
   nav: NavItem[];
+  /** Staff roles only - links the footer identity block to the self-service profile editor. */
+  profileHref?: string;
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
@@ -106,10 +109,17 @@ export function PortalShell({
           </nav>
 
           <div className="border-t border-gray-950/5 p-3">
-            <div className="px-3 py-2">
-              <p className="truncate text-sm font-medium text-gray-900">{name}</p>
-              <p className="truncate text-xs text-gray-500">{email}</p>
-            </div>
+            {profileHref ? (
+              <Link href={profileHref} className="block rounded-xl px-3 py-2 hover:bg-gray-100">
+                <p className="truncate text-sm font-medium text-gray-900">{name}</p>
+                <p className="truncate text-xs text-gray-500">{email}</p>
+              </Link>
+            ) : (
+              <div className="px-3 py-2">
+                <p className="truncate text-sm font-medium text-gray-900">{name}</p>
+                <p className="truncate text-xs text-gray-500">{email}</p>
+              </div>
+            )}
             <button
               type="button"
               onClick={async () => {
