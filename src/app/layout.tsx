@@ -37,6 +37,11 @@ export const metadata: Metadata = {
     images: ["/assets/og-default.png"],
   },
   robots: { index: true, follow: true },
+  // Google Search Console ownership. Next renders this as
+  // <meta name="google-site-verification" content="..."> in <head>.
+  // Not a secret - it only proves control of the domain - but it must stay put:
+  // removing it un-verifies the property and Search Console stops reporting.
+  verification: { google: "r5DKUG4dkUY38iO0J3VPTBQuuPSIREahJPKTV4auGV4" },
 };
 
 export default function RootLayout({
