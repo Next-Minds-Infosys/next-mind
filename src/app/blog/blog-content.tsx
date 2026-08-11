@@ -4,6 +4,7 @@ import Link from "next/link";
 
 import { useState } from "react";
 import { colors, gradient, heroGradient } from "@/lib/theme";
+import { FileText } from "lucide-react";
 
 
 const categories = ["All", "Career", "Technology", "Industry", "Tutorials"];
@@ -213,7 +214,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
 
             {filtered.length === 0 && (
               <div className="text-center py-20">
-                <div className="text-5xl mb-4">📝</div>
+                <FileText size={44} aria-hidden="true" className="mx-auto mb-4 text-nm-teal-ink" />
                 <h3 className="font-display font-bold text-xl mb-2" style={{ color: colors.navy }}>
                   No posts in this category yet
                 </h3>

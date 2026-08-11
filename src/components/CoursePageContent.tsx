@@ -18,9 +18,11 @@ import {
   Users,
 } from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
+import { courseTrustStrip } from "@/lib/stats";
 import { publicMediaSrc } from "@/lib/media-image";
 import { BlobBackground } from "@/components/ui/blob-background";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { CourseStickyBar } from "./CourseStickyBar";
 import EnrollModal from "./EnrollModal";
 
 const sections = [
@@ -34,24 +36,6 @@ const sections = [
   { id: "faq", label: "Faq" },
 ];
 
-const highlights = [
-  {
-    title: "Hands-on Projects",
-    desc: "Build 5+ real-world projects to showcase in your portfolio",
-  },
-  {
-    title: "Industry Practices",
-    desc: "Learn professional coding standards and best practices",
-  },
-  {
-    title: "Flexible Schedule",
-    desc: "Weekend and evening batches available for working professionals",
-  },
-  {
-    title: "Beginner Friendly",
-    desc: "No prior programming experience required",
-  },
-];
 
 const whyUs = [
   {
@@ -133,7 +117,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
   };
 
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <div className="min-h-screen bg-white pt-16 pb-24 md:pb-0">
       {/* Hero */}
       <section className="py-12 px-4 sm:px-6 lg:px-8 nm-hero-panel">
         <div className="max-w-7xl mx-auto">
@@ -147,30 +131,18 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               </h1>
               <p className="text-xl mb-6 text-white/70">{course.description}</p>
 
-              <div className="flex flex-wrap gap-4 mb-8">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="nm-gradient text-white px-8 py-3 rounded-full hover:shadow-lg transition-all font-semibold"
-                >
-                  Enroll Now !!!
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="border-2 border-nm-teal text-nm-teal px-8 py-3 rounded-full hover:bg-white/10 transition-all font-semibold"
-                >
-                  Download Syllabus
-                </button>
-              </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { n: `${course.students}+`, l: "Students" },
-                  { n: "4.8/5", l: "Rating" },
-                  { n: "500+", l: "Placements" },
-                  { n: "80+", l: "Partners" },
-                ].map((s) => (
+                {/*
+                    Was "500+ Placements / 80+ Partners" beside a per-course
+                    enrolment of ~165 - arithmetic a sceptical reader notices.
+                    These are institute-wide figures and now say so. The 4.8/5
+                    is dropped: no countable reviews back it.
+                  */}
+                  {[
+                    { n: `${course.students}+`, l: "Enrolled in this course" },
+                    ...courseTrustStrip,
+                  ].map((s) => (
                   <div key={s.l} className="text-center p-4 bg-white rounded-lg shadow">
                     <div className="font-display text-2xl font-bold nm-gradient-text mb-1">
                       {s.n}
@@ -239,7 +211,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                   onClick={() => setModalOpen(true)}
                   className="w-full border-2 border-nm-teal text-nm-teal px-6 py-3 rounded-full hover:bg-nm-light transition-all font-semibold"
                 >
-                  Download Syllabus
+                  Get syllabus by email
                 </button>
               </div>
             </div>
@@ -248,19 +220,6 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
         </div>
       </section>
 
-      {/* Highlight strip */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-nm-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-6">
-            {highlights.map((h) => (
-              <div key={h.title} className="text-center">
-                <h4 className="font-semibold mb-2 text-nm-navy">{h.title}</h4>
-                <p className="text-sm">{h.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Sticky section nav */}
       <div
@@ -594,6 +553,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
         </div>
       </section>
 
+      <CourseStickyBar price={course.price} onEnroll={() => setModalOpen(true)} />
       <EnrollModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}

@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     title: "Next Minds — IT Training in Kathmandu",
     description:
       "Industry-aligned IT training in Kathmandu — online and on campus at New Baneshwor.",
-    images: [{ url: "/assets/logo-horizontal.png", width: 1959, height: 356 }],
+    images: [{ url: "/assets/og-default.png", width: 1200, height: 630, alt: "Next Minds Infosys — IT training in Kathmandu" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Next Minds — IT Training in Kathmandu",
     description:
       "Industry-aligned IT training in Kathmandu — online and on campus at New Baneshwor.",
-    images: ["/assets/logo-horizontal.png"],
+    images: ["/assets/og-default.png"],
   },
   robots: { index: true, follow: true },
 };
@@ -46,7 +46,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">
+      {/*
+        Grammarly and similar extensions write data-* attributes onto <body>
+        before React hydrates (data-gr-ext-installed, data-new-gr-c-s-check-loaded),
+        which React reports as a hydration mismatch. It is not ours to fix and
+        affects nothing, so the warning is suppressed at exactly this node -
+        suppressHydrationWarning is one level deep, so real mismatches inside
+        the tree are still reported.
+      */}
+      <body className="antialiased font-sans" suppressHydrationWarning>
         {/* Identity graph: every other schema on the site references these by @id. */}
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />

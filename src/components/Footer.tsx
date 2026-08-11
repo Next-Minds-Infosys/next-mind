@@ -1,5 +1,6 @@
 "use client";
 
+import { Clock, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicCourse } from "@/db/queries";
@@ -16,9 +17,9 @@ const companyFooterLinks = [
 ];
 
 const contactRows = [
-  { icon: "📍", text: contact.address.full },
-  { icon: "✉️", text: contact.email },
-  { icon: "🕐", text: contact.hours },
+  { icon: MapPin, text: contact.address.full },
+  { icon: Mail, text: contact.email },
+  { icon: Clock, text: contact.hours },
 ];
 
 export default function Footer({ courses }: { courses: PublicCourse[] }) {
@@ -65,11 +66,11 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
           <div>
             <div className="mb-4 text-sm font-semibold text-nm-navy">Courses</div>
             <div className="space-y-2.5">
-              {courses.slice(0, 6).map((c) => (
+              {courses.map((c) => (
                 <Link
                   key={c.id}
                   href={`/courses/${c.slug}`}
-                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal"
+                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal-ink"
                 >
                   {c.title}
                 </Link>
@@ -84,7 +85,7 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
                 <Link
                   key={l.href}
                   href={l.href}
-                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal"
+                  className="block text-sm text-nm-muted transition-colors hover:text-nm-teal-ink"
                 >
                   {l.label}
                 </Link>
@@ -97,7 +98,7 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
             <div className="space-y-3">
               {contactRows.map((r) => (
                 <div key={r.text} className="flex gap-3 text-sm text-nm-muted">
-                  <span className="flex-shrink-0">{r.icon}</span>
+                  <r.icon size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0 text-nm-teal-ink" />
                   <span>{r.text}</span>
                 </div>
               ))}
@@ -118,11 +119,11 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-nm-border pt-6 sm:flex-row">
           <div className="text-sm text-nm-muted">
-            © 2025 Next Minds Infosys Pvt. Ltd. All rights reserved.
+            © {new Date().getFullYear()} Next Minds Infosys Pvt. Ltd. All rights reserved.
           </div>
           <div className="flex gap-6 text-sm text-nm-muted">
             {["Privacy Policy", "Terms of Service"].map((t) => (
-              <a key={t} href="#" className="transition-colors hover:text-nm-teal">
+              <a key={t} href="#" className="transition-colors hover:text-nm-teal-ink">
                 {t}
               </a>
             ))}

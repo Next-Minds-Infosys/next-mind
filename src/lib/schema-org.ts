@@ -1,4 +1,5 @@
 import { contact } from "./contact";
+import { socialLinks } from "@/components/SocialIcons";
 import { siteUrl } from "./site";
 
 /**
@@ -50,6 +51,9 @@ export function organizationSchema() {
       },
     ],
     areaServed: { "@type": "Country", name: "Nepal" },
+    // Ties the site to the real accounts in Google's knowledge graph.
+    sameAs: socialLinks.map((l) => l.href),
+    foundingDate: "2018",
     contactPoint: [
       {
         "@type": "ContactPoint",

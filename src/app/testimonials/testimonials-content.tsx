@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { testimonials } from "@/data/courses";
 import { colors, gradient, heroGradient } from "@/lib/theme";
+import { Star, Target, UserRound } from "lucide-react";
 
 const headStats = [
   { n: "4.9/5", l: "Average Rating" },
@@ -73,9 +74,7 @@ export default function TestimonialsPage() {
               >
                 <div className="flex gap-0.5 mb-3">
                   {Array.from({ length: 5 }).map((_, s) => (
-                    <span key={s} className="text-sm" style={{ color: "#f4a44a" }}>
-                      ★
-                    </span>
+                    <Star key={s} size={15} aria-hidden="true" className="fill-warning text-warning" />
                   ))}
                 </div>
                 <blockquote
@@ -94,7 +93,7 @@ export default function TestimonialsPage() {
                       background: `linear-gradient(135deg, ${colors.teal}20, ${colors.blue}20)`,
                     }}
                   >
-                    {t.emoji}
+                    <UserRound size={24} aria-hidden="true" className="text-nm-teal" />
                   </div>
                   <div>
                     <div className="font-semibold text-sm" style={{ color: colors.navy }}>
@@ -112,7 +111,7 @@ export default function TestimonialsPage() {
 
         <section className="py-20 px-6" style={{ backgroundColor: colors.surface }}>
           <div className="max-w-2xl mx-auto text-center">
-            <div className="text-5xl mb-4">🎯</div>
+            <Target size={44} aria-hidden="true" className="mx-auto mb-4 text-nm-teal-ink" />
             <h2 className="font-display text-3xl font-bold mb-4" style={{ color: colors.navy }}>
               Be the next success story.
             </h2>

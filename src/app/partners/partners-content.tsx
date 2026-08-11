@@ -3,21 +3,22 @@
 import Link from "next/link";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import partners from "@/data/partners.json";
+import { Briefcase, Building2, GraduationCap, Handshake, Zap } from "lucide-react";
 
 const partnerTypes = [
   {
     title: "Hiring Partners",
-    icon: "💼",
+    icon: Briefcase,
     desc: "Companies that actively hire our graduates.",
   },
   {
     title: "Technology Partners",
-    icon: "⚡",
+    icon: Zap,
     desc: "Tools and platforms we use in our curriculum.",
   },
   {
     title: "Academic Partners",
-    icon: "🎓",
+    icon: GraduationCap,
     desc: "Universities and colleges we collaborate with.",
   },
 ];
@@ -66,7 +67,7 @@ export default function PartnersPage() {
                 className="rounded-2xl p-6 text-center"
                 style={{ backgroundColor: colors.card, border: `1px solid ${colors.border}` }}
               >
-                <div className="text-3xl mb-3">{p.icon}</div>
+                <div className="text-3xl mb-3"><p.icon size={26} aria-hidden="true" className="text-nm-teal-ink" /></div>
                 <h3 className="font-semibold mb-1" style={{ color: colors.navy }}>
                   {p.title}
                 </h3>
@@ -104,7 +105,7 @@ export default function PartnersPage() {
                     e.currentTarget.style.boxShadow = "0 2px 8px rgba(13,45,82,0.04)";
                   }}
                 >
-                  <div className="text-3xl mb-2">{p.emoji}</div>
+                  <Building2 size={26} aria-hidden="true" className="mx-auto mb-2 text-nm-muted" />
                   <div className="font-semibold text-sm" style={{ color: colors.navy }}>
                     {p.name}
                   </div>
@@ -123,7 +124,7 @@ export default function PartnersPage() {
               className="rounded-3xl p-8 lg:p-12 text-center"
               style={{ background: heroGradient }}
             >
-              <div className="text-4xl mb-4">🤝</div>
+              <Handshake size={36} aria-hidden="true" className="mx-auto mb-4 text-nm-teal-ink" />
               <h2 className="font-display font-bold text-white text-3xl mb-3">Become a Partner</h2>
               <p className="mb-6" style={{ color: "rgba(255,255,255,0.65)" }}>
                 Whether you&apos;re a company looking to hire trained talent or a technology brand

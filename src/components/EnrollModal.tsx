@@ -214,7 +214,7 @@ export default function EnrollModal({
                     />
                     <label
                       htmlFor={`learningFormat-${opt}`}
-                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
+                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal-ink peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
                     >
                       {opt}
                     </label>
@@ -237,7 +237,7 @@ export default function EnrollModal({
                     />
                     <label
                       htmlFor={`hasLaptop-${opt}`}
-                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
+                      className="block cursor-pointer rounded-xl border border-nm-border bg-nm-surface px-4 py-2 text-sm font-medium text-nm-body transition-colors peer-checked:border-nm-teal peer-checked:bg-nm-teal/10 peer-checked:text-nm-teal-ink peer-focus-visible:ring-2 peer-focus-visible:ring-nm-teal/30"
                     >
                       {opt}
                     </label>

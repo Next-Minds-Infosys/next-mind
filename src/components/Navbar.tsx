@@ -44,7 +44,7 @@ function NavLink({
     <Link
       href={href}
       className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-        isActive ? "text-nm-teal" : "text-nm-body hover:text-nm-teal"
+        isActive ? "text-nm-teal-ink" : "text-nm-body hover:text-nm-teal-ink"
       }`}
       onMouseEnter={() => onHover(href)}
       onMouseLeave={() => onHover(null)}
@@ -135,7 +135,7 @@ export default function Navbar() {
             <button
               type="button"
               className={`flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                companyOpen ? "bg-nm-light text-nm-teal" : "text-nm-body hover:text-nm-teal"
+                companyOpen ? "bg-nm-light text-nm-teal-ink" : "text-nm-body hover:text-nm-teal-ink"
               }`}
               onClick={() => setCompanyOpen((v) => !v)}
             >
@@ -158,11 +158,11 @@ export default function Navbar() {
                     <Link
                       key={l.href}
                       href={l.href}
-                      className={`mx-1 flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-colors hover:bg-nm-surface hover:text-nm-teal ${
-                        isActive(l.href) ? "text-nm-teal" : "text-nm-body"
+                      className={`mx-1 flex items-center gap-3 rounded-lg px-4 py-2.5 text-sm transition-colors hover:bg-nm-surface hover:text-nm-teal-ink ${
+                        isActive(l.href) ? "text-nm-teal-ink" : "text-nm-body"
                       }`}
                     >
-                      <span>{l.icon}</span>
+                      <l.icon size={18} aria-hidden="true" className="shrink-0 text-nm-teal-ink" />
                       <span className="font-medium">{l.label}</span>
                     </Link>
                   ))}
@@ -186,7 +186,7 @@ export default function Navbar() {
           <button
             type="button"
             onClick={() => setLoginOpen(true)}
-            className="rounded-lg px-4 py-2 text-sm font-medium text-nm-body transition-colors hover:text-nm-teal"
+            className="rounded-lg px-4 py-2 text-sm font-medium text-nm-body transition-colors hover:text-nm-teal-ink"
           >
             Sign In
           </button>
@@ -234,7 +234,7 @@ export default function Navbar() {
                   key={l.href}
                   href={l.href}
                   className={`block rounded-lg px-3 py-2.5 text-base font-medium transition-colors ${
-                    isActive(l.href) ? "text-nm-teal" : "text-nm-body"
+                    isActive(l.href) ? "text-nm-teal-ink" : "text-nm-body"
                   }`}
                 >
                   {l.label}

@@ -2,64 +2,60 @@
 
 import Link from "next/link";
 import { colors, gradient, heroGradient } from "@/lib/theme";
+import { stats as instituteStats } from "@/lib/stats";
+import { Globe, Hammer, Handshake, Target, UserRound } from "lucide-react";
 
 const team = [
   {
     name: "Rajesh Shrestha",
     role: "Founder & CEO",
-    emoji: "👨‍💼",
-    bio: "10+ years building Nepal's tech talent ecosystem. Ex-software engineer turned educator.",
+        bio: "10+ years building Nepal's tech talent ecosystem. Ex-software engineer turned educator.",
   },
   {
     name: "Priya Tamang",
     role: "Head of Curriculum",
-    emoji: "👩‍🏫",
-    bio: "Curriculum designer with a background in instructional design and 8 years in ed-tech.",
+        bio: "Curriculum designer with a background in instructional design and 8 years in ed-tech.",
   },
   {
     name: "Suman Adhikari",
     role: "Lead Instructor — Cyber Security",
-    emoji: "👨‍💻",
-    bio: "Certified ethical hacker (CEH). Previously worked in enterprise security for Nepal Telecom.",
+        bio: "Certified ethical hacker (CEH). Previously worked in enterprise security for Nepal Telecom.",
   },
   {
     name: "Anita Maharjan",
     role: "Lead Instructor — Data Science",
-    emoji: "👩‍🔬",
-    bio: "Data scientist with 6 years at Leapfrog Technology. MSc in Data Analytics, NTU Singapore.",
+        bio: "Data scientist with 6 years at Leapfrog Technology. MSc in Data Analytics, NTU Singapore.",
   },
   {
     name: "Bikash Poudel",
     role: "Head of Career Services",
-    emoji: "🤝",
-    bio: "Placement specialist with a network of 200+ hiring partners across Nepal's IT sector.",
+        bio: "Placement specialist, building our hiring-partner network across Nepal's IT sector.",
   },
   {
     name: "Samrita KC",
     role: "Lead Instructor — Full Stack",
-    emoji: "👩‍💻",
-    bio: "Full-stack developer and open-source contributor. MERN & Django specialist.",
+        bio: "Full-stack developer and open-source contributor. MERN & Django specialist.",
   },
 ];
 
 const values = [
   {
-    icon: "🎯",
+    icon: Target,
     title: "Outcome-Focused",
     desc: "We measure success by your job placement and salary growth — not just course completions.",
   },
   {
-    icon: "🏗️",
+    icon: Hammer,
     title: "Hands-On First",
     desc: "Every concept is followed by a project. You leave with a portfolio, not just a certificate.",
   },
   {
-    icon: "🌍",
+    icon: Globe,
     title: "Nepal-Centered",
     desc: "Our curriculum is built for Nepal's tech market — teaching tools, frameworks, and companies that are hiring here.",
   },
   {
-    icon: "🤝",
+    icon: Handshake,
     title: "Accessible Education",
     desc: "EMI options, scholarships, and flexible schedules so nothing stops talented people from learning.",
   },
@@ -94,15 +90,17 @@ const timeline = [
   {
     year: "2025",
     title: "New Campus Expansion",
-    desc: "Expanded to 4 full-time classrooms. 3,000+ total graduates across all programs.",
+    desc: "Expanded to 4 full-time classrooms across all programs.",
   },
 ];
 
-const stats = [
-  { n: "3,000+", l: "Graduates", c: colors.teal },
+// Was 3,000+ graduates / 200+ partners here against 1,200+ students / 50+
+// partners on the homepage. Same source now, so the pages cannot disagree.
+const aboutStats = [
+  { n: instituteStats.studentsTrained, l: "Students Trained", c: colors.teal },
   { n: "8+", l: "IT Courses", c: colors.blue },
-  { n: "82%", l: "Placement Rate", c: colors.green },
-  { n: "200+", l: "Hiring Partners", c: "#f4a44a" },
+  { n: instituteStats.placementRate, l: "Placement Rate", c: colors.green },
+  { n: instituteStats.hiringPartners, l: "Hiring Partners", c: "#f4a44a" },
 ];
 
 export default function AboutPage() {
@@ -145,7 +143,7 @@ export default function AboutPage() {
         >
           <div className="max-w-7xl mx-auto">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {stats.map((s) => (
+              {aboutStats.map((s) => (
                 <div
                   key={s.l}
                   className="rounded-2xl p-6 text-center"
@@ -204,7 +202,7 @@ export default function AboutPage() {
                   className="rounded-2xl p-5"
                   style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
                 >
-                  <div className="text-2xl mb-3">{v.icon}</div>
+                  <v.icon size={24} aria-hidden="true" className="mb-3 text-nm-teal-ink" />
                   <h3 className="font-semibold text-sm mb-1" style={{ color: colors.navy }}>
                     {v.title}
                   </h3>
@@ -305,7 +303,7 @@ export default function AboutPage() {
                     e.currentTarget.style.boxShadow = "0 2px 8px rgba(13,45,82,0.05)";
                   }}
                 >
-                  <div className="text-4xl mb-4">{m.emoji}</div>
+                  <div className="text-4xl mb-4"><UserRound size={30} aria-hidden="true" className="text-nm-teal-ink" /></div>
                   <h3 className="font-display font-bold mb-0.5" style={{ color: colors.navy }}>
                     {m.name}
                   </h3>

@@ -4,14 +4,15 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import type { LucideIcon } from "lucide-react";
 import { LogOut, Menu, X } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 
 export interface NavItem {
   href: string;
   label: string;
-  /** Emoji keeps the shell dependency-free; lucide is already heavy in admin. */
-  icon: string;
+  /** Lucide component. Emoji render differently per OS and read as placeholder. */
+  icon: LucideIcon;
 }
 
 /**
@@ -57,7 +58,7 @@ export function PortalShell({
           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
       }`}
     >
-      <span aria-hidden>{n.icon}</span>
+      <n.icon size={18} aria-hidden="true" className="shrink-0" />
       {n.label}
     </Link>
   );
