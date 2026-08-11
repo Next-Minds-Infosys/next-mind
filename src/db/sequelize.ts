@@ -1,5 +1,6 @@
 import { Sequelize } from "sequelize";
 import pg from "pg";
+import { cleanConnectionString, sslOptions } from "./connection";
 import { loadEnvConfig } from "@next/env";
 
 // Load environment variables from the root .env file
@@ -38,7 +39,9 @@ if (!databaseUrl) {
   );
 }
 
-const connectionString = databaseUrl ?? "postgresql://nextmind:nextmind@127.0.0.1:5432/nextminds";
+const rawUrl = databaseUrl ?? "postgresql://nextmind:nextmind@127.0.0.1:5432/nextminds";
+const connectionString = cleanConnectionString(rawUrl);
+const ssl = sslOptions(rawUrl);
 
 const globalForSequelize = globalThis as unknown as { sequelize?: Sequelize };
 
@@ -47,18 +50,10 @@ export const sequelize =
   new Sequelize(connectionString, {
     dialect: "postgres",
     dialectModule: pg,
-    // Sequelize parses the URL itself and drops `?sslmode=`, so hosted
-    // Postgres (Neon, Supabase, RDS) must be told to use SSL explicitly or it
-    // rejects the connection as insecure. Local sockets stay plaintext.
-    ...(/(localhost|127\.0\.0\.1)/.test(connectionString)
-      ? {}
-      : {
-          dialectOptions: {
-            ssl: process.env.DATABASE_CA_CERT
-              ? { require: true, ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
-              : { require: true, rejectUnauthorized: false },
-          },
-        }),
+    // Sequelize parses the URL itself and drops `?sslmode=`, so hosted Postgres
+    // must be told to use SSL explicitly. The verification policy lives in
+    // src/db/connection.ts so the ORM and better-auth's pool cannot diverge.
+    ...(ssl ? { dialectOptions: { ssl: { require: true, ...ssl } } } : {}),
     logging: process.env.NODE_ENV === "development" ? console.log : false,
     define: {
       freezeTableName: true,

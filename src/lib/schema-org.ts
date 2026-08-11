@@ -37,11 +37,22 @@ export function organizationSchema() {
       "IT training institute in Kathmandu offering courses in full stack development, cyber security, digital marketing, DevOps, QA engineering and data science — online and on campus.",
     address: {
       "@type": "PostalAddress",
-      streetAddress: contact.address.locality,
+      streetAddress: `${contact.address.street}, ${contact.address.locality}`,
       addressLocality: contact.address.city,
       addressRegion: contact.address.region,
+      postalCode: contact.address.postalCode,
       addressCountry: contact.address.country,
     },
+    // Coordinates from the verified Google Business Profile. For a LocalBusiness
+    // these matter more than the address string: they are what ties the site to
+    // the map listing, and what "IT training near me" style queries resolve
+    // against. `hasMap` points at the listing itself.
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: contact.maps.lat,
+      longitude: contact.maps.lng,
+    },
+    hasMap: contact.maps.place,
     openingHoursSpecification: [
       {
         "@type": "OpeningHoursSpecification",
@@ -127,9 +138,15 @@ export function courseSchema(c: CourseSchemaInput) {
           name: "Next Minds Infosys",
           address: {
             "@type": "PostalAddress",
-            streetAddress: contact.address.locality,
+            streetAddress: `${contact.address.street}, ${contact.address.locality}`,
             addressLocality: contact.address.city,
+            postalCode: contact.address.postalCode,
             addressCountry: contact.address.country,
+          },
+          geo: {
+            "@type": "GeoCoordinates",
+            latitude: contact.maps.lat,
+            longitude: contact.maps.lng,
           },
         },
       },

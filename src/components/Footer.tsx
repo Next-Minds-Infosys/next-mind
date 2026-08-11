@@ -4,7 +4,7 @@ import { Clock, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicCourse } from "@/db/queries";
-import { contact } from "@/lib/contact";
+import { contact, mailtoHref } from "@/lib/contact";
 import { socialLinks, whatsappPath } from "./SocialIcons";
 
 const companyFooterLinks = [
@@ -17,9 +17,11 @@ const companyFooterLinks = [
 ];
 
 const contactRows = [
-  { icon: MapPin, text: contact.address.full },
-  { icon: Mail, text: contact.email },
-  { icon: Clock, text: contact.hours },
+  // The address links to the Google Business listing - the fastest path to
+  // directions from a phone, and a signal tying the site to the listing.
+  { icon: MapPin, text: contact.address.full, href: contact.maps.place },
+  { icon: Mail, text: contact.email, href: mailtoHref },
+  { icon: Clock, text: contact.hours, href: null },
 ];
 
 export default function Footer({ courses }: { courses: PublicCourse[] }) {
@@ -99,7 +101,18 @@ export default function Footer({ courses }: { courses: PublicCourse[] }) {
               {contactRows.map((r) => (
                 <div key={r.text} className="flex gap-3 text-sm text-nm-muted">
                   <r.icon size={16} aria-hidden="true" className="mt-0.5 flex-shrink-0 text-nm-teal-ink" />
-                  <span>{r.text}</span>
+                  {r.href ? (
+                    <a
+                      href={r.href}
+                      target={r.href.startsWith("http") ? "_blank" : undefined}
+                      rel={r.href.startsWith("http") ? "noopener noreferrer" : undefined}
+                      className="transition-colors hover:text-nm-teal-ink hover:underline"
+                    >
+                      {r.text}
+                    </a>
+                  ) : (
+                    <span>{r.text}</span>
+                  )}
                 </div>
               ))}
               <a

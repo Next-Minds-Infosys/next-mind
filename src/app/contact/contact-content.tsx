@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { contact } from "@/lib/contact";
+import { contact, directionsHref, mapEmbedHref } from "@/lib/contact";
 import Link from "next/link";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -266,18 +266,29 @@ export default function ContactPage() {
               ))}
 
               <div
-                className="rounded-2xl overflow-hidden h-48 flex items-center justify-center"
-                style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
+                className="rounded-2xl overflow-hidden"
+                style={{ border: `1px solid ${colors.border}` }}
               >
-                <div className="text-center">
-                  <MapPin size={34} className="mx-auto mb-2 text-nm-teal-ink" aria-hidden="true" />
-                  <p className="text-sm font-semibold" style={{ color: colors.navy }}>
-                    New Baneshwor
-                  </p>
-                  <p className="text-xs" style={{ color: colors.muted }}>
-                    Kathmandu, Nepal
-                  </p>
-                </div>
+                {/* `loading="lazy"` matters here: the Maps iframe pulls well over
+                    a megabyte, and it sits below the fold on the sidebar. */}
+                <iframe
+                  src={mapEmbedHref}
+                  title="Next Minds Infosys on Google Maps"
+                  className="w-full h-48 block border-0"
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  allowFullScreen
+                />
+                <a
+                  href={directionsHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 py-3 text-sm font-semibold transition-colors hover:bg-nm-surface"
+                  style={{ color: colors.navy, borderTop: `1px solid ${colors.border}` }}
+                >
+                  <MapPin size={16} aria-hidden="true" />
+                  Get directions
+                </a>
               </div>
 
               <div className="rounded-2xl p-5" style={{ background: heroGradient }}>
