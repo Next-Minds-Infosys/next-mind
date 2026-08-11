@@ -37,8 +37,8 @@ const csp = [
   "media-src 'self' blob: https:",
   "font-src 'self' data: https://fonts.gstatic.com",
   `connect-src 'self' https: ${gtm}`,
-  // The GTM noscript fallback is an iframe from googletagmanager.com.
-  "frame-src https://www.googletagmanager.com",
+  // The GTM noscript fallback, and the Google Maps embed on /contact.
+  "frame-src https://www.googletagmanager.com https://maps.google.com https://www.google.com",
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

@@ -6,6 +6,7 @@ import { adminAc } from "better-auth/plugins/admin/access";
 import { nextCookies } from "better-auth/next-js";
 import { loadEnvConfig } from "@next/env";
 import { Pool } from "pg";
+import { cleanConnectionString, sslOptions } from "@/db/connection";
 
 // Builds the pool at import time, so process.env must already be populated -
 // a plain `tsx` script can't rely on Next having done it first.
@@ -13,22 +14,9 @@ loadEnvConfig(process.cwd());
 
 const globalForPool = globalThis as unknown as { authPool?: Pool };
 
-const connectionString = process.env.DATABASE_URL;
-const isLocal = /(localhost|127\.0\.0\.1)/.test(connectionString ?? "");
-
-/** TLS for hosted Postgres - verified if DATABASE_CA_CERT is set, encrypted-only otherwise. */
-export const pgSsl = isLocal
-  ? undefined
-  : process.env.DATABASE_CA_CERT
-    ? { ca: process.env.DATABASE_CA_CERT, rejectUnauthorized: true }
-    : { rejectUnauthorized: false };
-
-if (!isLocal && !process.env.DATABASE_CA_CERT && process.env.NODE_ENV === "production") {
-  console.warn(
-    "[db] DATABASE_CA_CERT is not set - the database TLS certificate is not being " +
-      "verified. Set it to your provider's CA to close this.",
-  );
-}
+const rawUrl = process.env.DATABASE_URL ?? "";
+const connectionString = cleanConnectionString(rawUrl);
+const pgSsl = sslOptions(rawUrl);
 
 // Same connection string as src/db/sequelize.ts - auth and the ORM must not
 // point at different databases.
