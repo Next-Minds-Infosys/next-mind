@@ -31,6 +31,12 @@ export interface PublicCourse {
   price: number;
   imageUrl: string | null;
   mentor: { name: string; role: string; bio: string; photo: string | null } | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImageAlt: string | null;
+  focusKeyword: string | null;
 }
 
 function toPublicCourse(course: Course): PublicCourse {
@@ -54,6 +60,12 @@ function toPublicCourse(course: Course): PublicCourse {
     level: course.level,
     price: course.price,
     imageUrl: course.imageUrl,
+    metaTitle: course.metaTitle,
+    metaDescription: course.metaDescription,
+    ogTitle: course.ogTitle,
+    ogDescription: course.ogDescription,
+    ogImageAlt: course.ogImageAlt,
+    focusKeyword: course.focusKeyword,
     mentor: course.mentor
       ? {
           name: course.mentor.name,

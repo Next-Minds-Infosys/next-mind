@@ -37,7 +37,10 @@ export async function generateMetadata({
     post.metaDescription?.trim() || post.excerpt || post.contentMd.slice(0, 160);
 
   return {
-    title: seoTitle,
+    // `absolute` bypasses the root layout's "%s — Next Minds Infosys" template.
+    // A hand-written metaTitle already carries the brand, and appending the
+    // suffix pushed it past the ~60 characters Google shows.
+    title: post.metaTitle?.trim() ? { absolute: seoTitle } : seoTitle,
     description,
     alternates: { canonical: post.canonicalUrl?.trim() || `/blog/${post.slug}` },
     keywords: post.focusKeyword ? [post.focusKeyword] : undefined,
