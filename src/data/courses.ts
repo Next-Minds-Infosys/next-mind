@@ -1,3 +1,10 @@
+import {
+  Building2,
+  FileText,
+  Handshake,
+  MessageSquareQuote,
+  Trophy,
+} from "lucide-react";
 import coursesData from "./v2-courses.json";
 import testimonialsData from "./testimonials.json";
 import successStoriesData from "./success-stories.json";
@@ -77,9 +84,9 @@ export function getInstructorBySlug(slug: string): Instructor | undefined {
 }
 
 export const companyLinks = [
-  { label: "About Us", href: "/about", icon: "🏫" },
-  { label: "Blog", href: "/blog", icon: "📝" },
-  { label: "Success Stories", href: "/success-stories", icon: "🏆" },
-  { label: "Testimonials", href: "/testimonials", icon: "💬" },
-  { label: "Partners", href: "/partners", icon: "🤝" },
+  { label: "About us", href: "/about", icon: Building2 },
+  { label: "Blog", href: "/blog", icon: FileText },
+  { label: "Success stories", href: "/success-stories", icon: Trophy },
+  { label: "Testimonials", href: "/testimonials", icon: MessageSquareQuote },
+  { label: "Partners", href: "/partners", icon: Handshake },
 ];

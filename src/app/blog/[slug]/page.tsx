@@ -22,23 +22,39 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // notFound() must fire HERE, not in the page body. Once a route streams (the
+  // root loading.tsx creates a Suspense boundary, so every dynamic page does),
+  // the 200 status is already committed and a later notFound() only swaps the
+  // body - a soft 404 that Google will happily index. generateMetadata runs
+  // before the response starts, so the status is still ours to set.
   const post = await getPost(slug);
-  if (!post) return { title: "Post not found" };
+  if (!post) notFound();
 
-  const description = post.excerpt ?? post.contentMd.slice(0, 160);
+  // The SEO fields win when set - they are written to target a specific query
+  // and are usually not the same string as the on-page headline.
+  const seoTitle = post.metaTitle?.trim() || post.title;
+  const description =
+    post.metaDescription?.trim() || post.excerpt || post.contentMd.slice(0, 160);
+
   return {
-    title: post.title,
+    title: seoTitle,
     description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical: post.canonicalUrl?.trim() || `/blog/${post.slug}` },
+    keywords: post.focusKeyword ? [post.focusKeyword] : undefined,
     openGraph: {
       type: "article",
-      title: post.title,
+      title: seoTitle,
       description,
       url: `/blog/${post.slug}`,
       publishedTime: (post.publishedAt ?? post.createdAt).toISOString(),
       authors: post.authorName ? [post.authorName] : undefined,
     },
-    twitter: { card: "summary_large_image", title: post.title, description },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description,
+      images: ["/assets/og-default.png"],
+    },
   };
 }
 

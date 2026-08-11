@@ -16,6 +16,91 @@
   --nm-muted: #7a90a8;
   --nm-orange: #f4a44a;
   --nm-gradient: linear-gradient(135deg, #00bdb8, #1a7fe8);
+
+  /* Brand teal is 5.92:1 on navy (passes) but only 2.34:1 on white (fails AA
+   * badly). Fills, borders and icons keep --nm-teal; teal *text* on a light
+   * surface must use this darker ink instead. Spec §1.7. */
+  --nm-teal-ink: #0f766e;
+
+  /* ---------------------------------------------------------------------
+   * Design tokens (UI/UX spec §1-§4).
+   *
+   * The existing --nm-* names are kept and now alias into these ramps, so
+   * nothing that already uses them breaks. New work should use the ramp
+   * tokens; a raw hex in a component is a bug.
+   * ------------------------------------------------------------------- */
+
+  /* Navy — surfaces */
+  --navy-900: #061a2e;
+  --navy-800: #0a2540;
+  --navy-700: #0d2b4a;
+  --navy-600: #123a5e;
+  --navy-500: #1b4a73;
+  --navy-400: #2e6390;
+
+  /* Teal — action + accent. -600 is the only teal safe as text on white. */
+  --teal-600: #0f766e;
+  --teal-500: #0d9488;
+  --teal-400: #14b8a6;
+  --teal-300: #2dd4bf;
+  --teal-200: #5eead4;
+  --teal-100: #99f6e4;
+
+  /* Blue — secondary accent */
+  --blue-700: #0b4a7f;
+  --blue-600: #1868a8;
+  --blue-500: #2196f3;
+  --blue-300: #7db8e8;
+  --blue-200: #b5d4f4;
+
+  /* Neutrals */
+  --gray-50: #f7f9fb;
+  --gray-100: #edf1f5;
+  --gray-200: #dde3ea;
+  --gray-300: #c9d2dc;
+  --gray-500: #6b7785;
+  --gray-700: #3d4754;
+  --gray-900: #1a2029;
+
+  /* Semantic. Urgency is --warning, never --danger: red reads as an error,
+     not a deadline. --danger is reserved for form validation. */
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger: #dc2626;
+  --info: #1868a8;
+
+  /* The gradient. One per viewport, on the single primary button only. */
+  --gradient-primary: linear-gradient(135deg, #14b8a6 0%, #2196f3 100%);
+
+  /* Spacing — 4px base, only these steps */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-5: 20px;  --space-6: 24px;  --space-8: 32px;  --space-10: 40px;
+  --space-12: 48px; --space-16: 64px; --space-20: 80px; --space-24: 96px;
+  --space-30: 120px;
+
+  /* Radius — one per element type */
+  --radius-sm: 8px;    /* inputs, badges */
+  --radius-md: 12px;   /* buttons, tags */
+  --radius-lg: 16px;   /* cards */
+  --radius-xl: 24px;   /* hero panels */
+  --radius-full: 999px;
+
+  /* Elevation. Shadows barely read on navy, so depth there comes from
+     surface lightness + border; these are for light sections. */
+  --shadow-1: 0 4px 16px rgba(26, 32, 41, 0.08);
+  --shadow-2: 0 8px 32px rgba(6, 26, 46, 0.4);
+
+  /* Layout */
+  --container: 1240px;
+  --measure: 60ch;
+
+  /* Motion */
+  --duration-fast: 150ms;
+  --duration-base: 250ms;
+  --duration-slow: 400ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
   --font-sans: "DM Sans", sans-serif;
   --font-display: "Bricolage Grotesque", sans-serif;
 }
@@ -24,6 +109,7 @@
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
   --color-nm-teal: var(--nm-teal);
+  --color-nm-teal-ink: var(--nm-teal-ink);
   --color-nm-blue: var(--nm-blue);
   --color-nm-navy: var(--nm-navy);
   --color-nm-body: var(--nm-body);
@@ -33,6 +119,30 @@
   --color-nm-light: var(--nm-light);
   --color-nm-green: var(--nm-green);
   --color-nm-orange: var(--nm-orange);
+
+  /* Ramp tokens as Tailwind colours: bg-navy-800, text-teal-600, etc. */
+  --color-navy-900: var(--navy-900);
+  --color-navy-800: var(--navy-800);
+  --color-navy-700: var(--navy-700);
+  --color-navy-600: var(--navy-600);
+  --color-navy-500: var(--navy-500);
+  --color-teal-600: var(--teal-600);
+  --color-teal-500: var(--teal-500);
+  --color-teal-400: var(--teal-400);
+  --color-teal-300: var(--teal-300);
+  --color-teal-200: var(--teal-200);
+  --color-blue-700: var(--blue-700);
+  --color-blue-600: var(--blue-600);
+  --color-blue-300: var(--blue-300);
+  --color-blue-200: var(--blue-200);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
 }
 
 * {
@@ -148,6 +258,21 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/*
+ * Spec §8: the blanket rule, not just the named animations. Anything added
+ * later is covered without having to remember to list it here.
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .animate-blob-a,
   .animate-blob-b,
@@ -155,4 +280,48 @@ body {
   .animate-marquee {
     animation: none;
   }
+}
+
+/*
+ * Skip-to-content link.
+ *
+ * Hidden until it receives keyboard focus, then appears just below the fixed
+ * 4rem navbar rather than on top of it - anchored at top-left it covered the
+ * logo, which read as a rendering bug rather than an accessibility affordance.
+ *
+ * Written as one class instead of a stack of `focus:` utilities because the
+ * reveal depends on `position` being overridden in the right order, and utility
+ * ordering in the generated stylesheet is not something to rely on.
+ *
+ * `:focus-visible` ONLY - never plain `:focus`. Next moves focus after a
+ * client-side navigation, so a `:focus` rule made the link flash into view every
+ * time you clicked a nav item. :focus-visible applies the browser's own
+ * heuristic: keyboard yes, pointer and programmatic focus no.
+ */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: auto;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.skip-link:focus-visible {
+  position: fixed;
+  left: 1rem;
+  top: 4.75rem;
+  z-index: 200;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  padding: 0.625rem 1.25rem;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: var(--color-nm-navy, #0d2d52);
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 8px 24px rgba(13, 45, 82, 0.18);
+  outline: 2px solid var(--color-nm-teal, #00bdb8);
+  outline-offset: 2px;
 }

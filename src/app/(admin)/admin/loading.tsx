@@ -1,7 +1,12 @@
 /**
- * Every page in this app is dynamic and queries Postgres, so navigation blocked
- * on a blank screen until the server responded. This streams a skeleton
- * immediately instead.
+ * Skeleton for the authenticated portals only.
+ *
+ * This used to live at src/app/loading.tsx, which wrapped EVERY route in a
+ * Suspense boundary. That flushed the response - and with it a 200 status -
+ * before the page resolved, so notFound() on /blog/[slug] and
+ * /courses/[courseId] could only swap the body: a soft 404 that search engines
+ * index as a real page. Public routes now get their status right; the portals
+ * keep the skeleton, where perceived speed matters and the pages are noindex.
  */
 export default function Loading() {
   return (

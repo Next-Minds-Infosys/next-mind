@@ -23,8 +23,13 @@ export async function generateMetadata({
   params: Promise<{ courseId: string }>;
 }): Promise<Metadata> {
   const { courseId } = await params;
+  // notFound() must fire HERE, not in the page body. Once a route streams (the
+  // root loading.tsx creates a Suspense boundary, so every dynamic page does),
+  // the 200 status is already committed and a later notFound() only swaps the
+  // body - a soft 404 that Google will happily index. generateMetadata runs
+  // before the response starts, so the status is still ours to set.
   const course = await getPublicCourseBySlug(courseId);
-  if (!course) return { title: "Course not found" };
+  if (!course) notFound();
 
   const description =
     course.shortDesc || course.description.slice(0, 160) || `Learn ${course.title} at Next Minds.`;

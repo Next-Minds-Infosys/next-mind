@@ -7,18 +7,28 @@ import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import { contactSchema, type ContactInput, type ContactFormValues } from "@/lib/schemas";
+import {
+  Building2,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  GraduationCap,
+  Mail,
+  MapPin,
+  Phone,
+} from "lucide-react";
 
 const contactInfo = [
-  { icon: "📍", label: "Address", value: contact.address.full },
-  { icon: "📞", label: "Phone", value: contact.phoneDisplay },
-  { icon: "📧", label: "Email", value: contact.email },
-  { icon: "🕐", label: "Hours", value: contact.hours },
+  { icon: MapPin, label: "Address", value: contact.address.full },
+  { icon: Phone, label: "Phone", value: contact.phoneDisplay },
+  { icon: Mail, label: "Email", value: contact.email },
+  { icon: Clock, label: "Hours", value: contact.hours },
 ];
 
 const quickLinks = [
-  { label: "📅 Book Free Counselling", href: "/courses" },
-  { label: "🏢 Enterprise Enquiry", href: "/enterprise" },
-  { label: "🎓 Browse Courses", href: "/courses" },
+  { icon: CalendarDays, label: "Book free counselling", href: "/contact#enquiry" },
+  { icon: Building2, label: "Enterprise enquiry", href: "/enterprise" },
+  { icon: GraduationCap, label: "Browse courses", href: "/courses" },
 ];
 
 const inputStyle = {
@@ -111,7 +121,7 @@ export default function ContactPage() {
                   className="rounded-2xl p-12 text-center"
                   style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
                 >
-                  <div className="text-5xl mb-4">✅</div>
+                  <CheckCircle2 size={44} className="mx-auto mb-4 text-nm-teal-ink" aria-hidden="true" />
                   <h3 className="font-bold text-xl mb-2" style={{ color: colors.navy }}>
                     Message Sent!
                   </h3>
@@ -240,7 +250,7 @@ export default function ContactPage() {
                   className="flex gap-4 items-start p-5 rounded-2xl"
                   style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
                 >
-                  <div className="text-2xl">{c.icon}</div>
+                  <c.icon size={22} aria-hidden="true" className="text-nm-teal-ink" />
                   <div>
                     <div
                       className="text-xs font-bold uppercase tracking-wide mb-0.5"
@@ -260,7 +270,7 @@ export default function ContactPage() {
                 style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
               >
                 <div className="text-center">
-                  <div className="text-4xl mb-2">📍</div>
+                  <MapPin size={34} className="mx-auto mb-2 text-nm-teal-ink" aria-hidden="true" />
                   <p className="text-sm font-semibold" style={{ color: colors.navy }}>
                     New Baneshwor
                   </p>
@@ -289,6 +299,7 @@ export default function ContactPage() {
                         e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.08)";
                       }}
                     >
+                      <l.icon size={16} aria-hidden="true" className="shrink-0" />
                       {l.label}
                     </Link>
                   ))}

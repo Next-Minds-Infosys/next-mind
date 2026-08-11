@@ -27,8 +27,8 @@ export function SectionEyebrow({
         className={cn(
           "mb-4 inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs font-bold uppercase tracking-widest",
           dark
-            ? "border-nm-teal/40 bg-nm-teal/10 text-nm-teal"
-            : "border-nm-teal/30 bg-nm-light text-nm-teal",
+            ? "border-nm-teal/40 bg-nm-teal/10 text-nm-teal-ink"
+            : "border-nm-teal/30 bg-nm-light text-nm-teal-ink",
         )}
       >
         {label}
