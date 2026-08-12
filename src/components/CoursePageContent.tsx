@@ -3,8 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { contact, mailtoHref, telHref } from "@/lib/contact";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import Markdown from "./Markdown";
 import { AnimatePresence, motion } from "framer-motion";
 import {
   Award,
@@ -251,7 +250,11 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-16">
+          {/* min-w-0: a grid item defaults to min-width:auto, so it refuses to
+              shrink below its content's min-content width. Without this, a wide
+              markdown table inside pushes this column past the viewport and the
+              whole page scrolls sideways on mobile. */}
+          <div className="md:col-span-2 space-y-16 min-w-0">
             <section id="overview" className="scroll-mt-36">
               <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">Course Overview</h2>
               <p className="mb-6">{course.description}</p>
@@ -273,9 +276,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                 <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
                   About This Course
                 </h2>
-                <div className="prose-content max-w-none [&_h1]:font-display [&_h2]:font-display [&_h3]:font-display [&_h1]:mt-6 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-nm-navy [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-nm-navy [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-nm-navy [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_a]:text-nm-teal [&_a]:underline [&_strong]:font-semibold [&_blockquote]:border-l-2 [&_blockquote]:border-nm-teal [&_blockquote]:pl-4 [&_blockquote]:text-nm-muted [&_code]:rounded [&_code]:bg-nm-light [&_code]:px-1 [&_code]:py-0.5 [&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-nm-navy [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-white">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{course.contentMd}</ReactMarkdown>
-                </div>
+                <Markdown>{course.contentMd}</Markdown>
               </section>
             )}
 

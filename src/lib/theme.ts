@@ -8,6 +8,14 @@ export const colors = {
   navy: "#0d2d52",
   teal: "#00bdb8",
   blue: "#1a7fe8",
+  /**
+   * Darkened variants for TEXT. `teal` and `blue` above are tuned for fills -
+   * dots, icon chips, gradients - and drop to ~2.3:1 and ~3.6:1 as text on a
+   * light background, both under the 4.5:1 AA floor. These match --teal-600 /
+   * --blue-600 in globals.css. Spec §1.7.
+   */
+  tealInk: "#0f766e",
+  blueInk: "#1868a8",
   green: "#52c85a",
   heading: "#0d2d52",
   body: "#3d5166",

@@ -228,40 +228,57 @@ export default function AboutPage() {
                 How We Got Here
               </h2>
             </div>
+            {/* Three fixed columns - year | rail | card - so nothing overlaps.
+                The old markup right-aligned the year to x=72 and then drew the
+                rail at left-[72px] with the dot nudged to -left-[26.5px], which
+                put the dot on top of the last digit of the year. The card was
+                also a plain flex child with no flex-1, so every card sized to
+                its own text and the column edges came out ragged. */}
             <div className="relative">
-              <div
-                className="absolute left-[72px] top-0 bottom-0 w-px"
-                style={{ backgroundColor: colors.border }}
-              />
               <div className="space-y-6">
                 {timeline.map((t, i) => (
-                  <div key={t.year} className="flex gap-6 items-start">
-                    <div className="w-[72px] flex-shrink-0 text-right">
+                  <div key={t.year} className="flex items-start">
+                    <div className="w-14 flex-shrink-0 pt-1 text-right">
                       <span
-                        className="font-display font-bold text-sm"
-                        style={{ color: i % 2 === 0 ? colors.teal : colors.blue }}
+                        className="font-display text-sm font-bold"
+                        style={{ color: i % 2 === 0 ? colors.tealInk : colors.blueInk }}
                       >
                         {t.year}
                       </span>
                     </div>
-                    <div className="relative">
+
+                    {/* Rail column. The connector is drawn per item and skipped
+                        on the last one, so the line stops at the final dot
+                        instead of running past it. `self-stretch` makes this
+                        column as tall as the card, which is what lets the
+                        offsets below reach the next dot. */}
+                    <div className="relative flex w-8 flex-shrink-0 justify-center self-stretch">
+                      {i < timeline.length - 1 && (
+                        <div
+                          className="absolute left-1/2 w-px -translate-x-1/2"
+                          // 14px = the dot's centre. -38px = the 24px space-y-6
+                          // gap plus the next dot's own 14px centre offset.
+                          style={{ top: 14, bottom: -38, backgroundColor: colors.border }}
+                        />
+                      )}
                       <div
-                        className="w-3 h-3 rounded-full absolute -left-[26.5px] top-1.5 border-2 border-white"
+                        className="relative z-10 mt-2 h-3 w-3 rounded-full border-2 border-white"
                         style={{ backgroundColor: i % 2 === 0 ? colors.teal : colors.blue }}
                       />
-                      <div
-                        className="ml-4 rounded-2xl p-4"
-                        style={{
-                          backgroundColor: colors.card,
-                          border: `1px solid ${colors.border}`,
-                        }}
-                      >
-                        <div className="font-semibold mb-1 text-sm" style={{ color: colors.navy }}>
-                          {t.title}
-                        </div>
-                        <div className="text-xs leading-relaxed" style={{ color: colors.muted }}>
-                          {t.desc}
-                        </div>
+                    </div>
+
+                    <div
+                      className="min-w-0 flex-1 rounded-2xl p-4"
+                      style={{
+                        backgroundColor: colors.card,
+                        border: `1px solid ${colors.border}`,
+                      }}
+                    >
+                      <div className="font-semibold mb-1 text-sm" style={{ color: colors.navy }}>
+                        {t.title}
+                      </div>
+                      <div className="text-xs leading-relaxed" style={{ color: colors.muted }}>
+                        {t.desc}
                       </div>
                     </div>
                   </div>

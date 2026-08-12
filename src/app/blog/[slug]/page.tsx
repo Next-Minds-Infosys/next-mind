@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import Markdown from "@/components/Markdown";
 import SiteLayout from "@/components/SiteLayout";
 import { JsonLd } from "@/components/JsonLd";
 import { articleSchema, breadcrumbSchema } from "@/lib/schema-org";
@@ -130,9 +129,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </p>
         </header>
 
-        <div className="nm-prose leading-relaxed" style={{ color: colors.body }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contentMd}</ReactMarkdown>
-        </div>
+        <Markdown>{post.contentMd}</Markdown>
 
         <div
           className="mt-14 rounded-2xl p-8 text-center"
