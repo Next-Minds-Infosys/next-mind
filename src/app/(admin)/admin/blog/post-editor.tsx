@@ -300,6 +300,7 @@ export function PostEditor({
                 value={field.value ?? ""}
                 onChange={field.onChange}
                 placeholder="Write the article…"
+                imageUploadResourceId={draftId}
               />
             )}
           />

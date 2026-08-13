@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { Op } from "sequelize";
 import { getSession } from "@/lib/auth";
 import { Assignment, Batch, BatchStudent, Course, Lesson, Material, Mentor, Post, Submission, User } from "@/db";
 import { Role } from "@/lib/types";
@@ -130,7 +131,13 @@ async function resolveOwner(key: string): Promise<Owner | null> {
     return { public: true, download: false, fileName: null } as const;
   }
 
-  const post = await Post.findOne({ where: { coverKey: key }, attributes: ["id"] });
+  // Cover image, or an inline image embedded in the post body
+  // (`![alt](/api/media/<key>)` written into contentMd by the editor's image
+  // toolbar) - both are public once the post exists.
+  const post = await Post.findOne({
+    where: { [Op.or]: [{ coverKey: key }, { contentMd: { [Op.substring]: key } }] },
+    attributes: ["id"],
+  });
   if (post) {
     return { public: true, download: false, fileName: null } as const;
   }
