@@ -277,7 +277,13 @@ function ToolsMarquee() {
 function PopularCourses({ courses }: { courses: PublicCourse[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselect, setPreselect] = useState("");
-  const popular = courses.slice(0, 6);
+  // Every published course, not the 6 newest. The old `slice(0, 6)` combined
+  // with an `ORDER BY createdAt DESC` in getPublicCourses meant whichever
+  // courses happened to be created last won the homepage slots - which is why
+  // Digital Marketing, Advanced SEO and Full Stack were silently missing from
+  // it despite being live on /courses. Nine courses fill three clean rows on
+  // the 3-column grid, and each one gets an internal link from the homepage.
+  const popular = courses;
 
   return (
     <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
@@ -288,7 +294,7 @@ function PopularCourses({ courses }: { courses: PublicCourse[] }) {
               className="text-xs font-bold tracking-[0.2em] uppercase mb-2"
               style={{ color: colors.teal }}
             >
-              Popular Courses
+              Our Courses
             </div>
             <h2
               className="font-display text-3xl lg:text-4xl font-bold"

@@ -403,7 +403,14 @@ body {
   border-radius: 5px;
   padding: 0.15em 0.4em;
   font-size: 0.875em;
+  /* Long unbroken tokens - file paths, exploit identifiers, URLs - have no
+     break opportunity and would otherwise push the whole page sideways on a
+     phone. `anywhere` lets them wrap mid-token rather than overflow. */
+  overflow-wrap: anywhere;
 }
+
+/* Same protection for long bare URLs in body copy. */
+.nm-prose a { overflow-wrap: anywhere; }
 
 .nm-prose pre {
   margin: 0 0 1.15em;
@@ -451,15 +458,19 @@ body {
   min-width: 34rem;
 }
 
-.nm-prose thead { background: var(--nm-surface); }
+/* Navy header band with small-caps labels, matching the course-page design. */
+.nm-prose thead { background: var(--nm-navy); }
 
 .nm-prose th {
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1rem;
   text-align: left;
-  font-weight: 650;
-  color: var(--nm-heading);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.82);
   white-space: nowrap;
-  border-bottom: 1px solid var(--nm-border);
+  border-bottom: 0;
 }
 
 .nm-prose td {
@@ -469,6 +480,8 @@ body {
 }
 
 .nm-prose tbody tr:last-child td { border-bottom: 0; }
+/* The row label carries the scan-line, so it gets the heading colour. */
+.nm-prose tbody td:first-child { font-weight: 600; color: var(--nm-heading); }
 .nm-prose tbody tr:nth-child(even) { background: color-mix(in srgb, var(--nm-surface) 45%, transparent); }
 
 /* Numeric columns read far better right-aligned; GFM alignment syntax
