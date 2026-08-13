@@ -35,22 +35,28 @@ export async function generateMetadata({
   const description =
     post.metaDescription?.trim() || post.excerpt || post.contentMd.slice(0, 160);
 
-  const title = post.metaTitle || post.title;
-  const description = post.metaDescription || post.excerpt || post.contentMd.slice(0, 160);
-  const canonical = post.canonicalUrl || `/blog/${post.slug}`;
   return {
-    title,
+    // `absolute` bypasses the root layout's "%s — Next Minds Infosys" template.
+    // A hand-written metaTitle already carries the brand, and appending the
+    // suffix pushed it past the ~60 characters Google shows.
+    title: post.metaTitle?.trim() ? { absolute: seoTitle } : seoTitle,
     description,
-    alternates: { canonical },
+    alternates: { canonical: post.canonicalUrl?.trim() || `/blog/${post.slug}` },
+    keywords: post.focusKeyword ? [post.focusKeyword] : undefined,
     openGraph: {
       type: "article",
-      title,
+      title: seoTitle,
       description,
-      url: canonical,
+      url: `/blog/${post.slug}`,
       publishedTime: (post.publishedAt ?? post.createdAt).toISOString(),
       authors: post.authorName ? [post.authorName] : undefined,
     },
-    twitter: { card: "summary_large_image", title, description },
+    twitter: {
+      card: "summary_large_image",
+      title: seoTitle,
+      description,
+      images: ["/assets/og-default.png"],
+    },
   };
 }
 
