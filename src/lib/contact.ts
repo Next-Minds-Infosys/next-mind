@@ -28,13 +28,39 @@ export const contact = {
   hoursSpec: { days: ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday"], opens: "07:00", closes: "20:00" },
 
   address: {
+    street: "Balbhadra Marg",
     locality: "New Baneshwor",
     region: "Bagmati",
     city: "Kathmandu",
+    postalCode: "44703",
     country: "NP",
-    full: "New Baneshwor, Kathmandu, Nepal",
+    full: "Balbhadra Marg, New Baneshwor, Kathmandu 44703, Nepal",
+  },
+
+  /**
+   * The verified Google Business Profile, and the coordinates behind it.
+   *
+   * Taken from the business listing itself (maps.app.goo.gl/6BPGgAcrXHZ8DMuJ7),
+   * not geocoded from the address string - so the pin, the `geo` in structured
+   * data and the directions link all agree. `place` is the short share link:
+   * stable, and the one to hand out anywhere a URL has to be typed or printed.
+   */
+  maps: {
+    lat: 27.6944856,
+    lng: 85.3377256,
+    place: "https://maps.app.goo.gl/6BPGgAcrXHZ8DMuJ7",
   },
 } as const;
+
+/** Opens turn-by-turn directions - the Maps app on mobile, the web app elsewhere. */
+export const directionsHref = `https://www.google.com/maps/dir/?api=1&destination=${contact.maps.lat},${contact.maps.lng}`;
+
+/**
+ * Keyless Maps embed. The Embed API proper needs a billing-enabled key; this
+ * older `output=embed` form does not, which keeps the contact page working
+ * without adding a key to the client bundle.
+ */
+export const mapEmbedHref = `https://maps.google.com/maps?q=${contact.maps.lat},${contact.maps.lng}&z=16&hl=en&output=embed`;
 
 export const mailtoHref = `mailto:${contact.email}`;
 export const telHref = `tel:${contact.phoneE164}`;

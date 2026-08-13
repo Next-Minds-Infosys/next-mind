@@ -1,5 +1,13 @@
 import { requireRole } from "@/lib/access";
 import { Role } from "@/lib/types";
+import {
+  ClipboardList,
+  GraduationCap,
+  LayoutDashboard,
+  Library,
+  Receipt,
+  UserRound,
+} from "lucide-react";
 import { PortalShell } from "@/components/lms/portal-shell";
 
 /**
@@ -16,12 +24,12 @@ export const metadata = { robots: { index: false, follow: false } };
 
 
 const nav = [
-  { href: "/student", label: "Dashboard", icon: "🏠" },
-  { href: "/student/batches", label: "My batches", icon: "📚" },
-  { href: "/student/assignments", label: "Assignments", icon: "📝" },
-  { href: "/student/grades", label: "Grades", icon: "🎯" },
-  { href: "/student/payments", label: "Payments", icon: "🧾" },
-  { href: "/student/profile", label: "Profile", icon: "👤" },
+  { href: "/student", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/student/batches", label: "My batches", icon: Library },
+  { href: "/student/assignments", label: "Assignments", icon: ClipboardList },
+  { href: "/student/grades", label: "Grades", icon: GraduationCap },
+  { href: "/student/payments", label: "Payments", icon: Receipt },
+  { href: "/student/profile", label: "Profile", icon: UserRound },
 ];
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {

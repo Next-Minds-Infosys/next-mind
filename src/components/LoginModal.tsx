@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
-import { X } from "lucide-react";
+import { GraduationCap, X } from "lucide-react";
 import { signIn } from "@/lib/auth-client";
 import { colors, gradient } from "@/lib/theme";
 
@@ -59,7 +59,7 @@ export default function LoginModal({ isOpen, onClose }: { isOpen: boolean; onClo
           >
             <X size={16} />
           </button>
-          <div className="mb-1 text-2xl">🎓</div>
+          <GraduationCap size={26} aria-hidden="true" className="mb-1" />
           <h2 className="font-display text-xl font-bold">Student &amp; Instructor Login</h2>
           <p className="mt-1 text-sm opacity-80">
             Sign in to reach your batch, recordings and assignments.

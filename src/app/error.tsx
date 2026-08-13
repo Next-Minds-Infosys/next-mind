@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { TriangleAlert } from "lucide-react";
 
 /**
  * Root error boundary. Without one, an unhandled server error renders Next's
@@ -21,7 +22,7 @@ export default function GlobalError({
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
       <div className="w-full max-w-md rounded-2xl bg-white p-8 text-center ring-1 ring-gray-950/5">
-        <div className="mb-3 text-4xl">⚠️</div>
+        <TriangleAlert size={36} aria-hidden="true" className="mx-auto mb-3 text-amber-600" />
         <h1 className="text-xl font-semibold text-gray-900">Something went wrong</h1>
         <p className="mt-2 text-sm text-gray-500">
           The page could not be loaded. Try again, and if it keeps happening let us know.

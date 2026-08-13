@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import Markdown from "@/components/Markdown";
 import SiteLayout from "@/components/SiteLayout";
 import { JsonLd } from "@/components/JsonLd";
 import { articleSchema, breadcrumbSchema } from "@/lib/schema-org";
@@ -22,8 +21,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  // notFound() must fire HERE, not in the page body. Once a route streams (the
+  // root loading.tsx creates a Suspense boundary, so every dynamic page does),
+  // the 200 status is already committed and a later notFound() only swaps the
+  // body - a soft 404 that Google will happily index. generateMetadata runs
+  // before the response starts, so the status is still ours to set.
   const post = await getPost(slug);
-  if (!post) return { title: "Post not found" };
+  if (!post) notFound();
+
+  // The SEO fields win when set - they are written to target a specific query
+  // and are usually not the same string as the on-page headline.
+  const seoTitle = post.metaTitle?.trim() || post.title;
+  const description =
+    post.metaDescription?.trim() || post.excerpt || post.contentMd.slice(0, 160);
 
   const title = post.metaTitle || post.title;
   const description = post.metaDescription || post.excerpt || post.contentMd.slice(0, 160);
@@ -113,9 +123,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
           </p>
         </header>
 
-        <div className="nm-prose leading-relaxed" style={{ color: colors.body }}>
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{post.contentMd}</ReactMarkdown>
-        </div>
+        <Markdown>{post.contentMd}</Markdown>
 
         <div
           className="mt-14 rounded-2xl p-8 text-center"

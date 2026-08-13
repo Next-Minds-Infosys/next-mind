@@ -44,6 +44,17 @@ export interface CourseAttributes {
   published: boolean;
   createdById: string | null;
   mentorId: string | null;
+  /** Per-course SEO overrides; null falls back to the course's own fields. */
+  h1: string | null;
+  h1Accent: string | null;
+  nextBatch: string | null;
+  syllabusUrl: string | null;
+  metaTitle: string | null;
+  metaDescription: string | null;
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImageAlt: string | null;
+  focusKeyword: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +66,12 @@ type CourseCreation = Optional<
   | "published"
   | "createdById"
   | "mentorId"
+  | "metaTitle"
+  | "metaDescription"
+  | "ogTitle"
+  | "ogDescription"
+  | "ogImageAlt"
+  | "focusKeyword"
   | "createdAt"
   | "updatedAt"
   | "shortDesc"
@@ -90,6 +107,16 @@ class CourseModel extends Model<CourseAttributes, CourseCreation> implements Cou
   declare published: boolean;
   declare createdById: string | null;
   declare mentorId: string | null;
+  declare h1: string | null;
+  declare h1Accent: string | null;
+  declare nextBatch: string | null;
+  declare syllabusUrl: string | null;
+  declare metaTitle: string | null;
+  declare metaDescription: string | null;
+  declare ogTitle: string | null;
+  declare ogDescription: string | null;
+  declare ogImageAlt: string | null;
+  declare focusKeyword: string | null;
   declare createdAt: Date;
   declare updatedAt: Date;
   declare enrollments?: import("./enrollment").Enrollment[];
@@ -215,6 +242,16 @@ if (!sequelize.models.Course) {
         type: DataTypes.UUID,
         allowNull: true,
       },
+      h1: { type: DataTypes.STRING(200), allowNull: true },
+    h1Accent: { type: DataTypes.STRING(200), allowNull: true },
+    nextBatch: { type: DataTypes.STRING(80), allowNull: true },
+    syllabusUrl: { type: DataTypes.STRING(500), allowNull: true },
+    metaTitle: { type: DataTypes.STRING(200), allowNull: true },
+      metaDescription: { type: DataTypes.TEXT, allowNull: true },
+      ogTitle: { type: DataTypes.STRING(200), allowNull: true },
+      ogDescription: { type: DataTypes.TEXT, allowNull: true },
+      ogImageAlt: { type: DataTypes.STRING(300), allowNull: true },
+      focusKeyword: { type: DataTypes.STRING(160), allowNull: true },
       createdAt: { type: DataTypes.DATE, allowNull: false },
       updatedAt: { type: DataTypes.DATE, allowNull: false },
     },

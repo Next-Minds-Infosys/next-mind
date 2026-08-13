@@ -27,16 +27,21 @@ export const metadata: Metadata = {
     title: "Next Minds — IT Training in Kathmandu",
     description:
       "Industry-aligned IT training in Kathmandu — online and on campus at New Baneshwor.",
-    images: [{ url: "/assets/logo-horizontal.png", width: 1959, height: 356 }],
+    images: [{ url: "/assets/og-default.png", width: 1200, height: 630, alt: "Next Minds Infosys — IT training in Kathmandu" }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Next Minds — IT Training in Kathmandu",
     description:
       "Industry-aligned IT training in Kathmandu — online and on campus at New Baneshwor.",
-    images: ["/assets/logo-horizontal.png"],
+    images: ["/assets/og-default.png"],
   },
   robots: { index: true, follow: true },
+  // Google Search Console ownership. Next renders this as
+  // <meta name="google-site-verification" content="..."> in <head>.
+  // Not a secret - it only proves control of the domain - but it must stay put:
+  // removing it un-verifies the property and Search Console stops reporting.
+  verification: { google: "r5DKUG4dkUY38iO0J3VPTBQuuPSIREahJPKTV4auGV4" },
 };
 
 export default function RootLayout({
@@ -46,7 +51,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="antialiased font-sans">
+      {/*
+        Grammarly and similar extensions write data-* attributes onto <body>
+        before React hydrates (data-gr-ext-installed, data-new-gr-c-s-check-loaded),
+        which React reports as a hydration mismatch. It is not ours to fix and
+        affects nothing, so the warning is suppressed at exactly this node -
+        suppressHydrationWarning is one level deep, so real mismatches inside
+        the tree are still reported.
+      */}
+      <body className="antialiased font-sans" suppressHydrationWarning>
         {/* Identity graph: every other schema on the site references these by @id. */}
         <JsonLd data={organizationSchema()} />
         <JsonLd data={websiteSchema()} />

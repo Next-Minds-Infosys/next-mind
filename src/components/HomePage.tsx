@@ -5,8 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { testimonials } from "@/data/courses";
 import type { PublicCourse } from "@/db/queries";
+import { stats } from "@/lib/stats";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import EnrollModal from "./EnrollModal";
+import { Briefcase, GraduationCap, Handshake, Rocket, Star, Target, UserCog, UserRound, Zap } from "lucide-react";
 
 const tools = [
   "React",
@@ -37,42 +39,31 @@ const rotatingWords = [
 ];
 
 const heroStats: [string, string][] = [
-  ["1,200+", "Students Trained"],
-  ["85%", "Placement Rate"],
-  ["50+", "Hiring Partners"],
-];
-
-const recentEnrollments = [
-  { name: "Sushila T.", course: "DevOps Engineering", ago: "2 min ago" },
-  { name: "Aayush K.", course: "Full Stack Development", ago: "8 min ago" },
-  { name: "Nirajan S.", course: "Cyber Security", ago: "14 min ago" },
-  { name: "Pooja M.", course: "Digital Marketing", ago: "21 min ago" },
-  { name: "Bibek G.", course: "Data Science & AI", ago: "35 min ago" },
-  { name: "Sneha R.", course: "UI/UX Design", ago: "47 min ago" },
-  { name: "Kiran B.", course: "QA Engineering", ago: "1 hr ago" },
-  { name: "Manish A.", course: "Advanced SEO", ago: "2 hr ago" },
+  [stats.studentsTrained, "Students Trained"],
+  [stats.placementRate, "Placement Rate"],
+  [stats.hiringPartners, "Hiring Partners"],
 ];
 
 const stripStats = [
-  { n: "1,200+", l: "Students Trained", icon: "👨‍🎓", c: colors.teal },
-  { n: "85%", l: "Placement Rate", icon: "💼", c: colors.blue },
-  { n: "50+", l: "Hiring Partners", icon: "🤝", c: colors.green },
-  { n: "12+", l: "Expert Instructors", icon: "🧑‍💻", c: "#f4a44a" },
+  { n: stats.studentsTrained, l: "Students Trained", icon: GraduationCap, c: colors.teal },
+  { n: stats.placementRate, l: "Placement Rate", icon: Briefcase, c: colors.blue },
+  { n: stats.hiringPartners, l: "Hiring Partners", icon: Handshake, c: colors.green },
+  { n: stats.instructors, l: "Expert Instructors", icon: UserCog, c: "#f4a44a" },
 ];
 
 const processSteps = [
   {
-    icon: "🎯",
+    icon: Target,
     title: "Choose Your Course",
     desc: "Browse programs and book a free 30-min counselling session with our advisors.",
   },
   {
-    icon: "⚡",
+    icon: Zap,
     title: "Learn & Build",
     desc: "Live classes, real-world projects, and mentorship from active industry professionals.",
   },
   {
-    icon: "🚀",
+    icon: Rocket,
     title: "Get Placed",
     desc: "Strong portfolio, interview prep, and direct referrals to our 50+ hiring partners.",
   },
@@ -81,8 +72,6 @@ const processSteps = [
 function Hero({ courses }: { courses: PublicCourse[] }) {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
-  const [enrollIndex, setEnrollIndex] = useState(0);
-  const [enrollVisible, setEnrollVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
 
   useEffect(() => {
@@ -96,18 +85,7 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
     return () => clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    const id = setInterval(() => {
-      setEnrollVisible(false);
-      setTimeout(() => {
-        setEnrollIndex((i) => (i + 1) % recentEnrollments.length);
-        setEnrollVisible(true);
-      }, 320);
-    }, 3600);
-    return () => clearInterval(id);
-  }, []);
 
-  const enrollee = recentEnrollments[enrollIndex];
 
   return (
     <section className="relative overflow-hidden pt-16" style={{ backgroundColor: colors.bg }}>
@@ -179,16 +157,15 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
             <div className="flex flex-wrap gap-4 mb-12">
               <Link
                 href="/courses"
-                className="font-bold px-9 py-4 rounded-xl text-white text-base active:scale-95 transition-all"
-                style={{ background: gradient, boxShadow: `0 6px 24px ${colors.teal}40` }}
+                className="min-h-[48px] inline-flex items-center rounded-xl border-[1.5px] border-nm-teal px-9 py-4 text-base font-semibold text-nm-teal-ink transition-all hover:bg-nm-teal/10 active:scale-95"
               >
-                Explore Courses
+                Explore courses
               </Link>
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="font-semibold px-9 py-4 rounded-xl text-base transition-all"
-                style={{ border: `1.5px solid ${colors.border}`, color: colors.navy }}
+                className="min-h-[48px] rounded-xl px-9 py-4 text-base font-bold text-white transition-all active:scale-95"
+                style={{ background: gradient, boxShadow: `0 6px 24px ${colors.teal}40` }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.borderColor = colors.teal;
                   e.currentTarget.style.color = colors.teal;
@@ -198,7 +175,7 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
                   e.currentTarget.style.color = colors.navy;
                 }}
               >
-                Book Free Counselling
+                Book free counselling
               </button>
             </div>
 
@@ -241,60 +218,7 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
               />
             </div>
 
-            <div
-              className="absolute -left-10 top-[28%] rounded-2xl p-4 shadow-xl min-w-[190px]"
-              style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.border}`,
-                boxShadow: "0 8px 32px rgba(13,45,82,0.12)",
-              }}
-            >
-              <div className="flex items-center gap-2 mb-2">
-                <span
-                  className="w-2 h-2 rounded-full animate-pulse"
-                  style={{ backgroundColor: colors.green }}
-                />
-                <span className="text-xs font-bold" style={{ color: colors.green }}>
-                  Just Enrolled
-                </span>
-              </div>
-              <div
-                className="transition-all duration-300"
-                style={{
-                  opacity: enrollVisible ? 1 : 0,
-                  transform: enrollVisible ? "translateY(0)" : "translateY(6px)",
-                }}
-              >
-                <div className="text-sm font-semibold" style={{ color: colors.navy }}>
-                  {enrollee.name}
-                </div>
-                <div className="text-xs" style={{ color: colors.muted }}>
-                  {enrollee.course} · {enrollee.ago}
-                </div>
-              </div>
-            </div>
 
-            <div
-              className="absolute -right-8 bottom-[26%] rounded-2xl p-4 shadow-xl min-w-[204px]"
-              style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.border}`,
-                boxShadow: "0 8px 32px rgba(13,45,82,0.12)",
-              }}
-            >
-              <div className="text-xs font-bold mb-2" style={{ color: colors.teal }}>
-                🎓 Placement Win
-              </div>
-              <div className="text-sm font-semibold" style={{ color: colors.navy }}>
-                Roshan M.
-              </div>
-              <div className="text-xs" style={{ color: colors.muted }}>
-                Full Stack → Leapfrog
-              </div>
-              <div className="text-xs font-bold mt-1" style={{ color: colors.green }}>
-                NPR 65,000/mo
-              </div>
-            </div>
 
             <div
               className="absolute left-1/2 -translate-x-1/2 -bottom-5 rounded-full px-5 py-2.5 flex items-center gap-3"
@@ -306,9 +230,7 @@ function Hero({ courses }: { courses: PublicCourse[] }) {
             >
               <div className="flex gap-0.5">
                 {Array.from({ length: 5 }).map((_, i) => (
-                  <span key={i} style={{ color: "#f4a44a" }}>
-                    ★
-                  </span>
+                  <Star key={i} size={15} aria-hidden="true" className="fill-warning text-warning" />
                 ))}
               </div>
               <span className="text-sm font-semibold" style={{ color: colors.navy }}>
@@ -355,7 +277,13 @@ function ToolsMarquee() {
 function PopularCourses({ courses }: { courses: PublicCourse[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselect, setPreselect] = useState("");
-  const popular = courses.slice(0, 6);
+  // Every published course, not the 6 newest. The old `slice(0, 6)` combined
+  // with an `ORDER BY createdAt DESC` in getPublicCourses meant whichever
+  // courses happened to be created last won the homepage slots - which is why
+  // Digital Marketing, Advanced SEO and Full Stack were silently missing from
+  // it despite being live on /courses. Nine courses fill three clean rows on
+  // the 3-column grid, and each one gets an internal link from the homepage.
+  const popular = courses;
 
   return (
     <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
@@ -366,7 +294,7 @@ function PopularCourses({ courses }: { courses: PublicCourse[] }) {
               className="text-xs font-bold tracking-[0.2em] uppercase mb-2"
               style={{ color: colors.teal }}
             >
-              Popular Courses
+              Our Courses
             </div>
             <h2
               className="font-display text-3xl lg:text-4xl font-bold"
@@ -424,12 +352,6 @@ function PopularCourses({ courses }: { courses: PublicCourse[] }) {
                       }}
                     >
                       {course.category}
-                    </span>
-                    <span
-                      className="text-xs font-bold px-2.5 py-1 rounded-full"
-                      style={{ backgroundColor: `${colors.blue}10`, color: colors.blue }}
-                    >
-                      🤖 AI Enhanced
                     </span>
                   </div>
                 </div>
@@ -533,7 +455,7 @@ function StatsStrip() {
               className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl transition-transform group-hover:scale-110"
               style={{ backgroundColor: `${s.c}12` }}
             >
-              {s.icon}
+              <s.icon size={26} aria-hidden="true" className="text-nm-teal-ink" />
             </div>
             <div className="font-display text-4xl font-bold mb-1" style={{ color: s.c }}>
               {s.n}
@@ -637,9 +559,7 @@ function Testimonials() {
                       )}
                       <div className="flex gap-1 mb-4">
                         {Array.from({ length: 5 }).map((_, s) => (
-                          <span key={s} style={{ color: "#f4a44a" }}>
-                            ★
-                          </span>
+                          <Star key={s} size={15} aria-hidden="true" className="fill-warning text-warning" />
                         ))}
                       </div>
                       <p
@@ -656,7 +576,7 @@ function Testimonials() {
                           className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0"
                           style={{ background: gradient }}
                         >
-                          {t.emoji}
+                          <UserRound size={24} aria-hidden="true" className="text-nm-teal" />
                         </div>
                         <div>
                           <div className="font-semibold text-sm" style={{ color: colors.navy }}>
@@ -786,7 +706,7 @@ function Process() {
                     boxShadow: "0 4px 20px rgba(13,45,82,0.08)",
                   }}
                 >
-                  {s.icon}
+                  <s.icon size={26} aria-hidden="true" className="text-nm-teal-ink" />
                 </div>
                 <div
                   className="absolute -top-3 -right-3 w-8 h-8 rounded-full text-white text-sm font-black flex items-center justify-center shadow-lg"
@@ -839,7 +759,7 @@ function FinalCta({ courses }: { courses: PublicCourse[] }) {
                 color: colors.teal,
               }}
             >
-              {`🎓 ${nextIntakeLabel()} Batch — Limited Seats Remaining`}
+              {`${nextIntakeLabel()} batch — limited seats remaining`}
             </div>
             <h2
               className="font-display font-bold mb-4 leading-tight text-white"

@@ -1,5 +1,6 @@
 import { requireRole } from "@/lib/access";
 import { Role } from "@/lib/types";
+import { GraduationCap, LayoutDashboard, Library } from "lucide-react";
 import { PortalShell } from "@/components/lms/portal-shell";
 
 /**
@@ -16,9 +17,9 @@ export const metadata = { robots: { index: false, follow: false } };
 
 
 const nav = [
-  { href: "/instructor", label: "Dashboard", icon: "🏠" },
-  { href: "/instructor/batches", label: "My batches", icon: "📚" },
-  { href: "/instructor/grading", label: "Grading", icon: "🎯" },
+  { href: "/instructor", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/instructor/batches", label: "My batches", icon: Library },
+  { href: "/instructor/grading", label: "Grading", icon: GraduationCap },
 ];
 
 export default async function InstructorLayout({ children }: { children: React.ReactNode }) {

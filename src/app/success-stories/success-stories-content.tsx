@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { successStories } from "@/data/courses";
 import { colors, gradient, heroGradient } from "@/lib/theme";
+import { BookOpen, UserRound, Wallet } from "lucide-react";
 
 const stats = [
   { n: "3,000+", l: "Total Graduates", c: colors.teal },
@@ -93,7 +94,7 @@ export default function SuccessStoriesPage() {
                           background: `linear-gradient(135deg, ${colors.teal}20, ${colors.blue}20)`,
                         }}
                       >
-                        {s.emoji}
+                        <UserRound size={24} aria-hidden="true" className="text-nm-teal" />
                       </div>
                       <div>
                         <h3 className="font-display font-bold" style={{ color: colors.navy }}>
@@ -146,13 +147,13 @@ export default function SuccessStoriesPage() {
                         className="text-xs font-bold px-3 py-1.5 rounded-full"
                         style={{ backgroundColor: `${colors.green}15`, color: colors.green }}
                       >
-                        💰 {s.salary}
+                        <Wallet size={14} aria-hidden="true" className="inline mr-1.5 -mt-0.5" />{s.salary}
                       </span>
                       <span
                         className="text-xs font-semibold px-3 py-1.5 rounded-full"
                         style={{ backgroundColor: `${colors.teal}10`, color: colors.teal }}
                       >
-                        📚 {s.course}
+                        <BookOpen size={14} aria-hidden="true" className="inline mr-1.5 -mt-0.5" />{s.course}
                       </span>
                     </div>
 

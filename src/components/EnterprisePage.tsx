@@ -2,19 +2,7 @@
 
 import { useRef, useState } from "react";
 import { contact } from "@/lib/contact";
-import {
-  Award,
-  Building2,
-  CheckCircle,
-  Globe,
-  Mail,
-  Phone,
-  Shield,
-  Target,
-  TrendingUp,
-  Users,
-  Zap,
-} from "lucide-react";
+import { Award, Building2, CheckCircle, Globe, Mail, PartyPopper, Phone, Shield, Target, TrendingUp, Users, Zap } from "lucide-react";
 import { motion, useInView, AnimatePresence } from "framer-motion";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -265,7 +253,7 @@ function EnterpriseContactForm() {
     return (
       <div className="overflow-hidden rounded-2xl bg-gradient-to-br from-nm-teal to-nm-blue p-[1px] shadow-[0_8px_40px_rgba(0,189,184,0.12)]">
         <div className="rounded-[15px] bg-nm-card py-16 text-center">
-          <div className="mb-4 text-5xl">🎉</div>
+          <PartyPopper size={44} aria-hidden="true" className="mx-auto mb-4 text-nm-teal" />
           <p className="mb-2 text-2xl font-bold text-nm-navy">Request received!</p>
           <p className="text-nm-muted">Our enterprise team will reach out within 24 hours.</p>
           <Button className="mt-8" onClick={() => setStatus("idle")}>

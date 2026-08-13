@@ -114,7 +114,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
         >
           <motion.div
             variants={fadeUp}
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-nm-teal/40 bg-nm-teal/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-nm-teal"
+            className="mb-4 inline-flex items-center gap-2 rounded-full border border-nm-teal/40 bg-nm-teal/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-nm-teal-ink"
           >
             Course Catalog
           </motion.div>
@@ -143,7 +143,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
                 className={`flex-shrink-0 whitespace-nowrap rounded-full px-5 py-2 text-sm font-semibold transition-all ${
                   active
                     ? "nm-gradient text-white shadow-md shadow-nm-teal/20"
-                    : "border border-nm-border bg-nm-surface text-nm-body hover:border-nm-teal/40 hover:text-nm-teal"
+                    : "border border-nm-border bg-nm-surface text-nm-body hover:border-nm-teal/40 hover:text-nm-teal-ink"
                 }`}
               >
                 {cat}
@@ -167,7 +167,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
           <button
             type="button"
             onClick={() => setRefineOpen((v) => !v)}
-            className="inline-flex items-center gap-2 rounded-xl border border-nm-border bg-nm-card px-4 py-2.5 text-sm font-semibold text-nm-body transition-colors hover:border-nm-teal/40 hover:text-nm-teal"
+            className="inline-flex items-center gap-2 rounded-xl border border-nm-border bg-nm-card px-4 py-2.5 text-sm font-semibold text-nm-body transition-colors hover:border-nm-teal/40 hover:text-nm-teal-ink"
           >
             <SlidersHorizontal className="h-4 w-4" />
             Refine
@@ -185,7 +185,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
             <button
               type="button"
               onClick={clearAll}
-              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-nm-teal transition-colors hover:bg-nm-light"
+              className="inline-flex items-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-semibold text-nm-teal-ink transition-colors hover:bg-nm-light"
             >
               <X className="h-3.5 w-3.5" />
               Clear all
@@ -239,7 +239,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
               <button
                 type="button"
                 onClick={clearAll}
-                className="rounded-full border-2 border-nm-teal px-5 py-2 text-sm font-semibold text-nm-teal transition-colors hover:bg-nm-light"
+                className="rounded-full border-2 border-nm-teal px-5 py-2 text-sm font-semibold text-nm-teal-ink transition-colors hover:bg-nm-light"
               >
                 Clear all filters
               </button>
@@ -328,7 +328,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
                       <div className="flex gap-2">
                         <Link
                           href={`/courses/${course.slug}`}
-                          className="rounded-full border border-nm-border px-3.5 py-1.5 text-xs font-semibold text-nm-navy transition-colors hover:border-nm-teal hover:text-nm-teal"
+                          className="rounded-full border border-nm-border px-3.5 py-1.5 text-xs font-semibold text-nm-navy transition-colors hover:border-nm-teal hover:text-nm-teal-ink"
                         >
                           Details
                         </Link>

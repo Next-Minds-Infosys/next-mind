@@ -1,605 +1,1003 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { contact, mailtoHref, telHref } from "@/lib/contact";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import { AnimatePresence, motion } from "framer-motion";
+import Markdown from "./Markdown";
 import {
   Award,
-  BookOpen,
-  CheckCircle2,
+  BarChart3,
+  Calendar,
+  Check,
   ChevronDown,
   Clock,
-  Layers,
-  Mail,
+  FileText,
+  Handshake,
+  Minus,
+  MonitorSmartphone,
   Phone,
+  Plus,
+  TriangleAlert,
+  Wallet,
   Users,
 } from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
+import { contact, telHref } from "@/lib/contact";
+import { npr } from "@/lib/utils";
+import { colors, gradient, heroGradient } from "@/lib/theme";
 import { publicMediaSrc } from "@/lib/media-image";
-import { BlobBackground } from "@/components/ui/blob-background";
-import { SpotlightCard } from "@/components/ui/spotlight-card";
+import { CourseStickyBar } from "./CourseStickyBar";
 import EnrollModal from "./EnrollModal";
-
-const sections = [
-  { id: "overview", label: "Overview" },
-  { id: "about", label: "About" },
-  { id: "who-is-this-for", label: "Who Is This For" },
-  { id: "skills", label: "Skills" },
-  { id: "curriculum", label: "Curriculum" },
-  { id: "mentor", label: "Mentor" },
-  { id: "why-us", label: "Why Us" },
-  { id: "faq", label: "Faq" },
-];
-
-const highlights = [
-  {
-    title: "Hands-on Projects",
-    desc: "Build 5+ real-world projects to showcase in your portfolio",
-  },
-  {
-    title: "Industry Practices",
-    desc: "Learn professional coding standards and best practices",
-  },
-  {
-    title: "Flexible Schedule",
-    desc: "Weekend and evening batches available for working professionals",
-  },
-  {
-    title: "Beginner Friendly",
-    desc: "No prior programming experience required",
-  },
-];
-
-const whyUs = [
-  {
-    icon: Users,
-    title: "Expert Instructors",
-    desc: "Learn from professionals working in top tech companies",
-  },
-  {
-    icon: BookOpen,
-    title: "Hands-On Projects",
-    desc: "Build real-world projects for your portfolio",
-  },
-  {
-    icon: Award,
-    title: "Industry Certification",
-    desc: "Earn recognized certificates to boost your career",
-  },
-  {
-    icon: Clock,
-    title: "Lifetime Access",
-    desc: "Access course materials and updates forever",
-  },
-  {
-    icon: Users,
-    title: "Career Support",
-    desc: "Resume building, interview prep, and job placement",
-  },
-  {
-    icon: Clock,
-    title: "Flexible Schedule",
-    desc: "Weekend and evening batches available",
-  },
-];
-
-const counsellingBenefits = [
-  "Career path guidance",
-  "Course recommendation",
-  "Job market insights",
-  "Learning roadmap",
-];
 
 interface CoursePageContentProps {
   course: PublicCourse;
   courses: PublicCourse[];
 }
 
-export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [active, setActive] = useState("overview");
-  // Curriculum accordion: one module open at a time, all collapsed on load.
-  const [openModule, setOpenModule] = useState<number | null>(null);
-  const instructor = course.mentor;
-  const courseCoverSrc = publicMediaSrc(course.imageUrl);
-  const instructorPhotoSrc = instructor ? publicMediaSrc(instructor.photo) : null;
-  const navRef = useRef<HTMLDivElement>(null);
+/**
+ * Body sections come from `contentMd`, which is authored as a series of `##`
+ * headings. Splitting on them lets each one get real section chrome - a
+ * coloured eyebrow and a heading in the page's own type scale - instead of
+ * rendering as one undifferentiated wall of markdown.
+ */
+function splitContent(md: string) {
+  if (!md?.trim()) return [];
+  const parts = md.split(/^## +/m).filter((s) => s.trim());
+  // Text before the first `##` has no heading of its own.
+  const lead = md.trimStart().startsWith("## ") ? null : parts.shift() ?? null;
+  const out = parts.map((chunk) => {
+    const nl = chunk.indexOf("\n");
+    return {
+      heading: (nl === -1 ? chunk : chunk.slice(0, nl)).trim(),
+      body: (nl === -1 ? "" : chunk.slice(nl + 1)).trim(),
+    };
+  });
+  return lead ? [{ heading: "", body: lead.trim() }, ...out] : out;
+}
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const visible = entries
-          .filter((e) => e.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
-        if (visible) setActive(visible.target.id);
-      },
-      { rootMargin: "-140px 0px -55% 0px", threshold: 0 },
-    );
-    sections.forEach((s) => {
-      const el = document.getElementById(s.id);
-      if (el) observer.observe(el);
-    });
-    return () => observer.disconnect();
-  }, [instructor]);
+/** Eyebrow label + colour for a body section, matched on its heading. */
+function chromeFor(heading: string): { eyebrow: string; color: string } | null {
+  const h = heading.toLowerCase();
+  if (/career scope|salary/.test(h)) return { eyebrow: "Career & Salary", color: colors.orange };
+  if (/fee|batch|payment|pricing/.test(h)) return { eyebrow: "Pricing & Schedule", color: colors.tealInk };
+  if (/certification/.test(h)) return { eyebrow: "Certifications", color: colors.blueInk };
+  if (/tools/.test(h)) return { eyebrow: "Toolkit", color: colors.blueInk };
+  if (/project|lab/.test(h)) return { eyebrow: "Hands-on Work", color: colors.green };
+  if (/mistake/.test(h)) return { eyebrow: "From the Classroom", color: colors.orange };
+  if (/what this course/.test(h)) return { eyebrow: "Course Overview", color: colors.tealInk };
+  return null;
+}
 
-  const scrollTo = (id: string) => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    const y = el.getBoundingClientRect().top + window.scrollY - 140;
-    window.scrollTo({ top: y, behavior: "smooth" });
-  };
+/** Which tab a body section scrolls under. */
+function tabFor(heading: string) {
+  const h = heading.toLowerCase();
+  if (/career scope|salary/.test(h)) return "career";
+  if (/fee|batch|payment|pricing|certification/.test(h)) return "pricing";
+  if (/tools|project|lab/.test(h)) return "projects";
+  return "overview";
+}
+
+function Eyebrow({ children, color }: { children: React.ReactNode; color: string }) {
+  return (
+    <div className="mb-2 text-xs font-bold uppercase tracking-[0.18em]" style={{ color }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="font-display text-2xl font-bold" style={{ color: colors.navy }}>
+      {children}
+    </h2>
+  );
+}
+
+
+/* ---------------------------------------------------------------- body parts
+ * The design renders parts of the markdown body as real components rather than
+ * prose: tool cards, numbered project rows, role pills and callouts. The
+ * authored markdown uses consistent shapes, so each block is classified once
+ * and handed to the matching renderer; anything unrecognised stays markdown.
+ */
+
+/** `- **Name** — description` */
+function parseDefList(block: string) {
+  const out: { name: string; desc: string }[] = [];
+  for (const line of block.split("\n")) {
+    const m = line.match(/^-\s+\*\*(.+?)\*\*\s*[\u2014\u2013-]\s*(.+)$/);
+    if (m) out.push({ name: m[1].trim(), desc: m[2].trim() });
+  }
+  return out;
+}
+
+/** Plain `- item` bullets (excluding the `- **Name** —` shape above). */
+function parseBullets(block: string) {
+  return block
+    .split("\n")
+    .map((l) => l.match(/^-\s+(?!\*\*)(.+)$/)?.[1]?.trim())
+    .filter((x): x is string => !!x);
+}
+
+/** A single `**Label:** body` paragraph. */
+function parseLabelled(block: string) {
+  const m = block.trim().match(/^\*\*(.+?)\*\*\s*([\s\S]+)$/);
+  return m ? { label: m[1].replace(/:$/, "").trim(), text: m[2].trim() } : null;
+}
+
+function ToolCards({ items }: { items: { name: string; desc: string }[] }) {
+  return (
+    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      {items.map((t) => (
+        <div
+          key={t.name}
+          className="flex gap-3 rounded-xl border p-4"
+          style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+        >
+          <span
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+            style={{ background: gradient }}
+          >
+            {t.name.charAt(0)}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold" style={{ color: colors.navy }}>{t.name}</span>
+            <span className="mt-0.5 block text-xs leading-relaxed" style={{ color: colors.muted }}>{t.desc}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NumberedRows({ items }: { items: string[] }) {
+  return (
+    <ol className="mt-5 space-y-2.5">
+      {items.map((t, i) => (
+        <li
+          key={t}
+          className="flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed"
+          style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.body }}
+        >
+          <span
+            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+            style={{ background: gradient }}
+          >
+            {i + 1}
+          </span>
+          <span className="min-w-0">{t}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function RolePills({ text }: { text: string }) {
+  const roles = text.split(/,\s*/).map((r) => r.replace(/\.$/, "").trim()).filter(Boolean);
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {roles.map((r) => (
+        <span
+          key={r}
+          className="rounded-full border px-3.5 py-1.5 text-sm"
+          style={{ backgroundColor: colors.light, borderColor: `${colors.teal}55`, color: colors.tealInk }}
+        >
+          {r}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Callout({ label, text }: { label: string; text: string }) {
+  return (
+    <div
+      className="mt-6 rounded-2xl border p-6"
+      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+    >
+      <h3 className="mb-2 font-display text-base font-semibold" style={{ color: colors.navy }}>
+        {label}
+      </h3>
+      <p className="text-sm leading-relaxed" style={{ color: colors.body }}>{text}</p>
+    </div>
+  );
+}
+
+
+/** Each `**Title.** body` paragraph becomes its own warning card. */
+function MistakeCards({ body }: { body: string }) {
+  const blocks = body.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
+  const intro = blocks.filter((b) => !b.startsWith("**"));
+  const items = blocks
+    .map((b) => b.match(/^\*\*(.+?)\*\*\s*([\s\S]+)$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => ({ title: m[1].replace(/\.$/, ""), text: m[2].trim() }));
 
   return (
-    <div className="min-h-screen bg-white pt-16">
-      {/* Hero */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8 nm-hero-panel">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="md:col-span-2">
-              <div className="mb-4 inline-block rounded-full bg-nm-teal/15 px-3 py-1 text-sm text-nm-teal">
+    <>
+      {intro.map((t, i) => (
+        <p key={i} className="mt-4 leading-relaxed" style={{ color: colors.body }}>{t}</p>
+      ))}
+      <div className="mt-6 space-y-3">
+        {items.map((m) => (
+          <div
+            key={m.title}
+            className="flex gap-4 rounded-xl border p-5"
+            style={{ backgroundColor: "#fffaf2", borderColor: `${colors.orange}44` }}
+          >
+            <span
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: colors.orange }}
+            >
+              <TriangleAlert size={16} className="text-white" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <h4 className="mb-1 text-sm font-semibold" style={{ color: colors.navy }}>{m.title}</h4>
+              <p className="text-sm leading-relaxed" style={{ color: colors.body }}>{m.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** Price card + batches card, side by side, as in the design. */
+function FeeBlock({
+  body,
+  price,
+  duration,
+  nextBatch,
+  included,
+}: {
+  body: string;
+  price: number;
+  duration: string;
+  nextBatch: string | null;
+  included: string[];
+}) {
+  const batchLine = body.match(/\*\*Batch options:\*\*\s*(.+)/)?.[1] ?? "";
+  const weekend = batchLine.match(/Weekend batch \(([^)]+)\)/i)?.[1];
+  const evening = batchLine.match(/evening batch \(([^)]+)\)/i)?.[1];
+  const emi = body.match(/\*\*EMI[^*]*\*\*\s*(.+)/)?.[1];
+
+  return (
+    <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="rounded-2xl border p-6" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
+        <div className="font-display text-3xl font-bold" style={{ color: colors.navy }}>{npr(price)}</div>
+        <div className="mt-1 text-sm" style={{ color: colors.muted }}>As of August 2026 · EMI available</div>
+        <ul className="mt-5 space-y-2">
+          {included.map((t) => (
+            <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
+              <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl border p-6" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
+        <h3 className="mb-4 text-sm font-semibold" style={{ color: colors.navy }}>Available Batches</h3>
+        <dl className="space-y-3 text-sm">
+          <div className="flex items-baseline justify-between gap-3">
+            <dt className="font-semibold" style={{ color: colors.navy }}>Duration</dt>
+            <dd style={{ color: colors.muted }}>{duration}</dd>
+          </div>
+          {weekend && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="font-semibold" style={{ color: colors.navy }}>Weekend Batch</dt>
+              <dd className="text-right" style={{ color: colors.muted }}>{weekend}</dd>
+            </div>
+          )}
+          {evening && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="font-semibold" style={{ color: colors.navy }}>Evening Batch</dt>
+              <dd className="text-right" style={{ color: colors.muted }}>{evening}</dd>
+            </div>
+          )}
+        </dl>
+        {nextBatch && (
+          <div
+            className="mt-5 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
+            style={{ backgroundColor: colors.light, color: colors.tealInk }}
+          >
+            <Calendar size={15} aria-hidden="true" />
+            Next Batch: {nextBatch}
+          </div>
+        )}
+        {emi && (
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: colors.muted }}>{emi}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Splits a section body into blocks and renders each with the right treatment. */
+function SectionBody({ heading, body }: { heading: string; body: string }) {
+  const isTools = /tools/i.test(heading);
+  const isProjects = /project|lab/i.test(heading);
+
+  return (
+    <>
+      {body.split(/\n{2,}/).map((block, i) => {
+        const trimmed = block.trim();
+        if (!trimmed) return null;
+
+        if (isTools) {
+          const defs = parseDefList(trimmed);
+          if (defs.length) return <ToolCards key={i} items={defs} />;
+        }
+        if (isProjects) {
+          const bullets = parseBullets(trimmed);
+          if (bullets.length >= 3) return <NumberedRows key={i} items={bullets} />;
+        }
+
+        const labelled = parseLabelled(trimmed);
+        if (labelled && !trimmed.includes("\n")) {
+          if (/^roles you can apply/i.test(labelled.label))
+            return (
+              <div key={i} className="mt-8">
+                <h3 className="font-display text-base font-semibold" style={{ color: colors.navy }}>
+                  Roles You Can Apply For After This Course
+                </h3>
+                <RolePills text={labelled.text} />
+              </div>
+            );
+          if (labelled.label.endsWith("?"))
+            return <Callout key={i} label={labelled.label} text={labelled.text} />;
+        }
+
+        return (
+          <div key={i} className="mt-4">
+            <Markdown>{trimmed}</Markdown>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
+  const [modalOpen, setModalOpen] = useState(false);
+  const [openModule, setOpenModule] = useState<number | null>(0);
+  const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [active, setActive] = useState("overview");
+
+  const body = useMemo(() => splitContent(course.contentMd), [course.contentMd]);
+
+  /**
+   * The design's sidebar checklist is the real "what is included in the fee"
+   * list, which lives in the pricing section of contentMd. Deriving it from
+   * `tools` instead produced filler like "Hands-on practice with Canva".
+   */
+  const included = useMemo(() => {
+    const fee = body.find((s) => /fee|included/i.test(s.heading));
+    if (!fee) return [];
+    const after = fee.body.split(/what is included[^\n]*\n/i)[1];
+    if (!after) return [];
+    return after
+      .split(/\n{2,}/)[0]
+      .split("\n")
+      .map((l) => l.match(/^-\s+(.+)$/)?.[1]?.trim())
+      .filter((x): x is string => !!x);
+  }, [body]);
+  const mentorPhoto = course.mentor ? publicMediaSrc(course.mentor.photo) : null;
+
+  const tabs = useMemo(() => {
+    const t = [
+      { id: "overview", label: "Overview" },
+      { id: "audience", label: "Who It's For" },
+      { id: "curriculum", label: "Curriculum" },
+      { id: "projects", label: "Tools & Projects" },
+      { id: "career", label: "Career Scope" },
+      { id: "faq", label: "FAQ" },
+    ];
+    return t.filter((x) => {
+      if (x.id === "career" || x.id === "projects")
+        return body.some((s) => tabFor(s.heading) === x.id);
+      if (x.id === "faq") return course.faqs.length > 0;
+      return true;
+    });
+  }, [body, course.faqs.length]);
+
+  // Scroll spy for the tab strip.
+  useEffect(() => {
+    const onScroll = () => {
+      let current = tabs[0]?.id ?? "overview";
+      for (const t of tabs) {
+        const el = document.getElementById(t.id);
+        if (el && el.getBoundingClientRect().top <= 180) current = t.id;
+      }
+      setActive(current);
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [tabs]);
+
+  /**
+   * The design splits the H1: the trailing clause is teal. `h1Accent` must be a
+   * suffix of `h1`, so the lead is everything before it. Falls back to the card
+   * title when no editorial H1 has been written yet.
+   */
+  const headline = useMemo(() => {
+    const full = course.h1?.trim() || course.title;
+    const accent = course.h1Accent?.trim();
+    if (accent && full.endsWith(accent)) {
+      return { lead: full.slice(0, full.length - accent.length), accent };
+    }
+    return { lead: full, accent: "" };
+  }, [course.h1, course.h1Accent, course.title]);
+
+  const specs = [
+    { icon: Clock, label: "Duration", value: course.duration },
+    { icon: BarChart3, label: "Level", value: course.level },
+    { icon: MonitorSmartphone, label: "Format", value: "Online & In-Person" },
+    { icon: Award, label: "Certificate", value: "Included" },
+    { icon: Handshake, label: "Placement", value: "Support Included" },
+  ];
+
+  const facts = [
+    { icon: Clock, label: "Duration", value: course.duration },
+    { icon: Wallet, label: "Fee", value: npr(course.price) },
+    { icon: MonitorSmartphone, label: "Format", value: "Online + In-Person" },
+    // Only shown once a real intake is set - never a placeholder.
+    ...(course.nextBatch ? [{ icon: Calendar, label: "Next Batch", value: course.nextBatch }] : []),
+    { icon: BarChart3, label: "Level", value: course.level },
+  ];
+
+  return (
+    <>
+      {/* ---------------------------------------------------------------- hero */}
+      <section className="relative px-6 pt-28 pb-0" style={{ background: heroGradient }}>
+        <div className="mx-auto grid max-w-7xl gap-10 pb-14 lg:grid-cols-[1fr_360px]">
+          <div className="min-w-0">
+            <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-white/55">
+              <Link href="/" className="transition-colors hover:text-white">Home</Link>
+              <span>/</span>
+              <Link href="/courses" className="transition-colors hover:text-white">Courses</Link>
+              <span>/</span>
+              <span className="text-white/90">{course.title}</span>
+            </nav>
+
+            <div className="mb-5 flex flex-wrap gap-2">
+              <span
+                className="rounded-full px-3 py-1 text-xs font-semibold"
+                style={{ backgroundColor: `${colors.green}22`, color: colors.green, border: `1px solid ${colors.green}55` }}
+              >
                 {course.category}
-              </div>
-              <h1 className="font-display text-4xl md:text-5xl font-bold mb-6 text-white">
-                {course.title}
-              </h1>
-              <p className="text-xl mb-6 text-white/70">{course.description}</p>
-
-              <div className="flex flex-wrap gap-4 mb-8">
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="nm-gradient text-white px-8 py-3 rounded-full hover:shadow-lg transition-all font-semibold"
+              </span>
+              {course.badge && (
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-semibold"
+                  style={{ backgroundColor: `${colors.teal}22`, color: colors.teal, border: `1px solid ${colors.teal}55` }}
                 >
-                  Enroll Now !!!
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="border-2 border-nm-teal text-nm-teal px-8 py-3 rounded-full hover:bg-white/10 transition-all font-semibold"
-                >
-                  Download Syllabus
-                </button>
-              </div>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { n: `${course.students}+`, l: "Students" },
-                  { n: "4.8/5", l: "Rating" },
-                  { n: "500+", l: "Placements" },
-                  { n: "80+", l: "Partners" },
-                ].map((s) => (
-                  <div key={s.l} className="text-center p-4 bg-white rounded-lg shadow">
-                    <div className="font-display text-2xl font-bold nm-gradient-text mb-1">
-                      {s.n}
-                    </div>
-                    <div className="text-sm">{s.l}</div>
-                  </div>
-                ))}
-              </div>
+                  {course.badge}
+                </span>
+              )}
             </div>
 
-            <div className="h-fit sticky top-24 rounded-2xl bg-gradient-to-br from-nm-teal to-nm-blue p-[1px] shadow-xl">
-            <div className="rounded-[15px] bg-white p-6">
-              {/* The gradient + book icon stays as the fallback: imageUrl is
-                  optional, so a course with no cover set must still look
-                  finished rather than leaving a hole in the card. */}
-              {courseCoverSrc ? (
-                <div className="relative aspect-video mb-4 overflow-hidden rounded-lg">
-                  <Image
-                    src={courseCoverSrc}
-                    alt={`${course.title} course cover`}
-                    fill
-                    sizes="(max-width: 768px) 100vw, 380px"
-                    className="object-cover"
-                    priority
-                  />
-                </div>
-              ) : (
-                <div className="aspect-video nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
-                  <BookOpen size={48} />
-                </div>
+            <h1
+              className="font-display font-bold leading-[1.12] text-white"
+              style={{ fontSize: "clamp(2rem,4vw,2.8rem)" }}
+            >
+              {headline.lead}
+              {headline.accent && (
+                <span style={{ color: colors.teal }}>{headline.accent}</span>
               )}
-              <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">{course.title}</h3>
-              <div className="space-y-3 mb-6">
-                <div className="flex items-center gap-2 text-nm-body">
-                  <Layers size={18} className="text-nm-teal flex-shrink-0" />
-                  <span>
-                    Level: <strong className="font-semibold">{course.level}</strong>
-                  </span>
+            </h1>
+
+            <p className="mt-5 max-w-2xl leading-relaxed text-white/70">{course.description}</p>
+
+            <div className="mt-7 flex flex-wrap gap-2.5">
+              {facts.map((f) => (
+                <span
+                  key={f.label}
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.07] px-3.5 py-2 text-sm text-white/60"
+                >
+                  <f.icon size={14} aria-hidden="true" />
+                  {f.label}: <strong className="font-semibold text-white">{f.value}</strong>
+                </span>
+              ))}
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setModalOpen(true)}
+                className="min-h-[48px] rounded-xl px-8 py-3.5 text-base font-bold text-white transition-all active:scale-95"
+                style={{ background: gradient, boxShadow: `0 6px 24px ${colors.teal}45` }}
+              >
+                Enroll Now
+              </button>
+              {course.syllabusUrl && (
+                <a
+                  href={course.syllabusUrl}
+                  className="min-h-[48px] inline-flex items-center gap-2 rounded-xl border border-white/25 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/10"
+                >
+                  <FileText size={17} aria-hidden="true" />
+                  Download Syllabus
+                </a>
+              )}
+              <Link
+                href="/contact"
+                className="min-h-[48px] inline-flex items-center gap-2 rounded-xl border border-white/25 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/10"
+              >
+                <Phone size={17} aria-hidden="true" />
+                Book Free Counselling
+              </Link>
+            </div>
+          </div>
+
+          {/* Sticky pricing card */}
+          <aside className="lg:sticky lg:top-28 lg:self-start">
+            <div
+              className="overflow-hidden rounded-2xl bg-white"
+              style={{ boxShadow: "0 24px 64px rgba(6,26,46,0.28)" }}
+            >
+              <div className="h-1.5" style={{ background: gradient }} />
+              <div className="p-6">
+                <div className="font-display text-3xl font-bold" style={{ color: colors.navy }}>
+                  {npr(course.price)}
                 </div>
-                <div className="flex items-center gap-2 text-nm-body">
-                  <Clock size={18} className="text-nm-teal flex-shrink-0" />
-                  <span>
-                    Duration: <strong className="font-semibold">{course.duration}</strong>
-                  </span>
+                <div className="mt-1 text-sm" style={{ color: colors.muted }}>
+                  One-time payment · EMI available
                 </div>
-                <div className="flex items-center gap-2 text-nm-body">
-                  <Users size={18} className="text-nm-teal flex-shrink-0" />
-                  <span>
-                    Category: <strong className="font-semibold">{course.category}</strong>
-                  </span>
-                </div>
-              </div>
-              <div className="font-display text-3xl font-bold mb-6 nm-gradient-text">
-                NPR {course.price.toLocaleString()}
-              </div>
-              <div className="space-y-3">
+
+                {course.nextBatch && (
+                  <div
+                    className="mt-4 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold"
+                    style={{ backgroundColor: colors.light, color: colors.tealInk }}
+                  >
+                    <Calendar size={15} aria-hidden="true" />
+                    Next Batch: {course.nextBatch}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setModalOpen(true)}
-                  className="w-full nm-gradient text-white px-6 py-3 rounded-full hover:shadow-lg transition-all font-semibold"
+                  className="mt-4 min-h-[48px] w-full rounded-xl py-3.5 font-bold text-white transition-all active:scale-95"
+                  style={{ background: gradient }}
                 >
                   Enroll Now
                 </button>
-                <button
-                  type="button"
-                  onClick={() => setModalOpen(true)}
-                  className="w-full border-2 border-nm-teal text-nm-teal px-6 py-3 rounded-full hover:bg-nm-light transition-all font-semibold"
+                <Link
+                  href="/contact"
+                  className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-xl border py-3.5 font-semibold transition-all hover:bg-nm-surface"
+                  style={{ borderColor: colors.border, color: colors.navy }}
                 >
-                  Download Syllabus
-                </button>
+                  Book Free Counselling
+                </Link>
+
+                <dl className="mt-6 space-y-3">
+                  {specs.map((s) => (
+                    <div key={s.label} className="flex items-center justify-between gap-3 text-sm">
+                      <dt className="flex items-center gap-2" style={{ color: colors.muted }}>
+                        <s.icon size={15} className="text-nm-teal-ink" aria-hidden="true" />
+                        {s.label}
+                      </dt>
+                      <dd className="font-semibold" style={{ color: colors.navy }}>{s.value}</dd>
+                    </div>
+                  ))}
+                </dl>
+
+                {included.length > 0 && (
+                  <div className="mt-6 border-t pt-5" style={{ borderColor: colors.border }}>
+                    <div
+                      className="mb-3 text-xs font-bold uppercase tracking-[0.14em]"
+                      style={{ color: colors.tealInk }}
+                    >
+                      What&apos;s included
+                    </div>
+                    <ul className="space-y-2">
+                      {included.slice(0, 7).map((t) => (
+                        <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
+                          <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
+                          <span>{t}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
             </div>
-            </div>
-          </div>
+          </aside>
         </div>
       </section>
 
-      {/* Highlight strip */}
-      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white border-b border-nm-border">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-6">
-            {highlights.map((h) => (
-              <div key={h.title} className="text-center">
-                <h4 className="font-semibold mb-2 text-nm-navy">{h.title}</h4>
-                <p className="text-sm">{h.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Sticky section nav */}
+      {/* ---------------------------------------------------------------- tabs */}
       <div
-        ref={navRef}
-        className="sticky top-16 z-40 border-b border-nm-border bg-white/70 backdrop-blur-md"
+        className="sticky top-16 z-30 border-b bg-white/95 px-6 backdrop-blur"
+        style={{ borderColor: colors.border }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex gap-6 overflow-x-auto py-4 scrollbar-none">
-            {sections
-              .filter((s) => s.id !== "mentor" || instructor)
-              .filter((s) => s.id !== "about" || course.contentMd)
-              .map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => scrollTo(s.id)}
-                  className={`whitespace-nowrap pb-2 border-b-2 transition-colors ${
-                    active === s.id
-                      ? "border-nm-teal text-nm-teal"
-                      : "border-transparent text-nm-body hover:text-nm-teal"
-                  }`}
-                >
-                  {s.label}
-                </button>
-              ))}
-          </div>
+        <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto">
+          {tabs.map((t) => (
+            <a
+              key={t.id}
+              href={`#${t.id}`}
+              className="whitespace-nowrap border-b-2 py-4 text-sm font-semibold transition-colors"
+              style={{
+                borderColor: active === t.id ? colors.teal : "transparent",
+                color: active === t.id ? colors.tealInk : colors.muted,
+              }}
+            >
+              {t.label}
+            </a>
+          ))}
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid md:grid-cols-3 gap-8">
-          <div className="md:col-span-2 space-y-16">
-            <section id="overview" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">Course Overview</h2>
-              <p className="mb-6">{course.description}</p>
-              <h3 className="font-display text-2xl font-bold mb-4 text-nm-navy">
-                What You Will Achieve
-              </h3>
-              <ul className="space-y-3">
-                {course.skills.slice(0, 6).map((s) => (
-                  <li key={s} className="flex items-start gap-3">
-                    <CheckCircle2 size={20} className="text-nm-teal flex-shrink-0 mt-0.5" />
-                    <span className="">{s}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            {course.contentMd && (
-              <section id="about" className="scroll-mt-36">
-                <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                  About This Course
-                </h2>
-                <div className="prose-content max-w-none [&_h1]:font-display [&_h2]:font-display [&_h3]:font-display [&_h1]:mt-6 [&_h1]:mb-3 [&_h1]:text-2xl [&_h1]:font-bold [&_h1]:text-nm-navy [&_h2]:mt-6 [&_h2]:mb-3 [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-nm-navy [&_h3]:mt-4 [&_h3]:mb-2 [&_h3]:text-lg [&_h3]:font-semibold [&_h3]:text-nm-navy [&_p]:mb-4 [&_p]:leading-relaxed [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:mb-1 [&_a]:text-nm-teal [&_a]:underline [&_strong]:font-semibold [&_blockquote]:border-l-2 [&_blockquote]:border-nm-teal [&_blockquote]:pl-4 [&_blockquote]:text-nm-muted [&_code]:rounded [&_code]:bg-nm-light [&_code]:px-1 [&_code]:py-0.5 [&_pre]:mb-4 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-nm-navy [&_pre]:p-4 [&_pre_code]:bg-transparent [&_pre_code]:p-0 [&_pre_code]:text-white">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{course.contentMd}</ReactMarkdown>
+      {/* ------------------------------------------------------------- content */}
+      <div className="px-6 py-14" style={{ backgroundColor: colors.bg }}>
+        <div className="mx-auto max-w-3xl space-y-16">
+          {/* Overview + skills */}
+          <section id="overview" className="scroll-mt-32">
+            <Eyebrow color={colors.tealInk}>Course Overview</Eyebrow>
+            <SectionHeading>What This Course Is</SectionHeading>
+            {body
+              .filter((s) => tabFor(s.heading) === "overview")
+              .map((s, i) => (
+                <div key={i} className="mt-5">
+                  {s.heading && !/what this course/i.test(s.heading) && (
+                    <h3 className="mb-3 mt-8 font-display text-xl font-bold" style={{ color: colors.navy }}>
+                      {s.heading}
+                    </h3>
+                  )}
+                  <SectionBody heading={s.heading} body={s.body} />
                 </div>
-              </section>
+              ))}
+
+            {course.skills.length > 0 && (
+              <div
+                className="mt-10 rounded-2xl border p-6"
+                style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+              >
+                <h3 className="mb-5 font-display text-lg font-semibold" style={{ color: colors.navy }}>
+                  What You Will Be Able to Do After This Course
+                </h3>
+                <ul className="grid gap-x-6 gap-y-3 sm:grid-cols-2">
+                  {course.skills.map((s) => (
+                    <li key={s} className="flex gap-2.5 text-sm leading-relaxed" style={{ color: colors.body }}>
+                      <Check size={15} className="mt-1 flex-shrink-0" style={{ color: colors.tealInk }} />
+                      <span>{s}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
+          </section>
 
-            <section id="who-is-this-for" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                Who Is This Course For?
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {course.whoIsItFor.map((item) => (
-                  <div
-                    key={item}
-                    className="border border-nm-border rounded-lg p-6 hover:shadow-lg transition-all"
-                  >
-                    <div className="w-12 h-12 nm-gradient rounded-full flex items-center justify-center text-white mb-4">
-                      <Users size={22} />
+          {/* Who it's for */}
+          {course.whoIsItFor.length > 0 && (
+            <section id="audience" className="scroll-mt-32">
+              <Eyebrow color={colors.blueInk}>Target Audience</Eyebrow>
+              <SectionHeading>{`Who Is This ${course.title} Course For?`}</SectionHeading>
+              <div className="mt-6 space-y-3">
+                {course.whoIsItFor.map((w, i) => {
+                  const [head, ...rest] = w.split(/ (?:who|whose|moving|adding|switching|looking) /);
+                  return (
+                    <div
+                      key={w}
+                      className="flex gap-4 rounded-xl border bg-white p-5"
+                      style={{ borderColor: colors.border }}
+                    >
+                      <span
+                        className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+                        style={{ background: gradient }}
+                      >
+                        {i + 1}
+                      </span>
+                      <p className="text-sm leading-relaxed" style={{ color: colors.body }}>
+                        {rest.length ? (
+                          <>
+                            <strong style={{ color: colors.navy }}>{head}</strong>
+                            {w.slice(head.length)}
+                          </>
+                        ) : (
+                          w
+                        )}
+                      </p>
                     </div>
-                    <p className="">{item}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </section>
+          )}
 
-            <section id="skills" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                Skills You Will Learn
-              </h2>
-              <div className="grid md:grid-cols-3 gap-4">
-                {course.skills.map((s) => (
-                  <div
-                    key={s}
-                    className="bg-nm-light text-nm-teal px-4 py-3 rounded-lg text-center"
-                  >
-                    {s}
-                  </div>
-                ))}
+          {/* Curriculum */}
+          {course.curriculum.length > 0 && (
+            <section id="curriculum" className="scroll-mt-32">
+              <Eyebrow color={colors.green}>Full Curriculum</Eyebrow>
+              <div className="flex items-end justify-between gap-4">
+                <SectionHeading>What You Will Learn</SectionHeading>
+                <span className="whitespace-nowrap text-sm" style={{ color: colors.muted }}>
+                  {course.curriculum.length} modules
+                </span>
               </div>
 
-              <h3 className="font-display text-2xl font-bold mt-12 mb-6 text-nm-navy">
-                Platforms &amp; Tools You&apos;ll Master
-              </h3>
-              <div className="flex flex-wrap gap-4">
-                {course.tools.map((t) => (
-                  <div
-                    key={t}
-                    className="bg-white border border-nm-border px-6 py-3 rounded-lg text-gray-700"
-                  >
-                    {t}
-                  </div>
-                ))}
-              </div>
-            </section>
-
-            <section id="curriculum" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                Course Curriculum
-              </h2>
-              <p className="mb-6">
-                Our comprehensive curriculum is designed by industry experts to ensure you gain
-                practical, job-ready skills.
-              </p>
-              <div className="space-y-3">
-                {course.curriculum.map((mod, i) => {
+              <div className="mt-6 space-y-3">
+                {course.curriculum.map((m, i) => {
                   const open = openModule === i;
                   return (
                     <div
-                      key={mod.id ?? `${mod.title}-${i}`}
-                      className="border border-nm-border rounded-lg overflow-hidden"
+                      key={m.title}
+                      className="overflow-hidden rounded-xl border bg-white"
+                      style={{ borderColor: colors.border }}
                     >
                       <button
                         type="button"
                         onClick={() => setOpenModule(open ? null : i)}
                         aria-expanded={open}
-                        aria-controls={`curriculum-panel-${i}`}
-                        className="w-full flex items-start gap-4 p-4 text-left hover:bg-nm-light transition-all"
+                        className="flex w-full items-center gap-4 p-5 text-left"
                       >
-                        <span className="w-10 h-10 nm-gradient rounded-full flex items-center justify-center text-white flex-shrink-0 text-sm font-bold">
+                        <span
+                          className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+                          style={{ background: gradient }}
+                        >
                           {String(i + 1).padStart(2, "0")}
                         </span>
-                        <span className="flex-1 min-w-0">
-                          <span className="block text-lg font-semibold text-nm-navy">
-                            {mod.title}
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-semibold" style={{ color: colors.navy }}>
+                            {m.title}
                           </span>
-                          {mod.topics.length > 0 && (
-                            <span className="block text-sm text-nm-muted mt-1">
-                              {mod.topics.length} {mod.topics.length === 1 ? "topic" : "topics"}
-                            </span>
-                          )}
+                          <span className="block text-xs" style={{ color: colors.muted }}>
+                            {m.topics.length} topics
+                          </span>
                         </span>
                         <ChevronDown
                           size={18}
+                          className="flex-shrink-0 transition-transform"
+                          style={{ color: colors.tealInk, transform: open ? "rotate(180deg)" : "none" }}
                           aria-hidden="true"
-                          className={`flex-shrink-0 mt-2.5 text-nm-muted transition-transform duration-200 ${
-                            open ? "rotate-180" : ""
-                          }`}
                         />
                       </button>
-
-                      <AnimatePresence initial={false}>
-                        {open && mod.topics.length > 0 && (
-                          <motion.div
-                            id={`curriculum-panel-${i}`}
-                            initial={{ height: 0, opacity: 0 }}
-                            animate={{ height: "auto", opacity: 1 }}
-                            exit={{ height: 0, opacity: 0 }}
-                            transition={{ duration: 0.25, ease: "easeInOut" }}
-                            className="overflow-hidden border-t border-nm-border"
-                          >
-                            <ul className="list-disc space-y-1.5 px-4 py-4 pl-9 text-sm text-nm-muted">
-                              {mod.topics.map((topic) => (
-                                <li key={topic}>{topic}</li>
-                              ))}
-                            </ul>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
+                      {open && (
+                        <ul
+                          className="grid gap-x-6 gap-y-2.5 border-t px-5 py-5 sm:grid-cols-2"
+                          style={{ borderColor: colors.border, backgroundColor: colors.surface }}
+                        >
+                          {m.topics.map((t) => (
+                            <li key={t} className="flex gap-2.5 text-sm leading-relaxed" style={{ color: colors.body }}>
+                              <Check size={14} className="mt-1 flex-shrink-0" style={{ color: colors.tealInk }} />
+                              <span>{t}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
                   );
                 })}
               </div>
             </section>
+          )}
 
-            {instructor && (
-              <section id="mentor" className="scroll-mt-36">
-                <h2 className="font-display text-3xl font-bold mb-4 text-nm-navy">
-                  Learn <span className="text-nm-teal">From Industry Experts</span>
-                </h2>
-                <p className="mb-6">
-                  Every {course.title} batch is led by a working professional — not a full-time
-                  lecturer. You learn the tools, habits, and shortcuts they use on real projects
-                  every week.
-                </p>
-                <div className="border border-nm-border rounded-lg p-6 flex flex-col sm:flex-row gap-6 hover:shadow-lg transition-all">
-                  <div
-                    className="relative w-full sm:w-[150px] flex-shrink-0 rounded-lg overflow-hidden flex items-center justify-center nm-gradient text-white"
-                    style={{ aspectRatio: "3 / 4" }}
-                  >
-                    {instructorPhotoSrc ? (
-                      <Image
-                        src={instructorPhotoSrc}
-                        alt={instructor.name}
-                        fill
-                        sizes="150px"
-                        className="object-cover"
-                      />
-                    ) : (
-                      <Users size={64} />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="font-display text-2xl font-bold mb-1 text-nm-navy">
-                      {instructor.name}
+          {/* Tools & projects (from contentMd) */}
+          {body.some((s) => tabFor(s.heading) === "projects") && (
+            <section id="projects" className="scroll-mt-32">
+              <Eyebrow color={colors.blueInk}>Hands-on Practice</Eyebrow>
+              <SectionHeading>Tools You Will Get Hands-On Practice With</SectionHeading>
+
+              {body
+                .filter((s) => tabFor(s.heading) === "projects")
+                .map((s, i) => (
+                  <div key={i} className="mt-8">
+                    <h3 className="mb-3 font-display text-xl font-bold" style={{ color: colors.navy }}>
+                      {s.heading}
                     </h3>
-                    <div className="text-nm-teal mb-4">{instructor.role}</div>
-                    <p className="">{instructor.bio}</p>
+                    <SectionBody heading={s.heading} body={s.body} />
                   </div>
-                </div>
-              </section>
-            )}
+                ))}
+            </section>
+          )}
 
-            <section id="why-us" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                How We Make Learning Different
-              </h2>
-              <div className="grid md:grid-cols-2 gap-6">
-                {whyUs.map((w) => {
-                  const Icon = w.icon;
+          {/* Career & salary */}
+          {body.some((s) => tabFor(s.heading) === "career") && (
+            <section id="career" className="scroll-mt-32">
+              {body
+                .filter((s) => tabFor(s.heading) === "career")
+                .map((s, i) => {
+                  const c = chromeFor(s.heading);
                   return (
-                    <SpotlightCard key={w.title} className="p-6">
-                      <div className="w-12 h-12 nm-gradient rounded-full flex items-center justify-center text-white mb-4">
-                        <Icon size={22} />
+                    <div key={i} className={i ? "mt-10" : ""}>
+                      {c && <Eyebrow color={c.color}>{c.eyebrow}</Eyebrow>}
+                      <SectionHeading>{s.heading}</SectionHeading>
+                      <div className="mt-5">
+                        <SectionBody heading={s.heading} body={s.body} />
                       </div>
-                      <h3 className="text-xl font-semibold mb-2 text-nm-navy">{w.title}</h3>
-                      <p className="">{w.desc}</p>
-                    </SpotlightCard>
+                    </div>
+                  );
+                })}
+            </section>
+          )}
+
+          {/* Mentor */}
+          {course.mentor && (
+            <section id="mentor" className="scroll-mt-32">
+              <Eyebrow color={colors.tealInk}>Your Instructor</Eyebrow>
+              <SectionHeading>Who You Will Learn From</SectionHeading>
+              <div
+                className="mt-6 flex flex-col gap-6 rounded-2xl border bg-white p-6 sm:flex-row"
+                style={{ borderColor: colors.border }}
+              >
+                <div
+                  className="relative flex w-full flex-shrink-0 items-center justify-center overflow-hidden rounded-xl text-white sm:w-[150px]"
+                  style={{ aspectRatio: "3 / 4", background: gradient }}
+                >
+                  {mentorPhoto ? (
+                    <Image src={mentorPhoto} alt={course.mentor.name} fill sizes="150px" className="object-cover" />
+                  ) : (
+                    <Users size={56} aria-hidden="true" />
+                  )}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className="font-display text-xl font-bold" style={{ color: colors.navy }}>
+                    {course.mentor.name}
+                  </h3>
+                  <div className="mb-3 text-sm font-medium" style={{ color: colors.tealInk }}>
+                    {course.mentor.role}
+                  </div>
+                  <p className="text-sm leading-relaxed" style={{ color: colors.body }}>
+                    {course.mentor.bio}
+                  </p>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {/* Pricing, certifications, mistakes */}
+          {body.some((s) => tabFor(s.heading) === "pricing") && (
+            <section id="pricing" className="scroll-mt-32">
+              {body
+                .filter((s) => tabFor(s.heading) === "pricing")
+                .map((s, i) => {
+                  const c = chromeFor(s.heading);
+                  return (
+                    <div key={i} className={i ? "mt-10" : ""}>
+                      {c && <Eyebrow color={c.color}>{c.eyebrow}</Eyebrow>}
+                      <SectionHeading>{s.heading}</SectionHeading>
+                      {/^course fee/i.test(s.heading) ? (
+                        <FeeBlock
+                          body={s.body}
+                          price={course.price}
+                          duration={course.duration}
+                          nextBatch={course.nextBatch}
+                          included={included}
+                        />
+                      ) : (
+                        <div className="mt-5">
+                          <SectionBody heading={s.heading} body={s.body} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+            </section>
+          )}
+
+          {/* Common mistakes — rendered with a warning treatment */}
+          {body
+            .filter((s) => /mistake/i.test(s.heading))
+            .map((s, i) => (
+              <section key={i} className="scroll-mt-32">
+                <Eyebrow color={colors.orange}>From the Classroom</Eyebrow>
+                <SectionHeading>{s.heading}</SectionHeading>
+                <MistakeCards body={s.body} />
+              </section>
+            ))}
+
+          {/* FAQ */}
+          {course.faqs.length > 0 && (
+            <section id="faq" className="scroll-mt-32">
+              <Eyebrow color={colors.blueInk}>FAQ</Eyebrow>
+              <SectionHeading>Frequently Asked Questions</SectionHeading>
+              <div className="mt-6 space-y-3">
+                {course.faqs.map((f, i) => {
+                  const open = openFaq === i;
+                  return (
+                    <div
+                      key={f.q}
+                      className="overflow-hidden rounded-xl border bg-white"
+                      style={{ borderColor: colors.border }}
+                    >
+                      <button
+                        type="button"
+                        onClick={() => setOpenFaq(open ? null : i)}
+                        aria-expanded={open}
+                        className="flex w-full items-center gap-4 p-5 text-left"
+                      >
+                        <span className="flex-1 text-sm font-semibold" style={{ color: colors.navy }}>
+                          {f.q}
+                        </span>
+                        {open ? (
+                          <Minus size={17} className="flex-shrink-0" style={{ color: colors.tealInk }} aria-hidden="true" />
+                        ) : (
+                          <Plus size={17} className="flex-shrink-0" style={{ color: colors.tealInk }} aria-hidden="true" />
+                        )}
+                      </button>
+                      {open && (
+                        <div
+                          className="border-t px-5 py-4 text-sm leading-relaxed"
+                          style={{ borderColor: colors.border, color: colors.body, backgroundColor: colors.surface }}
+                        >
+                          {f.a}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
             </section>
+          )}
 
-            <section id="faq" className="scroll-mt-36">
-              <h2 className="font-display text-3xl font-bold mb-6 text-nm-navy">
-                Frequently Asked Questions
-              </h2>
-              <div className="space-y-4">
-                {course.faqs.map((faq) => (
-                  <div key={faq.q} className="border border-nm-border rounded-lg p-6">
-                    <h3 className="text-lg font-semibold mb-2 text-nm-navy">{faq.q}</h3>
-                    <p className="">{faq.a}</p>
-                  </div>
-                ))}
-              </div>
-            </section>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-8">
-            <div className="bg-white border border-nm-border rounded-2xl p-6 sticky top-32">
-              <h3 className="font-display text-xl font-bold mb-4 text-nm-navy">
-                Need Help Choosing?
-              </h3>
-              <p className="text-nm-body mb-4">
-                Talk to our course advisor for personalized guidance
-              </p>
-              <div className="aspect-square nm-gradient rounded-lg mb-4 flex items-center justify-center text-white">
-                <Users size={56} />
-              </div>
-              <div className="space-y-3 mb-6">
-                <a
-                  href={telHref}
-                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
-                >
-                  <Phone size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm">{contact.phoneDisplay}</span>
-                </a>
-                <a
-                  href={mailtoHref}
-                  className="flex items-center gap-2 text-nm-body transition-colors hover:text-nm-teal"
-                >
-                  <Mail size={16} className="text-nm-teal flex-shrink-0" />
-                  <span className="text-sm break-all">{contact.email}</span>
-                </a>
-              </div>
+          {/* Final CTA */}
+          <section className="rounded-2xl p-8" style={{ background: heroGradient }}>
+            <h2 className="font-display text-2xl font-bold text-white">Ready to Start?</h2>
+            <p className="mt-3 max-w-xl leading-relaxed text-white/70">
+              Talk to a course advisor before you enroll. A free 30-minute counselling session will
+              help you decide whether this course fits your goals, which batch timing works, and what
+              payment option makes sense.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => setModalOpen(true)}
-                className="w-full nm-gradient text-white px-6 py-3 rounded-full hover:shadow-lg transition-all font-semibold"
+                className="min-h-[48px] rounded-xl px-7 py-3.5 font-bold text-white transition-all active:scale-95"
+                style={{ background: gradient }}
               >
-                Schedule Counselling
+                Enroll Now
               </button>
-              <div className="mt-6 pt-6 border-t border-nm-border">
-                <h4 className="font-semibold mb-3 text-nm-navy">Benefits of Counselling:</h4>
-                <ul className="space-y-2 text-sm text-nm-body">
-                  {counsellingBenefits.map((b) => (
-                    <li key={b} className="flex items-start gap-2">
-                      <CheckCircle2 size={16} className="text-nm-teal flex-shrink-0 mt-0.5" />
-                      <span>{b}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+              <Link
+                href="/contact"
+                className="min-h-[48px] inline-flex items-center rounded-xl border border-white/25 px-7 py-3.5 font-semibold text-white transition-all hover:bg-white/10"
+              >
+                Book Free Counselling
+              </Link>
+              <a
+                href={telHref}
+                className="min-h-[48px] inline-flex items-center gap-2 rounded-xl border border-white/25 px-7 py-3.5 font-semibold text-white transition-all hover:bg-white/10"
+              >
+                <Phone size={16} aria-hidden="true" />
+                {contact.phoneDisplay}
+              </a>
             </div>
-          </div>
+          </section>
+
+          {/* Related */}
+          {courses.length > 1 && (
+            <section>
+              <Eyebrow color={colors.tealInk}>Keep Exploring</Eyebrow>
+              <SectionHeading>Other Courses at Next Minds</SectionHeading>
+              <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                {courses
+                  .filter((c) => c.slug !== course.slug)
+                  .slice(0, 4)
+                  .map((c) => (
+                    <Link
+                      key={c.slug}
+                      href={`/courses/${c.slug}`}
+                      className="rounded-xl border bg-white p-4 transition-all hover:shadow-md"
+                      style={{ borderColor: colors.border }}
+                    >
+                      <div className="font-semibold" style={{ color: colors.navy }}>{c.title}</div>
+                      <div className="mt-1 text-xs" style={{ color: colors.muted }}>
+                        {c.duration} · {npr(c.price)}
+                      </div>
+                    </Link>
+                  ))}
+              </div>
+            </section>
+          )}
         </div>
       </div>
 
-      {/* Final CTA */}
-      <section className="nm-dark-panel relative overflow-hidden py-20 px-4 sm:px-6 lg:px-8">
-        <BlobBackground variant="dark" />
-        <div className="relative max-w-4xl mx-auto text-center">
-          <div className="w-20 h-20 mx-auto mb-6 nm-gradient rounded-full flex items-center justify-center text-white">
-            <Award size={36} />
-          </div>
-          <h2 className="font-display text-4xl font-bold mb-6 text-white">
-            Ready to Start Your Journey?
-          </h2>
-          <p className="text-xl mb-8 text-white/65">
-            Join thousands of students who have transformed their careers with Next Minds
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="nm-gradient text-white px-8 py-3 rounded-full hover:shadow-lg transition-all font-semibold"
-            >
-              Enroll in {course.title}
-            </button>
-            <button
-              type="button"
-              onClick={() => setModalOpen(true)}
-              className="border-2 border-nm-teal text-nm-teal px-8 py-3 rounded-full hover:bg-white/10 transition-all font-semibold"
-            >
-              Schedule Free Counselling
-            </button>
-          </div>
-        </div>
-      </section>
-
+      <CourseStickyBar price={course.price} onEnroll={() => setModalOpen(true)} />
       <EnrollModal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        preSelectedCourse={course.title}
         courses={courses}
+        preSelectedCourse={course.title}
       />
-    </div>
+    </>
   );
 }

@@ -23,28 +23,44 @@ export async function generateMetadata({
   params: Promise<{ courseId: string }>;
 }): Promise<Metadata> {
   const { courseId } = await params;
+  // notFound() must fire HERE, not in the page body. Once a route streams (the
+  // root loading.tsx creates a Suspense boundary, so every dynamic page does),
+  // the 200 status is already committed and a later notFound() only swaps the
+  // body - a soft 404 that Google will happily index. generateMetadata runs
+  // before the response starts, so the status is still ours to set.
   const course = await getPublicCourseBySlug(courseId);
-  if (!course) return { title: "Course not found" };
+  if (!course) notFound();
 
+  // Hand-written SEO copy wins over the on-page fields when present. A written
+  // title tag already carries the brand, so `absolute` skips the root layout's
+  // "%s — Next Minds Infosys" template rather than pushing it past ~60 chars.
+  const seoTitle = course.metaTitle?.trim();
   const description =
-    course.shortDesc || course.description.slice(0, 160) || `Learn ${course.title} at Next Minds.`;
+    course.metaDescription?.trim() ||
+    course.shortDesc ||
+    course.description.slice(0, 160) ||
+    `Learn ${course.title} at Next Minds.`;
+  const socialTitle = course.ogTitle?.trim() || seoTitle || course.title;
+  const socialDescription = course.ogDescription?.trim() || description;
   const imageSrc = publicMediaSrc(course.imageUrl);
+  const imageAlt = course.ogImageAlt?.trim() || `${course.title} at Next Minds Infosys`;
 
   return {
-    title: course.title,
+    title: seoTitle ? { absolute: seoTitle } : course.title,
     description,
+    keywords: course.focusKeyword ? [course.focusKeyword] : undefined,
     alternates: { canonical: `/courses/${course.slug}` },
     openGraph: {
       type: "article",
-      title: course.title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       url: `/courses/${course.slug}`,
-      ...(imageSrc ? { images: [{ url: imageSrc }] } : {}),
+      ...(imageSrc ? { images: [{ url: imageSrc, alt: imageAlt }] } : {}),
     },
     twitter: {
       card: "summary_large_image",
-      title: course.title,
-      description,
+      title: socialTitle,
+      description: socialDescription,
       ...(imageSrc ? { images: [imageSrc] } : {}),
     },
   };
