@@ -25,20 +25,22 @@ export async function generateMetadata({
   const post = await getPost(slug);
   if (!post) return { title: "Post not found" };
 
-  const description = post.excerpt ?? post.contentMd.slice(0, 160);
+  const title = post.metaTitle || post.title;
+  const description = post.metaDescription || post.excerpt || post.contentMd.slice(0, 160);
+  const canonical = post.canonicalUrl || `/blog/${post.slug}`;
   return {
-    title: post.title,
+    title,
     description,
-    alternates: { canonical: `/blog/${post.slug}` },
+    alternates: { canonical },
     openGraph: {
       type: "article",
-      title: post.title,
+      title,
       description,
-      url: `/blog/${post.slug}`,
+      url: canonical,
       publishedTime: (post.publishedAt ?? post.createdAt).toISOString(),
       authors: post.authorName ? [post.authorName] : undefined,
     },
-    twitter: { card: "summary_large_image", title: post.title, description },
+    twitter: { card: "summary_large_image", title, description },
   };
 }
 
