@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCourses } from "@/lib/revalidate";
 import { Op } from "sequelize";
 import { Course } from "@/db";
 import { courseSchema, parseInput, type CourseInput } from "@/lib/schemas";
@@ -59,6 +60,7 @@ export async function createCourse(
 
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -112,6 +114,7 @@ export async function updateCourse(
 
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -121,6 +124,7 @@ export async function deleteCourse(id: string): Promise<{ success: true } | { er
   await Course.destroy({ where: { id } });
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -132,6 +136,7 @@ export async function toggleCoursePublished(
 
   await Course.update({ published }, { where: { id } });
   revalidatePath("/admin/courses");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -144,5 +149,6 @@ export async function updateCourseCategory(
   await Course.update({ categoryId }, { where: { id } });
   revalidatePath("/admin/courses");
   revalidatePath("/admin/categories");
+  revalidatePublicCourses();
   return { success: true };
 }

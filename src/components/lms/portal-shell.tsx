@@ -5,14 +5,44 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import type { LucideIcon } from "lucide-react";
-import { LogOut, Menu, X } from "lucide-react";
+import {
+  ClipboardList,
+  GraduationCap,
+  LayoutDashboard,
+  Library,
+  LogOut,
+  Menu,
+  Receipt,
+  UserRound,
+  X,
+} from "lucide-react";
 import { signOut } from "@/lib/auth-client";
+
+/**
+ * Icons are resolved here, on the client, from a plain string key.
+ *
+ * The portal layouts are server components. Passing a Lucide component across
+ * that boundary throws "Only plain objects can be passed to Client Components"
+ * - a Lucide icon is a forwardRef object with a `render` function, which React
+ * cannot serialise. A string key survives serialisation; the lookup happens
+ * after hydration.
+ */
+const ICONS = {
+  dashboard: LayoutDashboard,
+  batches: Library,
+  assignments: ClipboardList,
+  grades: GraduationCap,
+  payments: Receipt,
+  profile: UserRound,
+} satisfies Record<string, LucideIcon>;
+
+export type NavIcon = keyof typeof ICONS;
 
 export interface NavItem {
   href: string;
   label: string;
-  /** Lucide component. Emoji render differently per OS and read as placeholder. */
-  icon: LucideIcon;
+  /** Key into ICONS above - not a component, so this stays serialisable. */
+  icon: NavIcon;
 }
 
 /**
@@ -47,7 +77,9 @@ export function PortalShell({
     .filter((n) => pathname === n.href || pathname.startsWith(n.href + "/"))
     .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
-  const link = (n: NavItem, onClick?: () => void) => (
+  const link = (n: NavItem, onClick?: () => void) => {
+    const Icon = ICONS[n.icon];
+    return (
     <Link
       key={n.href}
       href={n.href}
@@ -58,10 +90,11 @@ export function PortalShell({
           : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
       }`}
     >
-      <n.icon size={18} aria-hidden="true" className="shrink-0" />
+      <Icon size={18} aria-hidden="true" className="shrink-0" />
       {n.label}
     </Link>
-  );
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 lg:flex">

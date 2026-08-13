@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicPosts } from "@/lib/revalidate";
 import { Op } from "sequelize";
 import { Post } from "@/db";
 import { parseInput, postSchema } from "@/lib/schemas";
@@ -61,7 +62,7 @@ export async function createPost(data: unknown): Promise<Result> {
   });
 
   revalidatePath("/admin/blog");
-  revalidatePath("/blog");
+  revalidatePublicPosts();
   return { success: true };
 }
 
@@ -98,7 +99,7 @@ export async function updatePost(id: string, data: unknown): Promise<Result> {
   });
 
   revalidatePath("/admin/blog");
-  revalidatePath("/blog");
+  revalidatePublicPosts();
   return { success: true };
 }
 
@@ -106,6 +107,6 @@ export async function deletePost(id: string): Promise<Result> {
   if (!(await requireBlog("delete"))) return { error: "Unauthorized" };
   await Post.destroy({ where: { id } });
   revalidatePath("/admin/blog");
-  revalidatePath("/blog");
+  revalidatePublicPosts();
   return { success: true };
 }

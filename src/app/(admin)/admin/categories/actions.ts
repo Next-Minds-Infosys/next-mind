@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCourses } from "@/lib/revalidate";
 import { Category, Course } from "@/db";
 import { categorySchema, parseInput, type CategoryInput } from "@/lib/schemas";
 import { slugify } from "@/lib/utils";
@@ -38,6 +39,7 @@ export async function createCategory(
   revalidatePath("/admin/categories");
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -69,6 +71,7 @@ export async function updateCategory(
 
   revalidatePath("/admin/categories");
   revalidatePath("/admin/courses");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -85,5 +88,6 @@ export async function deleteCategory(id: string): Promise<{ success: true } | { 
   await Category.destroy({ where: { id } });
   revalidatePath("/admin/categories");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
