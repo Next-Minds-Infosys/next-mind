@@ -4,13 +4,19 @@
  * Custom Code admin section: a single-row table holding a raw script snippet
  * and raw CSS injected into the public site only (src/components/SiteLayout.tsx).
  *
- * Also grants the new "customCode" resource to the two policies seeded by
- * 20260802000000-add-policies.js. Adding a key to RESOURCES in
- * src/lib/policies.ts does not retroactively appear in a Policy row's
- * `permissions` JSONB - that blob was computed once at insert time - so
- * without this, neither ADMIN's full-access nor EDITOR's content-and-leads
- * policy would see the new section until someone re-saved it by hand in
- * /admin/policies.
+ * Also grants the new "customCode" resource to ADMIN's full-access policy
+ * only. Adding a key to RESOURCES in src/lib/policies.ts does not
+ * retroactively appear in a Policy row's `permissions` JSONB - that blob was
+ * computed once at insert time - so without this, full-access would not see
+ * the new section until someone re-saved it by hand in /admin/policies.
+ *
+ * Deliberately NOT granted to EDITOR's content-and-leads policy: that policy
+ * is scoped to blog content and lead triage (see 20260802000000-add-policies.js),
+ * and customCode lets its holder run arbitrary <script>/CSS on every public
+ * page - full site compromise, not a content-editing permission. Keep this
+ * ADMIN-only; grant it to another role explicitly and deliberately via
+ * /admin/policies if that's ever actually needed, not as a side effect of
+ * this migration.
  * @type {import('sequelize-cli').Migration}
  */
 module.exports = {
@@ -33,13 +39,13 @@ module.exports = {
 
     const ALL_ACTIONS = JSON.stringify(["read", "create", "update", "delete"]);
     await queryInterface.sequelize.query(
-      `UPDATE "Policy" SET permissions = permissions || jsonb_build_object('customCode', '${ALL_ACTIONS}'::jsonb) WHERE name IN ('full-access', 'content-and-leads')`,
+      `UPDATE "Policy" SET permissions = permissions || jsonb_build_object('customCode', '${ALL_ACTIONS}'::jsonb) WHERE name = 'full-access'`,
     );
   },
 
   async down(queryInterface) {
     await queryInterface.sequelize.query(
-      `UPDATE "Policy" SET permissions = permissions - 'customCode' WHERE name IN ('full-access', 'content-and-leads')`,
+      `UPDATE "Policy" SET permissions = permissions - 'customCode' WHERE name = 'full-access'`,
     );
     await queryInterface.dropTable("SiteSetting");
   },
