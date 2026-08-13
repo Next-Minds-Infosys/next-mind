@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, Copy, MailCheck, TriangleAlert } from "lucide-react";
+import { Check, Copy, Loader2, MailCheck, TriangleAlert } from "lucide-react";
 import {
   createUserSchema,
   type CreateUserFormValues,
@@ -171,9 +171,16 @@ export function CreateUser() {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white transition hover:shadow-lg disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white transition hover:shadow-lg disabled:opacity-60"
       >
-        {isSubmitting ? "Creating…" : "Create account"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Creating…
+          </>
+        ) : (
+          "Create account"
+        )}
       </button>
     </form>
   );

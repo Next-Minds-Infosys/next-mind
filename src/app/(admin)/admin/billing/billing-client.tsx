@@ -4,7 +4,7 @@ import { npr } from "@/lib/utils";
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { invoiceSchema, type InvoiceFormValues, type InvoiceInput } from "@/lib/schemas";
@@ -148,9 +148,16 @@ export function NewInvoice({
       <button
         type="submit"
         disabled={isSubmitting || students.length === 0}
-        className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
       >
-        {isSubmitting ? "Generating…" : "Generate bill"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Generating…
+          </>
+        ) : (
+          "Generate bill"
+        )}
       </button>
     </form>
   );
@@ -196,15 +203,17 @@ export function InvoiceActions({
             setAmount(""); setMethod(""); router.refresh();
           })
         }
-        className="rounded-lg bg-teal-600 px-3 py-1 text-sm font-medium text-white disabled:opacity-60"
+        className="flex items-center justify-center gap-1.5 rounded-lg bg-teal-600 px-3 py-1 text-sm font-medium text-white disabled:opacity-60"
       >
+        {pending && <Loader2 size={13} className="animate-spin" />}
         Record
       </button>
       <button
         type="button" disabled={pending}
         onClick={() => start(async () => { await cancelInvoice(id); router.refresh(); })}
-        className="text-xs text-gray-400 hover:text-red-600"
+        className="flex items-center justify-center gap-1.5 text-xs text-gray-400 hover:text-red-600"
       >
+        {pending && <Loader2 size={12} className="animate-spin" />}
         Cancel
       </button>
       {error && <p className="w-full text-xs text-red-600">{error}</p>}
@@ -282,7 +291,7 @@ export function DeleteInvoice({ id, invoiceNo }: { id: string; invoiceNo: string
         }}
         className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
       >
-        <Trash2 size={15} />
+        {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
       </button>
       {error && <p className="text-xs text-red-600">{error}</p>}
     </>

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, KeyRound, Trash2 } from "lucide-react";
+import { Check, Copy, KeyRound, Loader2, Trash2 } from "lucide-react";
 import { deleteUser, resetUserPassword, updateUser, userImpact } from "./actions";
 
 interface Props {
@@ -77,7 +77,7 @@ export function UserRowActions({ user, isSelf }: Props) {
             }}
             className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
           >
-            <Trash2 size={15} />
+            {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
           </button>
         )}
       </div>
@@ -118,8 +118,9 @@ export function UserRowActions({ user, isSelf }: Props) {
             <button
               type="submit"
               disabled={pending}
-              className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
             >
+              {pending && <Loader2 size={16} className="animate-spin" />}
               {pending ? "Saving…" : "Save changes"}
             </button>
           </form>
@@ -175,8 +176,9 @@ export function UserRowActions({ user, isSelf }: Props) {
                       router.refresh();
                     })
                   }
-                  className="rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
                 >
+                  {pending && <Loader2 size={16} className="animate-spin" />}
                   {pending ? "Resetting…" : "Reset password"}
                 </button>
                 <button type="button" onClick={close} className="rounded-full px-5 py-2.5 text-sm text-gray-600 hover:bg-gray-100">
@@ -229,8 +231,9 @@ export function UserRowActions({ user, isSelf }: Props) {
                       router.refresh();
                     })
                   }
-                  className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                 >
+                  {pending && <Loader2 size={16} className="animate-spin" />}
                   {pending ? "Deleting…" : "Delete user"}
                 </button>
                 <button type="button" onClick={close} className="rounded-full px-5 py-2.5 text-sm text-gray-600 hover:bg-gray-100">
