@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { batchSchema, type BatchFormValues, type BatchInput } from "@/lib/schemas";
 import { createBatch, updateBatch } from "./actions";
 
@@ -158,9 +159,18 @@ export function BatchForm({ courses, instructors, initial, onDone }: Props) {
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white transition hover:shadow-lg disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white transition hover:shadow-lg disabled:opacity-60"
       >
-        {isSubmitting ? "Saving…" : initial ? "Save changes" : "Create batch"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Saving…
+          </>
+        ) : initial ? (
+          "Save changes"
+        ) : (
+          "Create batch"
+        )}
       </button>
     </form>
   );

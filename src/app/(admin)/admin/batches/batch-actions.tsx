@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import type { BatchInput } from "@/lib/schemas";
 import { BatchForm } from "./batch-form";
 import { batchImpact, deleteBatch } from "./actions";
@@ -53,7 +53,7 @@ export function BatchRowActions({ batch, courses, instructors }: Props) {
           }}
           className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
         >
-          <Trash2 size={15} />
+          {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
         </button>
       </div>
 
@@ -115,8 +115,9 @@ export function BatchRowActions({ batch, courses, instructors }: Props) {
                       router.refresh();
                     })
                   }
-                  className="rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                  className="flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
                 >
+                  {pending && <Loader2 size={16} className="animate-spin" />}
                   {pending ? "Deleting…" : "Delete batch"}
                 </button>
                 <button

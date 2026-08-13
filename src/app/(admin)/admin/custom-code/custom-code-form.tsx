@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import {
   siteSettingSchema,
   type SiteSettingInput,
@@ -88,9 +89,16 @@ export function CustomCodeForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
+        className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-2.5 text-sm font-semibold text-white disabled:opacity-60"
       >
-        {isSubmitting ? "Saving…" : "Save changes"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Saving…
+          </>
+        ) : (
+          "Save changes"
+        )}
       </button>
     </form>
   );

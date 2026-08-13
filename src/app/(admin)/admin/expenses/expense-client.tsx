@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import {
   EXPENSE_CATEGORIES,
   expenseSchema,
@@ -106,9 +106,18 @@ export function NewExpense({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
       >
-        {isSubmitting ? "Saving…" : initial ? "Save changes" : "Record expense"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Saving…
+          </>
+        ) : initial ? (
+          "Save changes"
+        ) : (
+          "Record expense"
+        )}
       </button>
     </form>
   );
@@ -123,9 +132,9 @@ export function DeleteExpense({ id }: { id: string }) {
       aria-label="Delete expense"
       disabled={pending}
       onClick={() => start(async () => { await deleteExpense(id); router.refresh(); })}
-      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+      className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
     >
-      <Trash2 size={15} />
+      {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
     </button>
   );
 }

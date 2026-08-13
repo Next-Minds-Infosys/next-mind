@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import { policySchema, type PolicyFormValues, type PolicyInput } from "@/lib/schemas";
 import {
   ACTIONS,
@@ -189,9 +189,18 @@ export function PolicyEditor({ initial }: { initial?: PolicyInput & { id: string
       <button
         type="submit"
         disabled={isSubmitting}
-        className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60 sm:w-auto"
+        className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60 sm:w-auto"
       >
-        {isSubmitting ? "Saving…" : initial ? "Save changes" : "Create policy"}
+        {isSubmitting ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Saving…
+          </>
+        ) : initial ? (
+          "Save changes"
+        ) : (
+          "Create policy"
+        )}
       </button>
     </form>
   );

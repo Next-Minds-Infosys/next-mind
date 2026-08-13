@@ -3,7 +3,7 @@
 import { useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { deletePolicy } from "./actions";
 
 export function PolicyRowActions({ id, label }: { id: string; label: string }) {
@@ -33,9 +33,9 @@ export function PolicyRowActions({ id, label }: { id: string; label: string }) {
             router.refresh();
           });
         }}
-        className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+        className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
       >
-        <Trash2 size={15} />
+        {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
       </button>
     </div>
   );
