@@ -7,15 +7,18 @@ import Markdown from "./Markdown";
 import {
   Award,
   BarChart3,
+  Calendar,
   Check,
   ChevronDown,
   Clock,
+  FileText,
   Handshake,
   Minus,
   MonitorSmartphone,
   Phone,
   Plus,
   TriangleAlert,
+  Wallet,
   Users,
 } from "lucide-react";
 import type { PublicCourse } from "@/db/queries";
@@ -90,6 +93,271 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+
+/* ---------------------------------------------------------------- body parts
+ * The design renders parts of the markdown body as real components rather than
+ * prose: tool cards, numbered project rows, role pills and callouts. The
+ * authored markdown uses consistent shapes, so each block is classified once
+ * and handed to the matching renderer; anything unrecognised stays markdown.
+ */
+
+/** `- **Name** — description` */
+function parseDefList(block: string) {
+  const out: { name: string; desc: string }[] = [];
+  for (const line of block.split("\n")) {
+    const m = line.match(/^-\s+\*\*(.+?)\*\*\s*[\u2014\u2013-]\s*(.+)$/);
+    if (m) out.push({ name: m[1].trim(), desc: m[2].trim() });
+  }
+  return out;
+}
+
+/** Plain `- item` bullets (excluding the `- **Name** —` shape above). */
+function parseBullets(block: string) {
+  return block
+    .split("\n")
+    .map((l) => l.match(/^-\s+(?!\*\*)(.+)$/)?.[1]?.trim())
+    .filter((x): x is string => !!x);
+}
+
+/** A single `**Label:** body` paragraph. */
+function parseLabelled(block: string) {
+  const m = block.trim().match(/^\*\*(.+?)\*\*\s*([\s\S]+)$/);
+  return m ? { label: m[1].replace(/:$/, "").trim(), text: m[2].trim() } : null;
+}
+
+function ToolCards({ items }: { items: { name: string; desc: string }[] }) {
+  return (
+    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+      {items.map((t) => (
+        <div
+          key={t.name}
+          className="flex gap-3 rounded-xl border p-4"
+          style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+        >
+          <span
+            className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white"
+            style={{ background: gradient }}
+          >
+            {t.name.charAt(0)}
+          </span>
+          <span className="min-w-0">
+            <span className="block text-sm font-semibold" style={{ color: colors.navy }}>{t.name}</span>
+            <span className="mt-0.5 block text-xs leading-relaxed" style={{ color: colors.muted }}>{t.desc}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function NumberedRows({ items }: { items: string[] }) {
+  return (
+    <ol className="mt-5 space-y-2.5">
+      {items.map((t, i) => (
+        <li
+          key={t}
+          className="flex items-start gap-3 rounded-xl border p-4 text-sm leading-relaxed"
+          style={{ backgroundColor: colors.surface, borderColor: colors.border, color: colors.body }}
+        >
+          <span
+            className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold text-white"
+            style={{ background: gradient }}
+          >
+            {i + 1}
+          </span>
+          <span className="min-w-0">{t}</span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
+function RolePills({ text }: { text: string }) {
+  const roles = text.split(/,\s*/).map((r) => r.replace(/\.$/, "").trim()).filter(Boolean);
+  return (
+    <div className="mt-4 flex flex-wrap gap-2">
+      {roles.map((r) => (
+        <span
+          key={r}
+          className="rounded-full border px-3.5 py-1.5 text-sm"
+          style={{ backgroundColor: colors.light, borderColor: `${colors.teal}55`, color: colors.tealInk }}
+        >
+          {r}
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function Callout({ label, text }: { label: string; text: string }) {
+  return (
+    <div
+      className="mt-6 rounded-2xl border p-6"
+      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+    >
+      <h3 className="mb-2 font-display text-base font-semibold" style={{ color: colors.navy }}>
+        {label}
+      </h3>
+      <p className="text-sm leading-relaxed" style={{ color: colors.body }}>{text}</p>
+    </div>
+  );
+}
+
+
+/** Each `**Title.** body` paragraph becomes its own warning card. */
+function MistakeCards({ body }: { body: string }) {
+  const blocks = body.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean);
+  const intro = blocks.filter((b) => !b.startsWith("**"));
+  const items = blocks
+    .map((b) => b.match(/^\*\*(.+?)\*\*\s*([\s\S]+)$/))
+    .filter((m): m is RegExpMatchArray => !!m)
+    .map((m) => ({ title: m[1].replace(/\.$/, ""), text: m[2].trim() }));
+
+  return (
+    <>
+      {intro.map((t, i) => (
+        <p key={i} className="mt-4 leading-relaxed" style={{ color: colors.body }}>{t}</p>
+      ))}
+      <div className="mt-6 space-y-3">
+        {items.map((m) => (
+          <div
+            key={m.title}
+            className="flex gap-4 rounded-xl border p-5"
+            style={{ backgroundColor: "#fffaf2", borderColor: `${colors.orange}44` }}
+          >
+            <span
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg"
+              style={{ backgroundColor: colors.orange }}
+            >
+              <TriangleAlert size={16} className="text-white" aria-hidden="true" />
+            </span>
+            <div className="min-w-0">
+              <h4 className="mb-1 text-sm font-semibold" style={{ color: colors.navy }}>{m.title}</h4>
+              <p className="text-sm leading-relaxed" style={{ color: colors.body }}>{m.text}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+/** Price card + batches card, side by side, as in the design. */
+function FeeBlock({
+  body,
+  price,
+  duration,
+  nextBatch,
+  included,
+}: {
+  body: string;
+  price: number;
+  duration: string;
+  nextBatch: string | null;
+  included: string[];
+}) {
+  const batchLine = body.match(/\*\*Batch options:\*\*\s*(.+)/)?.[1] ?? "";
+  const weekend = batchLine.match(/Weekend batch \(([^)]+)\)/i)?.[1];
+  const evening = batchLine.match(/evening batch \(([^)]+)\)/i)?.[1];
+  const emi = body.match(/\*\*EMI[^*]*\*\*\s*(.+)/)?.[1];
+
+  return (
+    <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="rounded-2xl border p-6" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
+        <div className="font-display text-3xl font-bold" style={{ color: colors.navy }}>{npr(price)}</div>
+        <div className="mt-1 text-sm" style={{ color: colors.muted }}>As of August 2026 · EMI available</div>
+        <ul className="mt-5 space-y-2">
+          {included.map((t) => (
+            <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
+              <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
+              <span>{t}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="rounded-2xl border p-6" style={{ backgroundColor: colors.surface, borderColor: colors.border }}>
+        <h3 className="mb-4 text-sm font-semibold" style={{ color: colors.navy }}>Available Batches</h3>
+        <dl className="space-y-3 text-sm">
+          <div className="flex items-baseline justify-between gap-3">
+            <dt className="font-semibold" style={{ color: colors.navy }}>Duration</dt>
+            <dd style={{ color: colors.muted }}>{duration}</dd>
+          </div>
+          {weekend && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="font-semibold" style={{ color: colors.navy }}>Weekend Batch</dt>
+              <dd className="text-right" style={{ color: colors.muted }}>{weekend}</dd>
+            </div>
+          )}
+          {evening && (
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="font-semibold" style={{ color: colors.navy }}>Evening Batch</dt>
+              <dd className="text-right" style={{ color: colors.muted }}>{evening}</dd>
+            </div>
+          )}
+        </dl>
+        {nextBatch && (
+          <div
+            className="mt-5 flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
+            style={{ backgroundColor: colors.light, color: colors.tealInk }}
+          >
+            <Calendar size={15} aria-hidden="true" />
+            Next Batch: {nextBatch}
+          </div>
+        )}
+        {emi && (
+          <p className="mt-4 text-xs leading-relaxed" style={{ color: colors.muted }}>{emi}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** Splits a section body into blocks and renders each with the right treatment. */
+function SectionBody({ heading, body }: { heading: string; body: string }) {
+  const isTools = /tools/i.test(heading);
+  const isProjects = /project|lab/i.test(heading);
+
+  return (
+    <>
+      {body.split(/\n{2,}/).map((block, i) => {
+        const trimmed = block.trim();
+        if (!trimmed) return null;
+
+        if (isTools) {
+          const defs = parseDefList(trimmed);
+          if (defs.length) return <ToolCards key={i} items={defs} />;
+        }
+        if (isProjects) {
+          const bullets = parseBullets(trimmed);
+          if (bullets.length >= 3) return <NumberedRows key={i} items={bullets} />;
+        }
+
+        const labelled = parseLabelled(trimmed);
+        if (labelled && !trimmed.includes("\n")) {
+          if (/^roles you can apply/i.test(labelled.label))
+            return (
+              <div key={i} className="mt-8">
+                <h3 className="font-display text-base font-semibold" style={{ color: colors.navy }}>
+                  Roles You Can Apply For After This Course
+                </h3>
+                <RolePills text={labelled.text} />
+              </div>
+            );
+          if (labelled.label.endsWith("?"))
+            return <Callout key={i} label={labelled.label} text={labelled.text} />;
+        }
+
+        return (
+          <div key={i} className="mt-4">
+            <Markdown>{trimmed}</Markdown>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
 export default function CoursePageContent({ course, courses }: CoursePageContentProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [openModule, setOpenModule] = useState<number | null>(0);
@@ -97,6 +365,23 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
   const [active, setActive] = useState("overview");
 
   const body = useMemo(() => splitContent(course.contentMd), [course.contentMd]);
+
+  /**
+   * The design's sidebar checklist is the real "what is included in the fee"
+   * list, which lives in the pricing section of contentMd. Deriving it from
+   * `tools` instead produced filler like "Hands-on practice with Canva".
+   */
+  const included = useMemo(() => {
+    const fee = body.find((s) => /fee|included/i.test(s.heading));
+    if (!fee) return [];
+    const after = fee.body.split(/what is included[^\n]*\n/i)[1];
+    if (!after) return [];
+    return after
+      .split(/\n{2,}/)[0]
+      .split("\n")
+      .map((l) => l.match(/^-\s+(.+)$/)?.[1]?.trim())
+      .filter((x): x is string => !!x);
+  }, [body]);
   const mentorPhoto = course.mentor ? publicMediaSrc(course.mentor.photo) : null;
 
   const tabs = useMemo(() => {
@@ -106,11 +391,10 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
       { id: "curriculum", label: "Curriculum" },
       { id: "projects", label: "Tools & Projects" },
       { id: "career", label: "Career Scope" },
-      { id: "pricing", label: "Pricing" },
       { id: "faq", label: "FAQ" },
     ];
     return t.filter((x) => {
-      if (x.id === "career" || x.id === "pricing" || x.id === "projects")
+      if (x.id === "career" || x.id === "projects")
         return body.some((s) => tabFor(s.heading) === x.id);
       if (x.id === "faq") return course.faqs.length > 0;
       return true;
@@ -132,6 +416,20 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
     return () => window.removeEventListener("scroll", onScroll);
   }, [tabs]);
 
+  /**
+   * The design splits the H1: the trailing clause is teal. `h1Accent` must be a
+   * suffix of `h1`, so the lead is everything before it. Falls back to the card
+   * title when no editorial H1 has been written yet.
+   */
+  const headline = useMemo(() => {
+    const full = course.h1?.trim() || course.title;
+    const accent = course.h1Accent?.trim();
+    if (accent && full.endsWith(accent)) {
+      return { lead: full.slice(0, full.length - accent.length), accent };
+    }
+    return { lead: full, accent: "" };
+  }, [course.h1, course.h1Accent, course.title]);
+
   const specs = [
     { icon: Clock, label: "Duration", value: course.duration },
     { icon: BarChart3, label: "Level", value: course.level },
@@ -141,10 +439,12 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
   ];
 
   const facts = [
-    { label: "Duration", value: course.duration },
-    { label: "Fee", value: npr(course.price) },
-    { label: "Format", value: "Online + In-Person" },
-    { label: "Level", value: course.level },
+    { icon: Clock, label: "Duration", value: course.duration },
+    { icon: Wallet, label: "Fee", value: npr(course.price) },
+    { icon: MonitorSmartphone, label: "Format", value: "Online + In-Person" },
+    // Only shown once a real intake is set - never a placeholder.
+    ...(course.nextBatch ? [{ icon: Calendar, label: "Next Batch", value: course.nextBatch }] : []),
+    { icon: BarChart3, label: "Level", value: course.level },
   ];
 
   return (
@@ -182,7 +482,10 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               className="font-display font-bold leading-[1.12] text-white"
               style={{ fontSize: "clamp(2rem,4vw,2.8rem)" }}
             >
-              {course.metaTitle?.split("|")[0]?.trim() || course.title}
+              {headline.lead}
+              {headline.accent && (
+                <span style={{ color: colors.teal }}>{headline.accent}</span>
+              )}
             </h1>
 
             <p className="mt-5 max-w-2xl leading-relaxed text-white/70">{course.description}</p>
@@ -191,8 +494,9 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               {facts.map((f) => (
                 <span
                   key={f.label}
-                  className="rounded-lg border border-white/15 bg-white/[0.07] px-3.5 py-2 text-sm text-white/60"
+                  className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/[0.07] px-3.5 py-2 text-sm text-white/60"
                 >
+                  <f.icon size={14} aria-hidden="true" />
                   {f.label}: <strong className="font-semibold text-white">{f.value}</strong>
                 </span>
               ))}
@@ -207,10 +511,20 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               >
                 Enroll Now
               </button>
+              {course.syllabusUrl && (
+                <a
+                  href={course.syllabusUrl}
+                  className="min-h-[48px] inline-flex items-center gap-2 rounded-xl border border-white/25 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/10"
+                >
+                  <FileText size={17} aria-hidden="true" />
+                  Download Syllabus
+                </a>
+              )}
               <Link
                 href="/contact"
-                className="min-h-[48px] inline-flex items-center rounded-xl border border-white/25 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/10"
+                className="min-h-[48px] inline-flex items-center gap-2 rounded-xl border border-white/25 px-8 py-3.5 text-base font-semibold text-white transition-all hover:bg-white/10"
               >
+                <Phone size={17} aria-hidden="true" />
                 Book Free Counselling
               </Link>
             </div>
@@ -231,10 +545,19 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                   One-time payment · EMI available
                 </div>
 
+                {course.nextBatch && (
+                  <div
+                    className="mt-4 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold"
+                    style={{ backgroundColor: colors.light, color: colors.tealInk }}
+                  >
+                    <Calendar size={15} aria-hidden="true" />
+                    Next Batch: {course.nextBatch}
+                  </div>
+                )}
                 <button
                   type="button"
                   onClick={() => setModalOpen(true)}
-                  className="mt-5 min-h-[48px] w-full rounded-xl py-3.5 font-bold text-white transition-all active:scale-95"
+                  className="mt-4 min-h-[48px] w-full rounded-xl py-3.5 font-bold text-white transition-all active:scale-95"
                   style={{ background: gradient }}
                 >
                   Enroll Now
@@ -259,7 +582,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                   ))}
                 </dl>
 
-                {course.skills.length > 0 && (
+                {included.length > 0 && (
                   <div className="mt-6 border-t pt-5" style={{ borderColor: colors.border }}>
                     <div
                       className="mb-3 text-xs font-bold uppercase tracking-[0.14em]"
@@ -268,10 +591,10 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                       What&apos;s included
                     </div>
                     <ul className="space-y-2">
-                      {course.tools.slice(0, 6).map((t) => (
-                        <li key={t} className="flex gap-2 text-sm" style={{ color: colors.body }}>
+                      {included.slice(0, 7).map((t) => (
+                        <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
                           <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
-                          <span>Hands-on practice with {t}</span>
+                          <span>{t}</span>
                         </li>
                       ))}
                     </ul>
@@ -321,7 +644,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                       {s.heading}
                     </h3>
                   )}
-                  <Markdown>{s.body}</Markdown>
+                  <SectionBody heading={s.heading} body={s.body} />
                 </div>
               ))}
 
@@ -349,7 +672,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
           {course.whoIsItFor.length > 0 && (
             <section id="audience" className="scroll-mt-32">
               <Eyebrow color={colors.blueInk}>Target Audience</Eyebrow>
-              <SectionHeading>Who Is This Course For?</SectionHeading>
+              <SectionHeading>{`Who Is This ${course.title} Course For?`}</SectionHeading>
               <div className="mt-6 space-y-3">
                 {course.whoIsItFor.map((w, i) => {
                   const [head, ...rest] = w.split(/ (?:who|whose|moving|adding|switching|looking) /);
@@ -452,22 +775,8 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
           {/* Tools & projects (from contentMd) */}
           {body.some((s) => tabFor(s.heading) === "projects") && (
             <section id="projects" className="scroll-mt-32">
-              <Eyebrow color={colors.blueInk}>Toolkit &amp; Hands-on Work</Eyebrow>
-              <SectionHeading>Tools You Will Use, Projects You Will Ship</SectionHeading>
-
-              {course.tools.length > 0 && (
-                <div className="mt-6 flex flex-wrap gap-2">
-                  {course.tools.map((t) => (
-                    <span
-                      key={t}
-                      className="rounded-lg border px-3 py-1.5 text-sm font-medium"
-                      style={{ borderColor: colors.border, backgroundColor: "#fff", color: colors.navy }}
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
-              )}
+              <Eyebrow color={colors.blueInk}>Hands-on Practice</Eyebrow>
+              <SectionHeading>Tools You Will Get Hands-On Practice With</SectionHeading>
 
               {body
                 .filter((s) => tabFor(s.heading) === "projects")
@@ -476,7 +785,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                     <h3 className="mb-3 font-display text-xl font-bold" style={{ color: colors.navy }}>
                       {s.heading}
                     </h3>
-                    <Markdown>{s.body}</Markdown>
+                    <SectionBody heading={s.heading} body={s.body} />
                   </div>
                 ))}
             </section>
@@ -494,7 +803,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                       {c && <Eyebrow color={c.color}>{c.eyebrow}</Eyebrow>}
                       <SectionHeading>{s.heading}</SectionHeading>
                       <div className="mt-5">
-                        <Markdown>{s.body}</Markdown>
+                        <SectionBody heading={s.heading} body={s.body} />
                       </div>
                     </div>
                   );
@@ -547,9 +856,19 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
                     <div key={i} className={i ? "mt-10" : ""}>
                       {c && <Eyebrow color={c.color}>{c.eyebrow}</Eyebrow>}
                       <SectionHeading>{s.heading}</SectionHeading>
-                      <div className="mt-5">
-                        <Markdown>{s.body}</Markdown>
-                      </div>
+                      {/^course fee/i.test(s.heading) ? (
+                        <FeeBlock
+                          body={s.body}
+                          price={course.price}
+                          duration={course.duration}
+                          nextBatch={course.nextBatch}
+                          included={included}
+                        />
+                      ) : (
+                        <div className="mt-5">
+                          <SectionBody heading={s.heading} body={s.body} />
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -563,22 +882,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
               <section key={i} className="scroll-mt-32">
                 <Eyebrow color={colors.orange}>From the Classroom</Eyebrow>
                 <SectionHeading>{s.heading}</SectionHeading>
-                <div
-                  className="mt-6 rounded-2xl border p-6"
-                  style={{ backgroundColor: "#fffaf2", borderColor: `${colors.orange}44` }}
-                >
-                  <div className="flex gap-3">
-                    <TriangleAlert
-                      size={18}
-                      className="mt-1 flex-shrink-0"
-                      style={{ color: colors.orange }}
-                      aria-hidden="true"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <Markdown>{s.body}</Markdown>
-                    </div>
-                  </div>
-                </div>
+                <MistakeCards body={s.body} />
               </section>
             ))}
 
