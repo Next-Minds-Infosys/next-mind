@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { revalidatePublicCourses } from "@/lib/revalidate";
 import { Course, Mentor } from "@/db";
 import { mentorSchema, parseInput, type MentorInput } from "@/lib/schemas";
 import { RESOURCES, type Action } from "@/lib/policies";
@@ -30,6 +31,7 @@ export async function createMentor(
   revalidatePath("/admin/mentors");
   revalidatePath("/admin/courses");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -55,6 +57,7 @@ export async function updateMentor(
 
   revalidatePath("/admin/mentors");
   revalidatePath("/admin/courses");
+  revalidatePublicCourses();
   return { success: true };
 }
 
@@ -71,5 +74,6 @@ export async function deleteMentor(id: string): Promise<{ success: true } | { er
   await Mentor.destroy({ where: { id } });
   revalidatePath("/admin/mentors");
   revalidatePath("/admin");
+  revalidatePublicCourses();
   return { success: true };
 }

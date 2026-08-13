@@ -62,7 +62,7 @@ function chromeFor(heading: string): { eyebrow: string; color: string } | null {
   if (/fee|batch|payment|pricing/.test(h)) return { eyebrow: "Pricing & Schedule", color: colors.tealInk };
   if (/certification/.test(h)) return { eyebrow: "Certifications", color: colors.blueInk };
   if (/tools/.test(h)) return { eyebrow: "Toolkit", color: colors.blueInk };
-  if (/project|lab/.test(h)) return { eyebrow: "Hands-on Work", color: colors.green };
+  if (/project|lab/.test(h)) return { eyebrow: "Hands-on Work", color: colors.blueInk };
   if (/mistake/.test(h)) return { eyebrow: "From the Classroom", color: colors.orange };
   if (/what this course/.test(h)) return { eyebrow: "Course Overview", color: colors.tealInk };
   return null;
@@ -269,7 +269,7 @@ function FeeBlock({
         <ul className="mt-5 space-y-2">
           {included.map((t) => (
             <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
-              <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
+              <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.tealInk }} />
               <span>{t}</span>
             </li>
           ))}
@@ -464,7 +464,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
             <div className="mb-5 flex flex-wrap gap-2">
               <span
                 className="rounded-full px-3 py-1 text-xs font-semibold"
-                style={{ backgroundColor: `${colors.green}22`, color: colors.green, border: `1px solid ${colors.green}55` }}
+                style={{ backgroundColor: `${colors.teal}22`, color: colors.teal, border: `1px solid ${colors.teal}55` }}
               >
                 {course.category}
               </span>
@@ -538,67 +538,75 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
             >
               <div className="h-1.5" style={{ background: gradient }} />
               <div className="p-6">
-                <div className="font-display text-3xl font-bold" style={{ color: colors.navy }}>
+                <h2 className="font-display text-lg font-bold" style={{ color: colors.navy }}>
+                  {course.title}
+                </h2>
+
+                {/* Specs read as "Label: value" on one line rather than a
+                    justified table - shorter card, and the value stays next to
+                    the thing it describes. */}
+                <dl className="mt-4 space-y-2.5">
+                  {specs.map((sp) => (
+                    <div key={sp.label} className="flex items-start gap-2.5 text-sm">
+                      <sp.icon
+                        size={16}
+                        className="mt-0.5 flex-shrink-0"
+                        style={{ color: colors.tealInk }}
+                        aria-hidden="true"
+                      />
+                      <dt style={{ color: colors.muted }}>{sp.label}:</dt>
+                      <dd className="font-semibold" style={{ color: colors.navy }}>{sp.value}</dd>
+                    </div>
+                  ))}
+                  {course.nextBatch && (
+                    <div className="flex items-start gap-2.5 text-sm">
+                      <Calendar
+                        size={16}
+                        className="mt-0.5 flex-shrink-0"
+                        style={{ color: colors.tealInk }}
+                        aria-hidden="true"
+                      />
+                      <dt style={{ color: colors.muted }}>Next batch:</dt>
+                      <dd className="font-semibold" style={{ color: colors.navy }}>{course.nextBatch}</dd>
+                    </div>
+                  )}
+                </dl>
+
+                <hr className="my-5 border-0 border-t" style={{ borderColor: colors.border }} />
+
+                <div className="font-display text-3xl font-bold" style={{ color: colors.tealInk }}>
                   {npr(course.price)}
                 </div>
                 <div className="mt-1 text-sm" style={{ color: colors.muted }}>
                   One-time payment · EMI available
                 </div>
 
-                {course.nextBatch && (
-                  <div
-                    className="mt-4 flex items-center justify-center gap-2 rounded-lg py-2 text-sm font-semibold"
-                    style={{ backgroundColor: colors.light, color: colors.tealInk }}
-                  >
-                    <Calendar size={15} aria-hidden="true" />
-                    Next Batch: {course.nextBatch}
-                  </div>
-                )}
                 <button
                   type="button"
                   onClick={() => setModalOpen(true)}
-                  className="mt-4 min-h-[48px] w-full rounded-xl py-3.5 font-bold text-white transition-all active:scale-95"
+                  className="mt-5 min-h-[48px] w-full rounded-full py-3.5 font-bold text-white transition-all active:scale-95"
                   style={{ background: gradient }}
                 >
-                  Enroll Now
+                  Enroll now
                 </button>
-                <Link
-                  href="/contact"
-                  className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-xl border py-3.5 font-semibold transition-all hover:bg-nm-surface"
-                  style={{ borderColor: colors.border, color: colors.navy }}
-                >
-                  Book Free Counselling
-                </Link>
 
-                <dl className="mt-6 space-y-3">
-                  {specs.map((s) => (
-                    <div key={s.label} className="flex items-center justify-between gap-3 text-sm">
-                      <dt className="flex items-center gap-2" style={{ color: colors.muted }}>
-                        <s.icon size={15} className="text-nm-teal-ink" aria-hidden="true" />
-                        {s.label}
-                      </dt>
-                      <dd className="font-semibold" style={{ color: colors.navy }}>{s.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-
-                {included.length > 0 && (
-                  <div className="mt-6 border-t pt-5" style={{ borderColor: colors.border }}>
-                    <div
-                      className="mb-3 text-xs font-bold uppercase tracking-[0.14em]"
-                      style={{ color: colors.tealInk }}
-                    >
-                      What&apos;s included
-                    </div>
-                    <ul className="space-y-2">
-                      {included.slice(0, 7).map((t) => (
-                        <li key={t} className="flex gap-2 text-sm leading-relaxed" style={{ color: colors.body }}>
-                          <Check size={15} className="mt-0.5 flex-shrink-0" style={{ color: colors.green }} />
-                          <span>{t}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                {course.syllabusUrl ? (
+                  <a
+                    href={course.syllabusUrl}
+                    className="mt-3 flex min-h-[48px] w-full items-center justify-center gap-2 rounded-full border-[1.5px] font-semibold transition-all hover:bg-nm-surface"
+                    style={{ borderColor: colors.teal, color: colors.tealInk }}
+                  >
+                    <FileText size={16} aria-hidden="true" />
+                    Get syllabus (PDF)
+                  </a>
+                ) : (
+                  <Link
+                    href="/contact"
+                    className="mt-3 flex min-h-[48px] w-full items-center justify-center rounded-full border-[1.5px] font-semibold transition-all hover:bg-nm-surface"
+                    style={{ borderColor: colors.teal, color: colors.tealInk }}
+                  >
+                    Book free counselling
+                  </Link>
                 )}
               </div>
             </div>
@@ -708,7 +716,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
           {/* Curriculum */}
           {course.curriculum.length > 0 && (
             <section id="curriculum" className="scroll-mt-32">
-              <Eyebrow color={colors.green}>Full Curriculum</Eyebrow>
+              <Eyebrow color={colors.tealInk}>Full Curriculum</Eyebrow>
               <div className="flex items-end justify-between gap-4">
                 <SectionHeading>What You Will Learn</SectionHeading>
                 <span className="whitespace-nowrap text-sm" style={{ color: colors.muted }}>

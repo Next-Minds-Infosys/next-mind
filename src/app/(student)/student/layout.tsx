@@ -1,14 +1,6 @@
 import { requireRole } from "@/lib/access";
 import { Role } from "@/lib/types";
-import {
-  ClipboardList,
-  GraduationCap,
-  LayoutDashboard,
-  Library,
-  Receipt,
-  UserRound,
-} from "lucide-react";
-import { PortalShell } from "@/components/lms/portal-shell";
+import { PortalShell, type NavItem } from "@/components/lms/portal-shell";
 
 /**
  * Everything under here reads the session and queries Postgres per request, so
@@ -23,13 +15,13 @@ export const dynamic = "force-dynamic";
 export const metadata = { robots: { index: false, follow: false } };
 
 
-const nav = [
-  { href: "/student", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/student/batches", label: "My batches", icon: Library },
-  { href: "/student/assignments", label: "Assignments", icon: ClipboardList },
-  { href: "/student/grades", label: "Grades", icon: GraduationCap },
-  { href: "/student/payments", label: "Payments", icon: Receipt },
-  { href: "/student/profile", label: "Profile", icon: UserRound },
+const nav: NavItem[] = [
+  { href: "/student", label: "Dashboard", icon: "dashboard" },
+  { href: "/student/batches", label: "My batches", icon: "batches" },
+  { href: "/student/assignments", label: "Assignments", icon: "assignments" },
+  { href: "/student/grades", label: "Grades", icon: "grades" },
+  { href: "/student/payments", label: "Payments", icon: "payments" },
+  { href: "/student/profile", label: "Profile", icon: "profile" },
 ];
 
 export default async function StudentLayout({ children }: { children: React.ReactNode }) {
