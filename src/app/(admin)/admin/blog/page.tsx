@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import { Post } from "@/db";
 import { requireResource } from "@/lib/access";
 import { RESOURCES } from "@/lib/policies";
@@ -7,6 +6,7 @@ import {
   Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
 } from "@/components/ui/table";
 import { PostRowActions } from "./post-actions";
+import { NewPostButton } from "./new-post-button";
 
 export default async function AdminBlogPage() {
   await requireResource(RESOURCES.BLOG);
@@ -21,13 +21,7 @@ export default async function AdminBlogPage() {
             Published posts appear on the public site at /blog.
           </p>
         </div>
-        <Link
-          href="/admin/blog/new"
-          className="inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white hover:shadow-lg"
-        >
-          <Plus size={16} />
-          Add new post
-        </Link>
+        <NewPostButton />
       </div>
 
       <Table>

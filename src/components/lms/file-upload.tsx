@@ -32,6 +32,7 @@ export function FileUpload({
     | "courseImage"
     | "mentorPhoto"
     | "postCover"
+    | "postImage"
     | "avatar";
   accept?: string;
   label?: string;

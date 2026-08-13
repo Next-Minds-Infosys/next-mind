@@ -25,6 +25,7 @@ const ALLOWED: Record<string, RegExp> = {
   courseImage: /^image\/(png|jpeg|webp)$/,
   mentorPhoto: /^image\/(png|jpeg|webp)$/,
   postCover: /^image\/(png|jpeg|webp)$/,
+  postImage: /^image\/(png|jpeg|webp)$/,
   avatar: /^image\/(png|jpeg|webp)$/,
 };
 
@@ -37,6 +38,7 @@ const MAX_BYTES: Record<string, number> = {
   courseImage: 8 * 1024 * 1024,
   mentorPhoto: 8 * 1024 * 1024,
   postCover: 8 * 1024 * 1024,
+  postImage: 8 * 1024 * 1024,
   avatar: 5 * 1024 * 1024,
 };
 
@@ -52,11 +54,12 @@ const KEY_PREFIX: Record<string, string> = {
   courseImage: "videos/teacher",
   mentorPhoto: "videos/teacher",
   postCover: "videos/teacher",
+  postImage: "videos/teacher",
   avatar: "videos/teacher",
 };
 
 /** Scopes that are admin-only and not tied to a batch. */
-const ADMIN_ONLY_SCOPES = new Set(["courseImage", "mentorPhoto", "postCover"]);
+const ADMIN_ONLY_SCOPES = new Set(["courseImage", "mentorPhoto", "postCover", "postImage"]);
 
 const bodySchema = z.object({
   // Batch id for batch-scoped uploads, the course/mentor id (or a
@@ -68,8 +71,8 @@ const bodySchema = z.object({
   /** Optional so existing callers keep working; enforced when supplied. */
   sizeBytes: z.coerce.number().int().positive().optional(),
   // "lesson"/"material"/"assignment" are instructor-only; "submission" is a
-  // student; "courseImage"/"mentorPhoto"/"postCover" are admin-only;
-  // "avatar" is any staff member uploading their own profile photo.
+  // student; "courseImage"/"mentorPhoto"/"postCover"/"postImage" are
+  // admin-only; "avatar" is any staff member uploading their own profile photo.
   scope: z.enum([
     "lesson",
     "material",
@@ -78,6 +81,7 @@ const bodySchema = z.object({
     "courseImage",
     "mentorPhoto",
     "postCover",
+    "postImage",
     "avatar",
   ]),
 });

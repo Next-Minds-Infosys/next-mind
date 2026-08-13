@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
@@ -13,6 +13,8 @@ import {
   type TableOfContentData,
 } from "@tiptap/extension-table-of-contents";
 import { Markdown, type MarkdownStorage } from "tiptap-markdown";
+import { FileUpload } from "@/components/lms/file-upload";
+import { publicMediaSrc } from "@/lib/media-image";
 import {
   Bold,
   Italic,
@@ -26,7 +28,6 @@ import {
   Code2,
   Minus,
   LinkIcon,
-  Unlink,
   ImageIcon,
   ListTree,
   Undo2,
@@ -45,6 +46,12 @@ interface RichTextEditorProps {
   value: string;
   onChange: (markdown: string) => void;
   placeholder?: string;
+  /**
+   * Id to namespace uploaded content images under (the "postImage" upload
+   * scope - see /api/uploads). Omit to hide the "upload from your device"
+   * option and only offer inserting images by URL.
+   */
+  imageUploadResourceId?: string;
 }
 
 function ToolbarButton({
@@ -75,6 +82,196 @@ function ToolbarButton({
     >
       {children}
     </button>
+  );
+}
+
+/** Closes an open toolbar popover on an outside click, matching native <dialog> light-dismiss. */
+function usePopoverDismiss(
+  ref: React.RefObject<HTMLElement | null>,
+  open: boolean,
+  onClose: () => void,
+) {
+  useEffect(() => {
+    if (!open) return;
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) onClose();
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, [open, onClose, ref]);
+}
+
+const popoverInput =
+  "w-full rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-800 ring-1 ring-gray-950/5 focus:outline-none focus:ring-2 focus:ring-teal-500";
+const popoverLabel = "text-xs font-medium text-gray-500";
+
+function LinkPopover({ editor }: { editor: Editor }) {
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  usePopoverDismiss(wrapRef, open, () => setOpen(false));
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    // The popover's markup only mounts once `open` flips true, so this is the
+    // one moment its input's initial value can be seeded without an effect.
+    setUrl((editor.getAttributes("link").href as string | undefined) ?? "");
+    setOpen(true);
+  }
+
+  function apply() {
+    const trimmed = url.trim();
+    if (trimmed) {
+      editor.chain().focus().extendMarkRange("link").setLink({ href: trimmed }).run();
+    } else {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+    }
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <ToolbarButton label="Link" active={editor.isActive("link") || open} onClick={toggle}>
+        <LinkIcon size={15} />
+      </ToolbarButton>
+      {open && (
+        <div className="absolute left-0 top-full z-10 mt-1 w-72 space-y-2 rounded-lg bg-white p-3 shadow-lg ring-1 ring-gray-950/10">
+          <label className={popoverLabel}>Link URL</label>
+          <input
+            autoFocus
+            type="url"
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                apply();
+              }
+              if (e.key === "Escape") setOpen(false);
+            }}
+            placeholder="https://…"
+            className={popoverInput}
+          />
+          <div className="flex items-center justify-end gap-2">
+            {editor.isActive("link") && (
+              <button
+                type="button"
+                onClick={() => {
+                  editor.chain().focus().extendMarkRange("link").unsetLink().run();
+                  setOpen(false);
+                }}
+                className="rounded-lg px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50"
+              >
+                Remove
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={apply}
+              className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImagePopover({ editor, uploadResourceId }: { editor: Editor; uploadResourceId?: string }) {
+  const [open, setOpen] = useState(false);
+  const [url, setUrl] = useState("");
+  const [alt, setAlt] = useState("");
+  const wrapRef = useRef<HTMLDivElement>(null);
+  usePopoverDismiss(wrapRef, open, () => setOpen(false));
+
+  function toggle() {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    // The popover's inputs only mount once `open` flips true, so this is the
+    // one moment they can be reset to blank without an effect.
+    setUrl("");
+    setAlt("");
+    setOpen(true);
+  }
+
+  function insert(src: string, imageAlt: string) {
+    const trimmed = src.trim();
+    if (!trimmed) return;
+    editor.chain().focus().setImage({ src: trimmed, alt: imageAlt.trim() }).run();
+    setOpen(false);
+  }
+
+  return (
+    <div className="relative" ref={wrapRef}>
+      <ToolbarButton label="Insert image" active={open} onClick={toggle}>
+        <ImageIcon size={15} />
+      </ToolbarButton>
+      {open && (
+        <div className="absolute left-0 top-full z-10 mt-1 w-72 space-y-3 rounded-lg bg-white p-3 shadow-lg ring-1 ring-gray-950/10">
+          <div className="space-y-1">
+            <label className={popoverLabel}>Alt text</label>
+            <input
+              autoFocus
+              type="text"
+              value={alt}
+              onChange={(e) => setAlt(e.target.value)}
+              onKeyDown={(e) => e.key === "Escape" && setOpen(false)}
+              placeholder="Describes the image, for SEO and accessibility"
+              className={popoverInput}
+            />
+          </div>
+
+          {uploadResourceId && (
+            <div className="space-y-1">
+              <label className={popoverLabel}>Upload from your device</label>
+              <FileUpload
+                resourceId={uploadResourceId}
+                scope="postImage"
+                accept="image/png,image/jpeg,image/webp"
+                label="Choose image"
+                onUploaded={(file) => insert(publicMediaSrc(file.key) ?? "", alt || file.fileName)}
+              />
+            </div>
+          )}
+
+          <div className="space-y-1">
+            <label className={popoverLabel}>{uploadResourceId ? "…or paste a URL" : "Image URL"}</label>
+            <input
+              type="url"
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  insert(url, alt);
+                }
+                if (e.key === "Escape") setOpen(false);
+              }}
+              placeholder="https://…"
+              className={popoverInput}
+            />
+          </div>
+          <div className="flex justify-end">
+            <button
+              type="button"
+              disabled={!url.trim()}
+              onClick={() => insert(url, alt)}
+              className="rounded-lg bg-teal-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-teal-700 disabled:opacity-50"
+            >
+              Insert
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -119,7 +316,15 @@ function TocButton({ editor, tocItems }: { editor: Editor; tocItems: TableOfCont
   );
 }
 
-function Toolbar({ editor, tocItems }: { editor: Editor; tocItems: TableOfContentData }) {
+function Toolbar({
+  editor,
+  tocItems,
+  imageUploadResourceId,
+}: {
+  editor: Editor;
+  tocItems: TableOfContentData;
+  imageUploadResourceId?: string;
+}) {
   return (
     <div className="flex flex-wrap items-center gap-0.5 border-b border-gray-950/5 px-2 py-1.5">
       <ToolbarButton
@@ -208,40 +413,8 @@ function Toolbar({ editor, tocItems }: { editor: Editor; tocItems: TableOfConten
 
       <span className="mx-1 h-5 w-px bg-gray-950/10" />
 
-      <ToolbarButton
-        label="Link"
-        active={editor.isActive("link")}
-        onClick={() => {
-          const previous = editor.getAttributes("link").href as string | undefined;
-          const url = window.prompt("Link URL", previous ?? "https://");
-          if (url === null) return;
-          if (url === "") {
-            editor.chain().focus().extendMarkRange("link").unsetLink().run();
-            return;
-          }
-          editor.chain().focus().extendMarkRange("link").setLink({ href: url }).run();
-        }}
-      >
-        <LinkIcon size={15} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Remove link"
-        disabled={!editor.isActive("link")}
-        onClick={() => editor.chain().focus().unsetLink().run()}
-      >
-        <Unlink size={15} />
-      </ToolbarButton>
-      <ToolbarButton
-        label="Insert image"
-        onClick={() => {
-          const url = window.prompt("Image URL");
-          if (!url) return;
-          const alt = window.prompt("Alt text (for SEO and accessibility)") ?? "";
-          editor.chain().focus().setImage({ src: url, alt }).run();
-        }}
-      >
-        <ImageIcon size={15} />
-      </ToolbarButton>
+      <LinkPopover editor={editor} />
+      <ImagePopover editor={editor} uploadResourceId={imageUploadResourceId} />
 
       <span className="mx-1 h-5 w-px bg-gray-950/10" />
 
@@ -263,7 +436,12 @@ function Toolbar({ editor, tocItems }: { editor: Editor; tocItems: TableOfConten
   );
 }
 
-export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorProps) {
+export function RichTextEditor({
+  value,
+  onChange,
+  placeholder,
+  imageUploadResourceId,
+}: RichTextEditorProps) {
   const [tocItems, setTocItems] = useState<TableOfContentData>([]);
 
   const editor = useEditor({
@@ -324,7 +502,7 @@ export function RichTextEditor({ value, onChange, placeholder }: RichTextEditorP
 
   return (
     <div className="overflow-hidden rounded-lg bg-white ring-1 ring-gray-950/5 transition focus-within:ring-2 focus-within:ring-teal-500">
-      <Toolbar editor={editor} tocItems={tocItems} />
+      <Toolbar editor={editor} tocItems={tocItems} imageUploadResourceId={imageUploadResourceId} />
       <EditorContent editor={editor} />
     </div>
   );
