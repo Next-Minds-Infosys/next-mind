@@ -5,18 +5,19 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm, useWatch, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle2, XCircle, AlertCircle, Loader2, UserCircle2 } from "lucide-react";
 import { postSchema, type PostFormValues, type PostInput } from "@/lib/schemas";
 import { RichTextEditor } from "@/components/admin/rich-text-editor";
 import { FileUpload } from "@/components/lms/file-upload";
 import { publicMediaSrc } from "@/lib/media-image";
 import { estimateReadTime, slugify } from "@/lib/utils";
+import { useSession } from "@/lib/auth-client";
 import { createPost, updatePost } from "./actions";
 
 const CATEGORIES = ["Career", "Technology", "Industry", "Tutorials"];
 
 const input =
-  "w-full rounded-xl bg-gray-50 px-4 py-2.5 text-sm ring-1 ring-gray-950/5 focus:outline-none focus:ring-2 focus:ring-teal-500";
+  "w-full rounded-lg bg-gray-50 px-4 py-2.5 text-sm ring-1 ring-gray-950/5 focus:outline-none focus:ring-2 focus:ring-teal-500";
 const label = "text-sm font-medium text-gray-700";
 const box = "space-y-4 rounded-2xl bg-white p-5 ring-1 ring-gray-950/5";
 
@@ -34,8 +35,17 @@ function SeoStatusIcon({ status }: { status: SeoStatus }) {
   );
 }
 
-export function PostEditor({ initial }: { initial?: PostInput & { id: string } }) {
+export function PostEditor({
+  initial,
+  usedKeywords = [],
+}: {
+  initial?: PostInput & { id: string };
+  /** Other posts' focus keywords (lowercased), for the "previously used" check. */
+  usedKeywords?: string[];
+}) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const authorName = initial?.authorName || session?.user?.name || "Next Minds Team";
   const [serverError, setServerError] = useState("");
   const [editingSlug, setEditingSlug] = useState(false);
   // A new post has no id yet to namespace the S3 cover upload under.
@@ -78,16 +88,95 @@ export function PostEditor({ initial }: { initial?: PostInput & { id: string } }
   const wordCount = contentMd.trim().split(/\s+/).filter(Boolean).length;
   const keyword = (values.focusKeyword || "").trim().toLowerCase();
 
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const images = Array.from(contentMd.matchAll(/!\[([^\]]*)\]\(([^)]+)\)/g));
+  const linkUrls = Array.from(contentMd.matchAll(/(?<!!)\[[^\]]*\]\(([^)]+)\)/g)).map((m) => m[1]);
+  const isInternalUrl = (url: string) =>
+    url.startsWith("/") || url.startsWith("#") || /nextmindsinfosys\.com/i.test(url);
+  const outboundLinks = linkUrls.filter((url) => /^https?:\/\//i.test(url) && !isInternalUrl(url));
+  const internalLinks = linkUrls.filter(isInternalUrl);
+  const subheadings = Array.from(contentMd.matchAll(/^#{2,3}[ \t]+(.+)$/gm)).map((m) =>
+    m[1].toLowerCase(),
+  );
+  const firstParagraph = (
+    contentMd
+      .split(/\n\s*\n/)
+      .map((p) => p.trim())
+      .find((p) => p && !/^#{1,6}\s/.test(p)) || ""
+  ).toLowerCase();
+  const keywordOccurrences = keyword
+    ? (contentMd.match(new RegExp(escapeRegExp(keyword), "gi")) || []).length
+    : 0;
+  const keywordDensity = keyword && wordCount > 0 ? (keywordOccurrences / wordCount) * 100 : 0;
+  const keywordWordCount = keyword ? keyword.split(/\s+/).filter(Boolean).length : 0;
+  const usedElsewhere = keyword && usedKeywords.some((k) => k.trim().toLowerCase() === keyword);
+
   const checks: SeoCheck[] = [
     check(
-      seoTitle.length >= 40 && seoTitle.length <= 60,
-      "SEO title length is good for search results.",
-      seoTitle.length === 0
-        ? "SEO title is empty."
-        : seoTitle.length < 40
-          ? "SEO title is short — aim for 40-60 characters."
-          : "SEO title is long and may be truncated in search results.",
+      outboundLinks.length > 0,
+      "You have an outbound link in this post. Good job!",
+      "No outbound links found — link to at least one relevant external source.",
     ),
+  ];
+
+  if (keyword && images.length > 0) {
+    checks.push(
+      check(
+        images.some((m) => m[1].toLowerCase().includes(keyword)),
+        "The focus keyphrase appears in an image's alt attribute.",
+        "None of the images have alt text containing the focus keyphrase.",
+      ),
+    );
+  }
+
+  checks.push(
+    check(
+      images.length > 0,
+      "The post contains images. Good job!",
+      "No images found — add at least one relevant image.",
+    ),
+    check(
+      internalLinks.length > 0,
+      "You have an internal link in this post. Good job!",
+      "No internal links found — link to at least one other page on the site.",
+    ),
+  );
+
+  if (keyword) {
+    checks.push(
+      check(
+        firstParagraph.includes(keyword),
+        "The focus keyphrase appears in the introduction.",
+        "The focus keyphrase does not appear in the first paragraph.",
+      ),
+      check(
+        keywordDensity >= 0.5 && keywordDensity <= 3,
+        `The keyphrase was found ${keywordOccurrences} time${keywordOccurrences === 1 ? "" : "s"}. This is great!`,
+        keywordOccurrences === 0
+          ? "The keyphrase does not appear in the content."
+          : keywordDensity > 3
+            ? `The keyphrase was found ${keywordOccurrences} times — that's more than the recommended maximum and may read as keyword stuffing.`
+            : `The keyphrase was found only ${keywordOccurrences} time(s) — use it a bit more often.`,
+      ),
+      check(
+        seoTitle.toLowerCase().startsWith(keyword),
+        "The exact match of the focus keyphrase appears at the beginning of the SEO title.",
+        "The focus keyphrase does not appear at the beginning of the SEO title.",
+      ),
+      check(
+        keywordWordCount > 0 && keywordWordCount <= 6,
+        "Keyphrase length: Good job!",
+        "The keyphrase is over 6 words — a keyphrase should be short and specific.",
+      ),
+      check(
+        seoDescription.toLowerCase().includes(keyword),
+        "Focus keyword appears in the meta description.",
+        "Focus keyword is missing from the meta description.",
+      ),
+    );
+  }
+
+  checks.push(
     check(
       seoDescription.length >= 120 && seoDescription.length <= 156,
       "Meta description length is good for search results.",
@@ -97,15 +186,14 @@ export function PostEditor({ initial }: { initial?: PostInput & { id: string } }
           ? "Meta description is short — aim for 120-156 characters."
           : "Meta description is long and may be truncated.",
     ),
-    check(wordCount >= 300, "Content is a healthy length for SEO.", `Content is only ${wordCount} words — aim for at least 300.`),
-  ];
+  );
 
   if (keyword) {
-    checks.unshift(
+    checks.push(
       check(
-        contentMd.toLowerCase().includes(keyword),
-        "Focus keyword appears in the content.",
-        "Focus keyword is missing from the content body.",
+        !usedElsewhere,
+        "You've not used this keyphrase before, very good.",
+        "You've already used this keyphrase on another post — focus keyphrases should be unique.",
       ),
       check(
         slugPreview.includes(slugify(keyword)),
@@ -113,17 +201,29 @@ export function PostEditor({ initial }: { initial?: PostInput & { id: string } }
         "Focus keyword is missing from the URL slug.",
       ),
       check(
-        seoDescription.toLowerCase().includes(keyword),
-        "Focus keyword appears in the meta description.",
-        "Focus keyword is missing from the meta description.",
-      ),
-      check(
-        seoTitle.toLowerCase().includes(keyword),
-        "Focus keyword appears in the SEO title.",
-        "Focus keyword is missing from the SEO title.",
+        subheadings.some((h) => h.includes(keyword)),
+        "The focus keyphrase appears in a subheading.",
+        "The focus keyphrase does not appear in any subheading (H2/H3).",
       ),
     );
   }
+
+  checks.push(
+    check(
+      wordCount >= 300,
+      "Content is a healthy length for SEO.",
+      `Content is only ${wordCount} words — aim for at least 300.`,
+    ),
+    check(
+      seoTitle.length >= 40 && seoTitle.length <= 60,
+      "SEO title width is good for search results.",
+      seoTitle.length === 0
+        ? "SEO title is empty."
+        : seoTitle.length < 40
+          ? "SEO title is short — aim for 40-60 characters."
+          : "SEO title is long and may be truncated in search results.",
+    ),
+  );
 
   async function onSubmit(v: PostInput) {
     setServerError("");
@@ -242,8 +342,9 @@ export function PostEditor({ initial }: { initial?: PostInput & { id: string } }
             <button
               type="submit"
               disabled={isSubmitting}
-              className="w-full rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
+              className="flex w-full items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-6 py-3 font-semibold text-white disabled:opacity-60"
             >
+              {isSubmitting && <Loader2 size={16} className="animate-spin" />}
               {isSubmitting
                 ? "Saving…"
                 : values.published
@@ -300,7 +401,10 @@ export function PostEditor({ initial }: { initial?: PostInput & { id: string } }
               </div>
               <div className="space-y-1.5">
                 <label className={label}>Author</label>
-                <input {...register("authorName")} placeholder="Next Minds Team" className={input} />
+                <div className="flex items-center gap-1.5 rounded-lg bg-gray-50 px-3 py-2.5 text-sm text-gray-700 ring-1 ring-gray-950/5">
+                  <UserCircle2 size={15} className="shrink-0 text-gray-400" />
+                  <span className="truncate">{authorName}</span>
+                </div>
               </div>
             </div>
           </div>

@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Trash2 } from "lucide-react";
+import { Loader2, Trash2 } from "lucide-react";
 import { addStudentById, removeStudentFromBatch } from "../actions";
 
 interface Row {
@@ -86,8 +86,9 @@ export function Roster({
           <button
             type="submit"
             disabled={pending || !userId}
-            className="rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
+            className="flex items-center justify-center gap-2 rounded-full bg-gradient-to-r from-teal-500 to-blue-600 px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-50"
           >
+            {pending && <Loader2 size={16} className="animate-spin" />}
             {pending ? "Adding…" : "Add to batch"}
           </button>
         </form>
@@ -120,7 +121,7 @@ export function Roster({
                 }}
                 className="rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600 disabled:opacity-50"
               >
-                <Trash2 size={15} />
+                {pending ? <Loader2 size={15} className="animate-spin" /> : <Trash2 size={15} />}
               </button>
             </li>
           ))}
