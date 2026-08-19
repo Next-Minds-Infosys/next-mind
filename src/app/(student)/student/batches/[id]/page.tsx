@@ -5,9 +5,14 @@ import { Role } from "@/lib/types";
 import { VideoPlayer } from "@/components/lms/video-player";
 import { Reply, SubmitAssignment } from "./interactions";
 import { LessonComplete } from "@/components/lms/lesson-complete";
-import { Progress } from "@/components/lms/ui";
-
-const panel = "rounded-2xl bg-white p-6 ring-1 ring-gray-950/5";
+import {
+  BatchHeader,
+  EmptyState,
+  Progress,
+  SectionCard,
+  SummaryStrip,
+} from "@/components/lms/ui";
+import { FileText, MessageSquare, NotebookPen, PlayCircle } from "lucide-react";
 
 export default async function StudentBatchPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -54,33 +59,51 @@ export default async function StudentBatchPage({ params }: { params: Promise<{ i
   const now = Date.now();
   const watermark = `${session.user.name ?? session.user.email} · ${session.user.id.slice(0, 8)}`;
   const threads = messages.filter((m) => !m.parentId);
+  // Anything published and not yet submitted still needs the student's attention.
+  const openAssignments = assignments.filter((a) => !submissionFor(a.id)).length;
 
   return (
     <div className="mx-auto max-w-4xl space-y-8 p-6">
-      <header>
-        <Link href="/student" className="text-sm text-teal-600 hover:text-teal-700">
-          ← My batches
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-gray-900">{batch.name}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          {batch.course?.title} · {batch.schedule ?? batch.mode}
-        </p>
-      </header>
+      <BatchHeader
+        backHref="/student"
+        backLabel="My batches"
+        title={batch.name}
+        meta={[batch.course?.title, batch.schedule ?? batch.mode]}
+      />
 
-      <section className={panel}>
-        <div className="mb-4 flex items-baseline justify-between gap-4">
-          <h2 className="font-semibold text-gray-900">Recorded lessons</h2>
-          <span className="text-sm tabular-nums text-gray-500">
-            {lessons.filter((l) => doneIds.has(l.id)).length}/{lessons.length} · {donePercent}%
-          </span>
-        </div>
+      {/* What needs attention, before the content itself. */}
+      <SummaryStrip
+        items={[
+          { label: "Course progress", value: `${donePercent}%`, tone: donePercent > 0 ? "good" : "default" },
+          { label: "Lessons", value: `${lessons.filter((l) => doneIds.has(l.id)).length}/${lessons.length}` },
+          { label: "Assignments due", value: openAssignments, tone: openAssignments > 0 ? "warn" : "default" },
+          { label: "Files shared", value: materials.length },
+        ]}
+      />
+
+      <SectionCard
+        icon={PlayCircle}
+        title="Recorded lessons"
+        count={lessons.length}
+        aside={
+          lessons.length > 0 ? (
+            <span className="text-sm tabular-nums text-nm-muted">
+              {lessons.filter((l) => doneIds.has(l.id)).length}/{lessons.length} · {donePercent}%
+            </span>
+          ) : null
+        }
+      >
         {lessons.length > 0 && (
           <div className="mb-5">
             <Progress percent={donePercent} />
           </div>
         )}
         {lessons.length === 0 ? (
-          <p className="text-sm text-gray-500">No recordings yet.</p>
+          <EmptyState
+            icon={PlayCircle}
+            title="No recordings yet"
+            hint="Lesson recordings appear here once your instructor publishes them."
+          />
         ) : (
           <div className="space-y-6">
             {lessons.map((l) => (
@@ -99,12 +122,15 @@ export default async function StudentBatchPage({ params }: { params: Promise<{ i
             ))}
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Files</h2>
+      <SectionCard icon={FileText} title="Files" count={materials.length}>
         {materials.length === 0 ? (
-          <p className="text-sm text-gray-500">Nothing shared yet.</p>
+          <EmptyState
+            icon={FileText}
+            title="No files yet"
+            hint="Slides, notes and other course material your instructor shares will show up here."
+          />
         ) : (
           <ul className="divide-y divide-gray-950/5">
             {materials.map((m) => (
@@ -127,12 +153,26 @@ export default async function StudentBatchPage({ params }: { params: Promise<{ i
             ))}
           </ul>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Assignments</h2>
+      <SectionCard
+        icon={NotebookPen}
+        title="Assignments"
+        count={assignments.length}
+        aside={
+          openAssignments > 0 ? (
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+              {openAssignments} to submit
+            </span>
+          ) : null
+        }
+      >
         {assignments.length === 0 ? (
-          <p className="text-sm text-gray-500">Nothing set yet.</p>
+          <EmptyState
+            icon={NotebookPen}
+            title="No assignments yet"
+            hint="Work set by your instructor appears here, with its due date and a place to upload your submission."
+          />
         ) : (
           <div className="space-y-6">
             {assignments.map((a) => {
@@ -193,12 +233,15 @@ export default async function StudentBatchPage({ params }: { params: Promise<{ i
             })}
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Messages</h2>
+      <SectionCard icon={MessageSquare} title="Messages" count={threads.length}>
         {threads.length === 0 ? (
-          <p className="text-sm text-gray-500">No announcements yet.</p>
+          <EmptyState
+            icon={MessageSquare}
+            title="No announcements yet"
+            hint="Announcements from your instructor show up here, and you can reply to any of them."
+          />
         ) : (
           <ul className="space-y-4">
             {threads.map((t) => (
@@ -226,7 +269,7 @@ export default async function StudentBatchPage({ params }: { params: Promise<{ i
             ))}
           </ul>
         )}
-      </section>
+      </SectionCard>
     </div>
   );
 }

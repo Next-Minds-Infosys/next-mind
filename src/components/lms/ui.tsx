@@ -87,3 +87,139 @@ export function dueState(dueAt: Date | null, submittedAt: Date | null, gradedAt:
   if (dueAt && dueAt.getTime() < Date.now()) return "overdue" as const;
   return "due" as const;
 }
+
+/* ------------------------------------------------------------------ shell
+ * The batch pages were a stack of identical unlabelled white cards, so a
+ * student landing on an empty batch saw four boxes reading "Nothing yet" with
+ * no sense of where they were or what happens next. These give each section an
+ * icon and a count, and turn empty states into an explanation rather than a
+ * dead end.
+ *
+ * Both portals render server-side, so passing a Lucide component here is safe -
+ * unlike the nav, which crosses into a client component.
+ */
+
+import type { LucideIcon } from "lucide-react";
+
+/** Back link + title + meta chips for a single batch. */
+export function BatchHeader({
+  backHref,
+  backLabel,
+  title,
+  meta,
+}: {
+  backHref: string;
+  backLabel: string;
+  title: string;
+  meta: (string | null | undefined)[];
+}) {
+  const chips = meta.filter((m): m is string => !!m && m.trim().length > 0);
+  return (
+    <header>
+      <Link
+        href={backHref}
+        className="inline-flex items-center gap-1 text-sm font-medium text-teal-700 transition-colors hover:text-teal-800"
+      >
+        ← {backLabel}
+      </Link>
+      <h1 className="mt-3 font-display text-3xl font-bold text-nm-navy">{title}</h1>
+      {chips.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-2">
+          {chips.map((c) => (
+            <span
+              key={c}
+              className="rounded-full border border-nm-border bg-white px-3 py-1 text-xs font-medium text-nm-muted"
+            >
+              {c}
+            </span>
+          ))}
+        </div>
+      )}
+    </header>
+  );
+}
+
+/** Compact at-a-glance row. `tone` highlights anything needing attention. */
+export function SummaryStrip({
+  items,
+}: {
+  items: { label: string; value: string | number; tone?: "default" | "warn" | "good" }[];
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      {items.map((i) => (
+        <div key={i.label} className="rounded-xl border border-nm-border bg-white px-4 py-3">
+          <p
+            className={`font-display text-xl font-bold tabular-nums ${
+              i.tone === "warn"
+                ? "text-amber-600"
+                : i.tone === "good"
+                  ? "text-teal-700"
+                  : "text-nm-navy"
+            }`}
+          >
+            {i.value}
+          </p>
+          <p className="mt-0.5 text-xs text-nm-muted">{i.label}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** A titled panel with an icon and an optional count on the right. */
+export function SectionCard({
+  icon: Icon,
+  title,
+  count,
+  aside,
+  children,
+}: {
+  icon: LucideIcon;
+  title: string;
+  count?: number;
+  aside?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-nm-border bg-white">
+      <div className="flex items-center gap-3 border-b border-nm-border px-6 py-4">
+        <span className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+          <Icon size={16} aria-hidden="true" />
+        </span>
+        <h2 className="font-semibold text-nm-navy">{title}</h2>
+        {typeof count === "number" && count > 0 && (
+          <span className="rounded-full bg-nm-surface px-2 py-0.5 text-xs font-semibold tabular-nums text-nm-muted">
+            {count}
+          </span>
+        )}
+        {aside && <div className="ml-auto">{aside}</div>}
+      </div>
+      <div className="p-6">{children}</div>
+    </section>
+  );
+}
+
+/**
+ * Empty state that says what will appear here and who puts it there, instead
+ * of a bare "Nothing yet."
+ */
+export function EmptyState({
+  icon: Icon,
+  title,
+  hint,
+}: {
+  icon: LucideIcon;
+  title: string;
+  hint?: string;
+}) {
+  return (
+    <div className="py-8 text-center">
+      <span className="mx-auto mb-3 flex h-11 w-11 items-center justify-center rounded-full bg-nm-surface text-nm-muted">
+        <Icon size={19} aria-hidden="true" />
+      </span>
+      <p className="text-sm font-medium text-nm-navy">{title}</p>
+      {hint && <p className="mx-auto mt-1 max-w-sm text-sm text-nm-muted">{hint}</p>}
+    </div>
+  );
+}
