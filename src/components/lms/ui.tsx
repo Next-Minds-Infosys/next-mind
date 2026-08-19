@@ -223,3 +223,105 @@ export function EmptyState({
     </div>
   );
 }
+
+
+/* ------------------------------------------------------ batch page chrome */
+
+/** Small pill under the batch title: code, course, roster size. */
+export function Chip({
+  children,
+  tone = "muted",
+}: {
+  children: React.ReactNode;
+  tone?: "muted" | "teal";
+}) {
+  const cls =
+    tone === "teal"
+      ? "bg-teal-50 text-teal-700"
+      : "bg-nm-surface text-nm-muted";
+  return (
+    <span className={`rounded-full px-3 py-1 text-xs font-semibold ${cls}`}>{children}</span>
+  );
+}
+
+/**
+ * Stat tile with a leading dot. The dot turns amber when the number is
+ * something the reader has to act on - work awaiting grading, assignments
+ * still to submit - so the row can be scanned without reading the labels.
+ */
+export function StatCard({
+  value,
+  label,
+  attention = false,
+  href,
+}: {
+  value: string | number;
+  label: string;
+  attention?: boolean;
+  /** Optional drill-down; the tile becomes a link when set. */
+  href?: string;
+}) {
+  const body = (
+    <div className="h-full rounded-xl border border-nm-border bg-white px-5 py-4 transition hover:border-teal-500/40">
+      <div className="flex items-center gap-2">
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${attention ? "bg-amber-500" : "bg-teal-500"}`}
+          aria-hidden="true"
+        />
+        <span className="font-display text-2xl font-bold tabular-nums text-nm-navy">{value}</span>
+      </div>
+      <p className="mt-1 text-sm text-nm-muted">{label}</p>
+    </div>
+  );
+  return href ? <Link href={href}>{body}</Link> : body;
+}
+
+/** Initials avatar for message threads. */
+export function Avatar({ name, tone = "dark" }: { name: string; tone?: "dark" | "light" }) {
+  const initials = name
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+  return (
+    <span
+      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-bold ${
+        tone === "dark" ? "bg-nm-navy text-white" : "bg-teal-100 text-teal-800"
+      }`}
+      aria-hidden="true"
+    >
+      {initials}
+    </span>
+  );
+}
+
+/** "2 days ago" - the design labels messages relatively, not with a timestamp. */
+export function relativeTime(d: Date | string | null) {
+  if (!d) return "";
+  const date = typeof d === "string" ? new Date(d) : d;
+  const mins = Math.round((Date.now() - date.getTime()) / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins} min ago`;
+  const hrs = Math.round(mins / 60);
+  if (hrs < 24) return `${hrs} hour${hrs === 1 ? "" : "s"} ago`;
+  const days = Math.round(hrs / 24);
+  if (days < 30) return `${days} day${days === 1 ? "" : "s"} ago`;
+  return fmtDate(date);
+}
+
+/** White card used for each block inside a tab panel. */
+export function Panel({ children }: { children: React.ReactNode }) {
+  return (
+    <section className="overflow-hidden rounded-2xl border border-nm-border bg-white">
+      {children}
+    </section>
+  );
+}
+
+/** Heading row inside a Panel. */
+export function PanelTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className="border-b border-nm-border px-6 py-4 font-semibold text-nm-navy">{children}</h2>
+  );
+}

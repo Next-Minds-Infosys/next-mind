@@ -10,11 +10,73 @@ export interface UploadedFile {
   size: number;
 }
 
+export type UploadScope =
+  | "lesson"
+  | "material"
+  | "assignment"
+  | "submission"
+  | "courseImage"
+  | "mentorPhoto"
+  | "postCover"
+  | "postImage"
+  | "avatar";
+
 /**
  * Two-step direct upload: ask our server to presign a PUT, then send the bytes
  * straight to S3. The file never passes through a Next route handler, which
  * would cap out at Vercel's ~4.5 MB request body limit.
+ *
+ * Exported so the screen recorder can push its blob through exactly this path
+ * rather than growing a second, subtly different uploader.
  */
+export async function uploadToS3({
+  file,
+  resourceId,
+  scope,
+  onProgress,
+}: {
+  file: File;
+  resourceId: string;
+  scope: UploadScope;
+  onProgress?: (percent: number) => void;
+}): Promise<UploadedFile> {
+  // The upload allowlist matches the bare type, so a MediaRecorder blob typed
+  // `video/webm;codecs=vp9,opus` has to have its codec parameter dropped here.
+  const contentType = (file.type || "application/octet-stream").split(";")[0].trim();
+
+  const res = await fetch("/api/uploads", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      resourceId,
+      scope,
+      filename: file.name,
+      contentType,
+      sizeBytes: file.size,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error ?? "Could not start the upload.");
+
+  // XHR rather than fetch: fetch cannot report upload progress, and these are
+  // large files where a silent wait is a bad experience.
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", data.url);
+    xhr.setRequestHeader("Content-Type", contentType);
+    xhr.upload.onprogress = (e) =>
+      e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100));
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Upload failed (${xhr.status})`));
+    xhr.onerror = () => reject(new Error("Upload failed — check your connection."));
+    xhr.send(file);
+  });
+
+  return { key: data.key, fileName: file.name, contentType, size: file.size };
+}
+
 export function FileUpload({
   resourceId,
   scope,
@@ -24,16 +86,7 @@ export function FileUpload({
 }: {
   /** Batch id for batch-scoped uploads, course/mentor id for the admin-only scopes, own user id for "avatar". */
   resourceId: string;
-  scope:
-    | "lesson"
-    | "material"
-    | "assignment"
-    | "submission"
-    | "courseImage"
-    | "mentorPhoto"
-    | "postCover"
-    | "postImage"
-    | "avatar";
+  scope: UploadScope;
   accept?: string;
   label?: string;
   onUploaded: (file: UploadedFile) => void;
@@ -46,41 +99,8 @@ export function FileUpload({
     setError("");
     setProgress(0);
     try {
-      const res = await fetch("/api/uploads", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resourceId,
-          scope,
-          filename: file.name,
-          contentType: file.type || "application/octet-stream",
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Could not start the upload.");
-
-      // XHR rather than fetch: fetch cannot report upload progress, and these
-      // are large files where a silent wait is a bad experience.
-      await new Promise<void>((resolve, reject) => {
-        const xhr = new XMLHttpRequest();
-        xhr.open("PUT", data.url);
-        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-        xhr.upload.onprogress = (e) =>
-          e.lengthComputable && setProgress(Math.round((e.loaded / e.total) * 100));
-        xhr.onload = () =>
-          xhr.status >= 200 && xhr.status < 300
-            ? resolve()
-            : reject(new Error(`Upload failed (${xhr.status})`));
-        xhr.onerror = () => reject(new Error("Upload failed — check your connection."));
-        xhr.send(file);
-      });
-
-      onUploaded({
-        key: data.key,
-        fileName: file.name,
-        contentType: file.type || "application/octet-stream",
-        size: file.size,
-      });
+      const uploaded = await uploadToS3({ file, resourceId, scope, onProgress: setProgress });
+      onUploaded(uploaded);
       setProgress(100);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");

@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ScreenRecorder } from "@/components/lms/screen-recorder";
 import { FileUpload, type UploadedFile } from "@/components/lms/file-upload";
 import { createAssignment, createLesson, createMaterial, gradeSubmission, postMessage } from "../../actions";
 
@@ -40,6 +41,13 @@ export function AddLesson({ batchId }: { batchId: string }) {
           Upload H.264/AAC MP4 — there is no transcoding step, so other codecs may not play in
           every browser.
         </p>
+
+        <div className="flex items-center gap-3 py-1">
+          <span className="h-px flex-1 bg-gray-200" />
+          <span className="text-xs font-medium text-gray-400">or record one now</span>
+          <span className="h-px flex-1 bg-gray-200" />
+        </div>
+        <ScreenRecorder resourceId={batchId} scope="lesson" onUploaded={setVideo} />
         <Err msg={error} />
         <button
           type="button"
