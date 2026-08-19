@@ -3,8 +3,13 @@ import { Assignment, BatchStudent, Course, Lesson, Material, Message, Submission
 import { requireRole, assertInstructorOwnsBatch } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { AddAssignment, AddLesson, AddMaterial, Announce, GradeForm } from "./workspace";
-
-const panel = "rounded-2xl bg-white p-6 ring-1 ring-gray-950/5";
+import {
+  BatchHeader,
+  EmptyState,
+  SectionCard,
+  SummaryStrip,
+} from "@/components/lms/ui";
+import { FileText, MessageSquare, NotebookPen, PlayCircle } from "lucide-react";
 
 export default async function InstructorBatchPage({
   params,
@@ -42,17 +47,35 @@ export default async function InstructorBatchPage({
     }),
   ]);
 
+  // Submissions that have been handed in but not yet given a score.
+  const ungraded = assignments.reduce(
+    (n, a) => n + (a.submissions ?? []).filter((sub) => sub.gradedAt == null).length,
+    0,
+  );
+
   return (
     <div className="mx-auto max-w-6xl space-y-8 p-6">
-      <header>
-        <Link href="/instructor" className="text-sm text-teal-600 hover:text-teal-700">
-          ← My batches
-        </Link>
-        <h1 className="mt-2 text-2xl font-semibold text-gray-900">{batch.name}</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          {batch.code} · {course?.title} · {roster.length} students
-        </p>
-      </header>
+      <BatchHeader
+        backHref="/instructor"
+        backLabel="My batches"
+        title={batch.name}
+        meta={[
+          batch.code,
+          course?.title,
+          `${roster.length} ${roster.length === 1 ? "student" : "students"}`,
+        ]}
+      />
+
+      {/* The state of the batch at a glance - previously the instructor had to
+          scroll past four empty forms to find out whether anything existed. */}
+      <SummaryStrip
+        items={[
+          { label: "Students", value: roster.length },
+          { label: "Lessons", value: lessons.length },
+          { label: "Files", value: materials.length },
+          { label: "Awaiting grading", value: ungraded, tone: ungraded > 0 ? "warn" : "good" },
+        ]}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <AddLesson batchId={id} />
@@ -61,10 +84,13 @@ export default async function InstructorBatchPage({
         <Announce batchId={id} />
       </div>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Lessons ({lessons.length})</h2>
+      <SectionCard icon={PlayCircle} title="Lessons" count={lessons.length}>
         {lessons.length === 0 ? (
-          <p className="text-sm text-gray-500">No lessons yet.</p>
+          <EmptyState
+            icon={PlayCircle}
+            title="No lessons yet"
+            hint="Use “Add a recorded lesson” above. Students see each lesson as soon as you publish it."
+          />
         ) : (
           <ul className="divide-y divide-gray-950/5">
             {lessons.map((l) => (
@@ -78,12 +104,15 @@ export default async function InstructorBatchPage({
             ))}
           </ul>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Files ({materials.length})</h2>
+      <SectionCard icon={FileText} title="Files" count={materials.length}>
         {materials.length === 0 ? (
-          <p className="text-sm text-gray-500">Nothing shared yet.</p>
+          <EmptyState
+            icon={FileText}
+            title="No files shared"
+            hint="Share slides, notes or reference material with “Share a file” above."
+          />
         ) : (
           <ul className="divide-y divide-gray-950/5">
             {materials.map((m) => (
@@ -102,12 +131,26 @@ export default async function InstructorBatchPage({
             ))}
           </ul>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Assignments &amp; submissions</h2>
+      <SectionCard
+        icon={NotebookPen}
+        title="Assignments &amp; submissions"
+        count={assignments.length}
+        aside={
+          ungraded > 0 ? (
+            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
+              {ungraded} to grade
+            </span>
+          ) : null
+        }
+      >
         {assignments.length === 0 ? (
-          <p className="text-sm text-gray-500">No assignments yet.</p>
+          <EmptyState
+            icon={NotebookPen}
+            title="No assignments yet"
+            hint="Set work with “Set an assignment” above. Submissions appear here ready for grading."
+          />
         ) : (
           <div className="space-y-6">
             {assignments.map((a) => (
@@ -148,12 +191,15 @@ export default async function InstructorBatchPage({
             ))}
           </div>
         )}
-      </section>
+      </SectionCard>
 
-      <section className={panel}>
-        <h2 className="mb-4 font-semibold text-gray-900">Messages</h2>
+      <SectionCard icon={MessageSquare} title="Messages" count={messages.length}>
         {messages.length === 0 ? (
-          <p className="text-sm text-gray-500">Nothing posted yet.</p>
+          <EmptyState
+            icon={MessageSquare}
+            title="Nothing posted yet"
+            hint="Announcements you post reach everyone in the batch, and students can reply."
+          />
         ) : (
           <ul className="space-y-3">
             {messages.map((m) => (
@@ -167,7 +213,7 @@ export default async function InstructorBatchPage({
             ))}
           </ul>
         )}
-      </section>
+      </SectionCard>
     </div>
   );
 }

@@ -58,7 +58,11 @@ function splitContent(md: string) {
 /** Eyebrow label + colour for a body section, matched on its heading. */
 function chromeFor(heading: string): { eyebrow: string; color: string } | null {
   const h = heading.toLowerCase();
-  if (/career scope|salary/.test(h)) return { eyebrow: "Career & Salary", color: colors.orange };
+  // Forex has no salary table - it is not a salaried career - so the eyebrow
+  // must not promise one.
+  if (/career scope|salary/.test(h))
+    return { eyebrow: /salary/.test(h) ? "Career & Salary" : "Career Scope", color: colors.orange };
+  if (/realistic expectation/.test(h)) return { eyebrow: "Before You Enroll", color: colors.orange };
   if (/fee|batch|payment|pricing/.test(h)) return { eyebrow: "Pricing & Schedule", color: colors.tealInk };
   if (/certification/.test(h)) return { eyebrow: "Certifications", color: colors.blueInk };
   if (/tools/.test(h)) return { eyebrow: "Toolkit", color: colors.blueInk };
@@ -71,7 +75,7 @@ function chromeFor(heading: string): { eyebrow: string; color: string } | null {
 /** Which tab a body section scrolls under. */
 function tabFor(heading: string) {
   const h = heading.toLowerCase();
-  if (/career scope|salary/.test(h)) return "career";
+  if (/career scope|salary|realistic expectation/.test(h)) return "career";
   if (/fee|batch|payment|pricing|certification/.test(h)) return "pricing";
   if (/tools|project|lab/.test(h)) return "projects";
   return "overview";
