@@ -49,7 +49,16 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-  { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+  {
+    // `camera=()` / `microphone=()` is an EMPTY allowlist - it denies the
+    // feature to every origin *including this one*, so getUserMedia rejected
+    // with NotAllowedError before the browser could even prompt. That was
+    // correct while nothing needed them; the instructor screen recorder does.
+    // `self` permits only our own origin, so embedded third-party frames still
+    // cannot reach the camera or microphone.
+    key: "Permissions-Policy",
+    value: "camera=(self), microphone=(self), display-capture=(self), geolocation=(), payment=()",
+  },
   { key: "X-DNS-Prefetch-Control", value: "on" },
   {
     key: "Strict-Transport-Security",

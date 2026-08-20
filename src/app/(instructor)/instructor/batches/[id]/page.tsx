@@ -4,12 +4,25 @@ import { requireRole, assertInstructorOwnsBatch } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { AddAssignment, AddLesson, AddMaterial, Announce, GradeForm } from "./workspace";
 import {
-  BatchHeader,
+  Avatar,
+  Chip,
   EmptyState,
-  SectionCard,
-  SummaryStrip,
+  Panel,
+  PanelTitle,
+  StatCard,
+  relativeTime,
 } from "@/components/lms/ui";
+import { BatchTabs } from "@/components/lms/batch-tabs";
 import { FileText, MessageSquare, NotebookPen, PlayCircle } from "lucide-react";
+
+/**
+ * Everything under here reads the session and queries Postgres per request, so
+ * none of it can be prerendered.
+ */
+export const dynamic = "force-dynamic";
+
+// Belt and braces with robots.txt: nothing behind a login should be indexed.
+export const metadata = { robots: { index: false, follow: false } };
 
 export default async function InstructorBatchPage({
   params,
@@ -47,173 +60,241 @@ export default async function InstructorBatchPage({
     }),
   ]);
 
-  // Submissions that have been handed in but not yet given a score.
+  // Submissions handed in but not yet scored - the number to act on.
   const ungraded = assignments.reduce(
-    (n, a) => n + (a.submissions ?? []).filter((sub) => sub.gradedAt == null).length,
+    (n, a) => n + (a.submissions ?? []).filter((s) => s.gradedAt == null).length,
     0,
   );
 
+  const lessonsPanel = (
+    <div className="space-y-6">
+      <AddLesson batchId={id} />
+      <Panel>
+        <PanelTitle>Published lessons</PanelTitle>
+        <div className="p-6">
+          {lessons.length === 0 ? (
+            <EmptyState
+              icon={PlayCircle}
+              title="No lessons yet"
+              hint="Use the form above. Students see each lesson as soon as you publish it."
+            />
+          ) : (
+            <ul className="divide-y divide-nm-border">
+              {lessons.map((l) => (
+                <li key={l.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
+                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
+                    <PlayCircle size={17} aria-hidden="true" />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-nm-navy">{l.title}</p>
+                    {l.description && (
+                      <p className="mt-0.5 text-sm text-nm-muted">{l.description}</p>
+                    )}
+                    <p className="mt-1 text-xs text-nm-muted">
+                      {l.videoKey ? "Video attached" : "No video"} · {relativeTime(l.createdAt)}
+                    </p>
+                  </div>
+                  <span
+                    className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
+                      l.published ? "bg-teal-50 text-teal-700" : "bg-nm-surface text-nm-muted"
+                    }`}
+                  >
+                    {l.published ? "Published" : "Draft"}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Panel>
+    </div>
+  );
+
+  const filesPanel = (
+    <div className="space-y-6">
+      <AddMaterial batchId={id} />
+      <Panel>
+        <PanelTitle>Shared files</PanelTitle>
+        <div className="p-6">
+          {materials.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No files shared"
+              hint="Share slides, notes or reference material using the form above."
+            />
+          ) : (
+            <ul className="divide-y divide-nm-border">
+              {materials.map((m) => (
+                <li key={m.id} className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0">
+                  <div className="min-w-0">
+                    <p className="font-medium text-nm-navy">{m.title}</p>
+                    <p className="text-xs text-nm-muted">{m.fileName}</p>
+                  </div>
+                  <a
+                    href={`/api/media/${m.storageKey}`}
+                    className="flex-shrink-0 rounded-lg border border-nm-border px-3 py-1.5 text-sm font-semibold text-nm-navy transition-colors hover:bg-nm-surface"
+                  >
+                    Open
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </Panel>
+    </div>
+  );
+
+  const assignmentsPanel = (
+    <div className="space-y-6">
+      <AddAssignment batchId={id} />
+      <Panel>
+        <PanelTitle>Assignments &amp; submissions</PanelTitle>
+        <div className="p-6">
+          {assignments.length === 0 ? (
+            <EmptyState
+              icon={NotebookPen}
+              title="No assignments yet"
+              hint="Set work using the form above. Submissions appear here ready for grading."
+            />
+          ) : (
+            <div className="space-y-4">
+              {assignments.map((a) => {
+                const subs = a.submissions ?? [];
+                const pending = subs.filter((s) => s.gradedAt == null).length;
+                return (
+                  <div key={a.id} className="rounded-xl border border-nm-border">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-nm-border px-5 py-3">
+                      <div className="min-w-0">
+                        <h3 className="font-semibold text-nm-navy">{a.title}</h3>
+                        <p className="text-xs text-nm-muted">
+                          {a.dueAt ? `Due ${a.dueAt.toLocaleString()}` : "No due date"} ·{" "}
+                          {a.maxScore} points · {subs.length}/{roster.length} submitted
+                        </p>
+                      </div>
+                      {pending > 0 && (
+                        <span className="flex-shrink-0 rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                          {pending} to grade
+                        </span>
+                      )}
+                    </div>
+                    {subs.length === 0 ? (
+                      <p className="px-5 py-4 text-sm text-nm-muted">No submissions yet.</p>
+                    ) : (
+                      <ul className="divide-y divide-nm-border">
+                        {subs.map((s) => (
+                          <li key={s.id} className="px-5 py-4">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="text-sm font-semibold text-nm-navy">
+                                {s.user?.name ?? s.user?.email}
+                              </span>
+                              {s.storageKey && (
+                                <a
+                                  href={`/api/media/${s.storageKey}`}
+                                  className="text-sm font-semibold text-teal-700 hover:text-teal-800"
+                                >
+                                  Download {s.fileName}
+                                </a>
+                              )}
+                            </div>
+                            {s.note && <p className="mt-1 text-xs text-nm-muted">{s.note}</p>}
+                            <GradeForm
+                              batchId={id}
+                              submissionId={s.id}
+                              maxScore={a.maxScore}
+                              score={s.score}
+                              feedback={s.feedback}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </Panel>
+    </div>
+  );
+
+  const messagesPanel = (
+    <div className="space-y-6">
+      <Announce batchId={id} />
+      <Panel>
+        <PanelTitle>Messages</PanelTitle>
+        <div className="p-6">
+          {messages.length === 0 ? (
+            <EmptyState
+              icon={MessageSquare}
+              title="Nothing posted yet"
+              hint="Announcements you post reach everyone in the batch, and students can reply."
+            />
+          ) : (
+            <ul className="space-y-4">
+              {messages.map((m) => {
+                const name = m.author?.name ?? m.author?.email ?? "Unknown";
+                return (
+                  <li key={m.id} className={m.parentId ? "ml-8 flex gap-3" : "flex gap-3"}>
+                    <Avatar name={name} tone={m.parentId ? "light" : "dark"} />
+                    <div className="min-w-0 flex-1">
+                      <p className="flex flex-wrap items-baseline gap-2">
+                        <span className="text-sm font-semibold text-nm-navy">{name}</span>
+                        {m.parentId && (
+                          <span className="text-[10px] font-bold uppercase tracking-wide text-nm-muted">
+                            Reply
+                          </span>
+                        )}
+                        <span className="text-xs text-nm-muted">{relativeTime(m.createdAt)}</span>
+                      </p>
+                      <p className="mt-0.5 text-sm text-nm-body">{m.body}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
+      </Panel>
+    </div>
+  );
+
   return (
-    <div className="mx-auto max-w-6xl space-y-8 p-6">
-      <BatchHeader
-        backHref="/instructor"
-        backLabel="My batches"
-        title={batch.name}
-        meta={[
-          batch.code,
-          course?.title,
-          `${roster.length} ${roster.length === 1 ? "student" : "students"}`,
-        ]}
-      />
+    <div className="mx-auto max-w-5xl space-y-6 p-6">
+      <header>
+        <Link
+          href="/instructor"
+          className="inline-flex items-center gap-1 text-sm font-medium text-teal-700 transition-colors hover:text-teal-800"
+        >
+          ‹ My batches
+        </Link>
+        <h1 className="mt-3 font-display text-3xl font-bold text-nm-navy">{batch.name}</h1>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {batch.code && <Chip>CODE · {batch.code}</Chip>}
+          {course?.title && <Chip tone="teal">{course.title}</Chip>}
+          <Chip>
+            {roster.length} {roster.length === 1 ? "student" : "students"}
+            {batch.mode ? ` · ${batch.mode}` : ""}
+          </Chip>
+        </div>
+      </header>
 
-      {/* The state of the batch at a glance - previously the instructor had to
-          scroll past four empty forms to find out whether anything existed. */}
-      <SummaryStrip
-        items={[
-          { label: "Students", value: roster.length },
-          { label: "Lessons", value: lessons.length },
-          { label: "Files", value: materials.length },
-          { label: "Awaiting grading", value: ungraded, tone: ungraded > 0 ? "warn" : "good" },
-        ]}
-      />
-
-      <div className="grid gap-6 lg:grid-cols-2">
-        <AddLesson batchId={id} />
-        <AddMaterial batchId={id} />
-        <AddAssignment batchId={id} />
-        <Announce batchId={id} />
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard value={roster.length} label="Students" />
+        <StatCard value={lessons.length} label="Lessons" />
+        <StatCard value={materials.length} label="Files" />
+        <StatCard value={ungraded} label="Awaiting grading" attention={ungraded > 0} />
       </div>
 
-      <SectionCard icon={PlayCircle} title="Lessons" count={lessons.length}>
-        {lessons.length === 0 ? (
-          <EmptyState
-            icon={PlayCircle}
-            title="No lessons yet"
-            hint="Use “Add a recorded lesson” above. Students see each lesson as soon as you publish it."
-          />
-        ) : (
-          <ul className="divide-y divide-gray-950/5">
-            {lessons.map((l) => (
-              <li key={l.id} className="py-3">
-                <p className="font-medium text-gray-900">{l.title}</p>
-                <p className="text-xs text-gray-500">
-                  {l.videoKey ? "Video attached" : "No video"} ·{" "}
-                  {l.published ? "Published" : "Draft"}
-                </p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
-
-      <SectionCard icon={FileText} title="Files" count={materials.length}>
-        {materials.length === 0 ? (
-          <EmptyState
-            icon={FileText}
-            title="No files shared"
-            hint="Share slides, notes or reference material with “Share a file” above."
-          />
-        ) : (
-          <ul className="divide-y divide-gray-950/5">
-            {materials.map((m) => (
-              <li key={m.id} className="flex items-center justify-between py-3">
-                <div>
-                  <p className="font-medium text-gray-900">{m.title}</p>
-                  <p className="text-xs text-gray-500">{m.fileName}</p>
-                </div>
-                <a
-                  href={`/api/media/${m.storageKey}`}
-                  className="text-sm font-medium text-teal-600 hover:text-teal-700"
-                >
-                  Open
-                </a>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
-
-      <SectionCard
-        icon={NotebookPen}
-        title="Assignments &amp; submissions"
-        count={assignments.length}
-        aside={
-          ungraded > 0 ? (
-            <span className="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-semibold text-amber-700">
-              {ungraded} to grade
-            </span>
-          ) : null
-        }
-      >
-        {assignments.length === 0 ? (
-          <EmptyState
-            icon={NotebookPen}
-            title="No assignments yet"
-            hint="Set work with “Set an assignment” above. Submissions appear here ready for grading."
-          />
-        ) : (
-          <div className="space-y-6">
-            {assignments.map((a) => (
-              <div key={a.id}>
-                <p className="font-medium text-gray-900">{a.title}</p>
-                <p className="text-xs text-gray-500">
-                  {a.dueAt ? `Due ${a.dueAt.toLocaleString()}` : "No due date"} · max {a.maxScore} ·{" "}
-                  {a.submissions?.length ?? 0}/{roster.length} submitted
-                </p>
-                <ul className="mt-3 space-y-3">
-                  {(a.submissions ?? []).map((s) => (
-                    <li key={s.id} className="rounded-xl bg-gray-50 p-3">
-                      <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="text-sm font-medium text-gray-900">
-                          {s.user?.name ?? s.user?.email}
-                        </span>
-                        {s.storageKey && (
-                          <a
-                            href={`/api/media/${s.storageKey}`}
-                            className="text-sm text-teal-600 hover:text-teal-700"
-                          >
-                            Download {s.fileName}
-                          </a>
-                        )}
-                      </div>
-                      {s.note && <p className="mt-1 text-xs text-gray-600">{s.note}</p>}
-                      <GradeForm
-                        batchId={id}
-                        submissionId={s.id}
-                        maxScore={a.maxScore}
-                        score={s.score}
-                        feedback={s.feedback}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
-      </SectionCard>
-
-      <SectionCard icon={MessageSquare} title="Messages" count={messages.length}>
-        {messages.length === 0 ? (
-          <EmptyState
-            icon={MessageSquare}
-            title="Nothing posted yet"
-            hint="Announcements you post reach everyone in the batch, and students can reply."
-          />
-        ) : (
-          <ul className="space-y-3">
-            {messages.map((m) => (
-              <li key={m.id} className={m.parentId ? "ml-6 rounded-xl bg-gray-50 p-3" : "rounded-xl bg-teal-50/60 p-3"}>
-                <p className="text-xs font-medium text-gray-700">
-                  {m.author?.name ?? m.author?.email}
-                  {m.parentId && <span className="text-gray-400"> · reply</span>}
-                </p>
-                <p className="mt-1 text-sm text-gray-800">{m.body}</p>
-              </li>
-            ))}
-          </ul>
-        )}
-      </SectionCard>
+      <BatchTabs
+        tabs={[
+          { id: "lessons", label: "Lessons", content: lessonsPanel },
+          { id: "files", label: "Files", content: filesPanel },
+          { id: "assignments", label: "Assignments", content: assignmentsPanel },
+          { id: "messages", label: "Messages", content: messagesPanel },
+        ]}
+      />
     </div>
   );
 }
