@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { testimonials } from "@/data/courses";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
 import { stats } from "@/lib/stats";
 import { colors, gradient, heroGradient } from "@/lib/theme";
 import EnrollModal from "./EnrollModal";
@@ -69,7 +69,7 @@ const processSteps = [
   },
 ];
 
-function Hero({ courses }: { courses: PublicCourse[] }) {
+function Hero({ courses }: { courses: CourseCard[] }) {
   const [index, setIndex] = useState(0);
   const [visible, setVisible] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -274,7 +274,7 @@ function ToolsMarquee() {
   );
 }
 
-function PopularCourses({ courses }: { courses: PublicCourse[] }) {
+function PopularCourses({ courses }: { courses: CourseCard[] }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [preselect, setPreselect] = useState("");
   // Every published course, not the 6 newest. The old `slice(0, 6)` combined
@@ -729,7 +729,7 @@ function Process() {
   );
 }
 
-function FinalCta({ courses }: { courses: PublicCourse[] }) {
+function FinalCta({ courses }: { courses: CourseCard[] }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
@@ -818,7 +818,7 @@ function nextIntakeLabel() {
   return target.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
 }
 
-export default function HomePage({ courses }: { courses: PublicCourse[] }) {
+export default function HomePage({ courses }: { courses: CourseCard[] }) {
   return (
     <>
       <Hero courses={courses} />

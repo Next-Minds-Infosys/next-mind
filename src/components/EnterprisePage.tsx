@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { BlobBackground } from "@/components/ui/blob-background";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { SectionEyebrow } from "@/components/SectionEyebrow";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
 import EnrollModal from "./EnrollModal";
 
 const fadeUp = {
@@ -368,7 +368,7 @@ function EnterpriseContactForm() {
   );
 }
 
-export default function EnterprisePage({ courses }: { courses: PublicCourse[] }) {
+export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });

@@ -1,6 +1,6 @@
 import SiteLayout from "@/components/SiteLayout";
 import EnterprisePage from "@/components/EnterprisePage";
-import { getPublicCourses } from "@/db/queries";
+import { getCourseCards } from "@/db/queries";
 
 export const metadata = {
   title: "Enterprise Training",
@@ -25,7 +25,7 @@ export const metadata = {
 export const revalidate = 300;
 
 export default async function Page() {
-  const courses = await getPublicCourses();
+  const courses = await getCourseCards();
 
   return (
     <SiteLayout>

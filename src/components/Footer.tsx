@@ -3,7 +3,7 @@
 import { Clock, Mail, MapPin } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
 import { contact, mailtoHref } from "@/lib/contact";
 import { socialLinks, whatsappPath } from "./SocialIcons";
 
@@ -24,7 +24,7 @@ const contactRows = [
   { icon: Clock, text: contact.hours, href: null },
 ];
 
-export default function Footer({ courses }: { courses: PublicCourse[] }) {
+export default function Footer({ courses }: { courses: CourseCard[] }) {
   return (
     <footer className="relative overflow-hidden border-t border-nm-border bg-nm-surface px-6 pt-14 pb-8">
       <div

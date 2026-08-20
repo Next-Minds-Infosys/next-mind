@@ -21,7 +21,7 @@ import {
   Wallet,
   Users,
 } from "lucide-react";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard, PublicCourse } from "@/db/queries";
 import { contact, telHref } from "@/lib/contact";
 import { npr } from "@/lib/utils";
 import { colors, gradient, heroGradient } from "@/lib/theme";
@@ -31,7 +31,7 @@ import EnrollModal from "./EnrollModal";
 
 interface CoursePageContentProps {
   course: PublicCourse;
-  courses: PublicCourse[];
+  courses: CourseCard[];
 }
 
 /**

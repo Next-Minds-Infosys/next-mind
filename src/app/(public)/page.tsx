@@ -1,6 +1,6 @@
 import SiteLayout from "@/components/SiteLayout";
 import HomePage from "@/components/HomePage";
-import { getPublicCourses } from "@/db/queries";
+import { getCourseCards } from "@/db/queries";
 
 // SiteLayout and this page both query Postgres for course data; without this,
 // Next statically prerenders the route at build time and the query runs
@@ -18,7 +18,7 @@ import { getPublicCourses } from "@/db/queries";
 export const revalidate = 300;
 
 export default async function Page() {
-  const courses = await getPublicCourses();
+  const courses = await getCourseCards();
 
   return (
     <SiteLayout>

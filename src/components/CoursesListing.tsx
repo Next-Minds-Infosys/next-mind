@@ -20,7 +20,7 @@ import {
   Workflow,
   X,
 } from "lucide-react";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
 import EnrollModal from "@/components/EnrollModal";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
@@ -54,7 +54,7 @@ const staggerContainer = {
   show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
 };
 
-export default function CoursesListing({ courses }: { courses: PublicCourse[] }) {
+export default function CoursesListing({ courses }: { courses: CourseCard[] }) {
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(courses.map((c) => c.category)))],
     [courses],

@@ -1,6 +1,6 @@
 import SiteLayout from "@/components/SiteLayout";
 import CoursesListing from "@/components/CoursesListing";
-import { getPublicCourses } from "@/db/queries";
+import { getCourseCards } from "@/db/queries";
 
 export const metadata = {
   title: "Courses",
@@ -25,7 +25,7 @@ export const metadata = {
 export const revalidate = 300;
 
 export default async function CoursesPage() {
-  const courses = await getPublicCourses();
+  const courses = await getCourseCards();
 
   return (
     <SiteLayout>
