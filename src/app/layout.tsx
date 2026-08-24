@@ -1,10 +1,28 @@
 import type { Metadata } from "next";
+import { Manrope } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { siteUrl } from "@/lib/site";
 import { GTM_ID, analyticsEnabled } from "@/lib/analytics";
 import { JsonLd } from "@/components/JsonLd";
 import { organizationSchema, websiteSchema } from "@/lib/schema-org";
+
+/**
+ * One family for body and headings - the design sets headings in Manrope 800
+ * rather than a separate display face, so this replaces both DM Sans and
+ * Bricolage Grotesque.
+ *
+ * next/font self-hosts the files and inlines the @font-face rules. The previous
+ * setup pulled two families from a render-blocking @import at the top of
+ * globals.css, which stalled first paint on a third-party connection; this
+ * removes that request entirely.
+ */
+const manrope = Manrope({
+  subsets: ["latin"],
+  display: "swap",
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-manrope",
+});
 
 export const metadata: Metadata = {
   // Resolves relative OG/canonical URLs against the real domain instead of the
@@ -50,7 +68,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={manrope.variable}>
       {/*
         Grammarly and similar extensions write data-* attributes onto <body>
         before React hydrates (data-gr-ext-installed, data-new-gr-c-s-check-loaded),

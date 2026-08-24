@@ -1,14 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { testimonials } from "@/data/courses";
 import type { CourseCard } from "@/db/queries";
 import { stats } from "@/lib/stats";
-import { colors, gradient, heroGradient } from "@/lib/theme";
+import { borderSoft, colors, ctaBody, ctaEyebrow, ctaGradient, gradient, heroWash, statGradient } from "@/lib/theme";
+import { CourseCardTile } from "./CourseCardTile";
 import EnrollModal from "./EnrollModal";
-import { Briefcase, GraduationCap, Handshake, Rocket, Star, Target, UserCog, UserRound, Zap } from "lucide-react";
+import { Briefcase, GraduationCap, Handshake, Rocket, Star, Target, UserCog, Zap } from "lucide-react";
 
 const tools = [
   "React",
@@ -38,11 +39,8 @@ const rotatingWords = [
   "UI/UX Design",
 ];
 
-const heroStats: [string, string][] = [
-  [stats.studentsTrained, "Students Trained"],
-  [stats.placementRate, "Placement Rate"],
-  [stats.hiringPartners, "Hiring Partners"],
-];
+/** Decorative stand-ins for student faces beside the rating. */
+const avatarTints = ["#00c29a", "#0095de", "#6dd3c0", "#ee9748"];
 
 const stripStats = [
   { n: stats.studentsTrained, l: "Students Trained", icon: GraduationCap, c: colors.teal },
@@ -88,7 +86,12 @@ function Hero({ courses }: { courses: CourseCard[] }) {
 
 
   return (
-    <section className="relative overflow-hidden pt-16" style={{ backgroundColor: colors.bg }}>
+    <section
+      className="relative overflow-hidden pt-16"
+      /* A wash that has faded to white by 65% down, so the hero lifts off the
+         page without a hard seam where it meets the stat band below. */
+      style={{ background: heroWash }}
+    >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div
           className="absolute -top-32 -right-32 w-[600px] h-[600px] rounded-full opacity-[0.07]"
@@ -107,7 +110,7 @@ function Hero({ courses }: { courses: CourseCard[] }) {
         />
       </div>
 
-      <div className="relative max-w-7xl mx-auto px-6 py-16 lg:py-24">
+      <div className="relative max-w-[1240px] mx-auto px-6 py-16 lg:py-24">
         <div className="grid lg:grid-cols-[1fr_460px] gap-16 items-center">
           <div>
             <div
@@ -126,14 +129,16 @@ function Hero({ courses }: { courses: CourseCard[] }) {
             </div>
 
             <h1
-              className="font-display font-bold leading-[1.05] mb-6"
-              style={{ fontSize: "clamp(2.6rem,5vw,4.5rem)", color: colors.navy }}
+              className="font-display mb-6 font-extrabold leading-[1.05] tracking-[-1.2px]"
+              style={{ fontSize: "clamp(34px,5.2vw,58px)", color: colors.navy }}
             >
               Learn{" "}
               <span
                 className="inline-block transition-all duration-300"
                 style={{
-                  color: colors.teal,
+                  // NOT colors.teal - the fill teal is 2.29:1 on white and fails AA even
+                  // at this size; large text still needs 3:1. tealInk is 5.29:1.
+                  color: colors.tealInk,
                   opacity: visible ? 1 : 0,
                   transform: visible ? "translateY(0)" : "translateY(8px)",
                 }}
@@ -141,7 +146,7 @@ function Hero({ courses }: { courses: CourseCard[] }) {
                 {rotatingWords[index]}
               </span>
               <br />
-              <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
+              <span className="text-transparent bg-clip-text" style={{ backgroundImage: statGradient }}>
                 Lead Tomorrow
               </span>
             </h1>
@@ -179,17 +184,23 @@ function Hero({ courses }: { courses: CourseCard[] }) {
               </button>
             </div>
 
-            <div className="flex flex-wrap gap-10">
-              {heroStats.map(([n, l]) => (
-                <div key={l}>
-                  <div className="font-display text-3xl font-bold" style={{ color: colors.navy }}>
-                    {n}
-                  </div>
-                  <div className="text-xs tracking-wide mt-0.5" style={{ color: colors.muted }}>
-                    {l}
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-wrap items-center gap-2.5">
+              <div className="flex">
+                {avatarTints.map((c, i) => (
+                  <div
+                    key={c}
+                    aria-hidden="true"
+                    className="h-[30px] w-[30px] rounded-full border-2 border-white"
+                    style={{ background: c, marginLeft: i === 0 ? 0 : -8 }}
+                  />
+                ))}
+              </div>
+              <div className="text-[13.5px] font-bold" style={{ color: colors.body }}>
+                4.9{" "}
+                <span className="font-semibold" style={{ color: colors.muted }}>
+                  from 200+ reviews
+                </span>
+              </div>
             </div>
           </div>
 
@@ -220,26 +231,6 @@ function Hero({ courses }: { courses: CourseCard[] }) {
 
 
 
-            <div
-              className="absolute left-1/2 -translate-x-1/2 -bottom-5 rounded-full px-5 py-2.5 flex items-center gap-3"
-              style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.border}`,
-                boxShadow: "0 4px 20px rgba(13,45,82,0.10)",
-              }}
-            >
-              <div className="flex gap-0.5">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} size={15} aria-hidden="true" className="fill-warning text-warning" />
-                ))}
-              </div>
-              <span className="text-sm font-semibold" style={{ color: colors.navy }}>
-                4.9
-              </span>
-              <span className="text-xs" style={{ color: colors.muted }}>
-                from 200+ reviews
-              </span>
-            </div>
           </div>
         </div>
       </div>
@@ -274,193 +265,98 @@ function ToolsMarquee() {
   );
 }
 
+
 function PopularCourses({ courses }: { courses: CourseCard[] }) {
-  const [modalOpen, setModalOpen] = useState(false);
-  const [preselect, setPreselect] = useState("");
-  // Every published course, not the 6 newest. The old `slice(0, 6)` combined
-  // with an `ORDER BY createdAt DESC` in getPublicCourses meant whichever
-  // courses happened to be created last won the homepage slots - which is why
-  // Digital Marketing, Advanced SEO and Full Stack were silently missing from
-  // it despite being live on /courses. Nine courses fill three clean rows on
-  // the 3-column grid, and each one gets an internal link from the homepage.
-  const popular = courses;
+  const [active, setActive] = useState("All");
+
+  // Derived from the data rather than hard-coded, so a new category added in the
+  // admin dashboard shows up here without a code change.
+  const categories = useMemo(
+    () => ["All", ...Array.from(new Set(courses.map((c) => c.category)))],
+    [courses],
+  );
+  const visible = active === "All" ? courses : courses.filter((c) => c.category === active);
 
   return (
-    <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between gap-4 mb-10">
+    <section className="px-6 py-[70px]">
+      <div className="mx-auto max-w-[1240px]">
+        <div className="mb-3.5 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div
-              className="text-xs font-bold tracking-[0.2em] uppercase mb-2"
-              style={{ color: colors.teal }}
+              className="mb-2 text-[13px] font-bold uppercase tracking-[0.06em]"
+              style={{ color: colors.tealInk }}
             >
               Our Courses
             </div>
             <h2
-              className="font-display text-3xl lg:text-4xl font-bold"
-              style={{ color: colors.navy }}
+              className="font-display font-extrabold tracking-[-0.6px]"
+              style={{ fontSize: "clamp(24px,3.4vw,34px)", color: colors.navy }}
             >
-              Find Your Path to a{" "}
-              <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
-                Future-Proof Career
-              </span>
+              Find your path to a
+              <br />
+              future-proof career
             </h2>
           </div>
           <Link
             href="/courses"
-            className="hidden sm:flex items-center gap-1 text-sm font-semibold whitespace-nowrap transition-colors"
-            style={{ color: colors.teal }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = colors.blue;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = colors.teal;
-            }}
+            className="flex-shrink-0 text-[14.5px] font-bold transition-colors"
+            style={{ color: colors.tealInk }}
           >
-            View all Courses →
+            View all courses →
           </Link>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {popular.map((course) => (
-            <div
-              key={course.id}
-              className="rounded-2xl overflow-hidden group transition-all duration-300 hover:-translate-y-1.5 flex flex-col"
-              style={{
-                backgroundColor: colors.card,
-                border: `1px solid ${colors.border}`,
-                boxShadow: "0 2px 8px rgba(13,45,82,0.05)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.borderColor = `${course.color}50`;
-                e.currentTarget.style.boxShadow = "0 12px 40px rgba(13,45,82,0.10)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.borderColor = colors.border;
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(13,45,82,0.05)";
-              }}
-            >
-              <div className="p-5 flex-1">
-                <div className="flex items-start justify-between mb-3">
-                  <div className="flex gap-2 flex-wrap">
-                    <span
-                      className="text-xs font-bold px-2.5 py-1 rounded-full border"
-                      style={{
-                        color: course.color,
-                        borderColor: `${course.color}40`,
-                        backgroundColor: `${course.color}10`,
-                      }}
-                    >
-                      {course.category}
-                    </span>
-                  </div>
-                </div>
-                <h3
-                  className="font-display font-bold text-base leading-snug mb-2"
-                  style={{ color: colors.navy }}
-                >
-                  {course.title}
-                </h3>
-                <p className="text-xs leading-relaxed mb-4" style={{ color: colors.muted }}>
-                  {course.shortDesc}
-                </p>
-                <div className="flex gap-1 flex-wrap">
-                  {course.tools.slice(0, 4).map((tool) => (
-                    <span
-                      key={tool}
-                      className="text-[10px] px-2 py-0.5 rounded-md"
-                      style={{
-                        backgroundColor: colors.surface,
-                        color: colors.muted,
-                        border: `1px solid ${colors.border}`,
-                      }}
-                    >
-                      {tool}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div
-                className="px-5 pb-5 flex items-center justify-between pt-4 border-t"
-                style={{ borderColor: colors.border }}
+        <div className="flex gap-2 overflow-x-auto py-5 pb-[26px]">
+          {categories.map((cat) => {
+            const on = cat === active;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setActive(cat)}
+                aria-pressed={on}
+                className="flex-shrink-0 whitespace-nowrap rounded-full px-[18px] py-2.5 text-[13.5px] font-bold transition-colors"
+                style={
+                  on
+                    ? { background: colors.teal, color: "#fff", border: `1px solid ${colors.teal}` }
+                    : { background: "#fff", color: colors.navy, border: `1px solid ${colors.border}` }
+                }
               >
-                <div className="text-sm font-bold" style={{ color: colors.navy }}>
-                  NPR {course.price.toLocaleString()}
-                </div>
-                <div className="flex gap-2">
-                  <Link
-                    href={`/courses/${course.slug}`}
-                    className="text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                    style={{ border: `1px solid ${colors.border}`, color: colors.navy }}
-                  >
-                    Details
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setPreselect(course.title);
-                      setModalOpen(true);
-                    }}
-                    className="text-xs font-bold px-3 py-1.5 rounded-lg text-white transition-all"
-                    style={{ background: gradient }}
-                  >
-                    Enroll Now →
-                  </button>
-                </div>
-              </div>
-            </div>
+                {cat}
+              </button>
+            );
+          })}
+        </div>
+
+        <div className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]">
+          {visible.map((course) => (
+            <CourseCardTile key={course.id} course={course} />
           ))}
         </div>
-
-        <div className="text-center mt-10">
-          <Link
-            href="/courses"
-            className="inline-flex items-center gap-2 font-semibold px-8 py-3 rounded-xl transition-all"
-            style={{ border: `1.5px solid ${colors.border}`, color: colors.navy }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.borderColor = colors.teal;
-              e.currentTarget.style.color = colors.teal;
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.borderColor = colors.border;
-              e.currentTarget.style.color = colors.navy;
-            }}
-          >
-            Browse All Courses →
-          </Link>
-        </div>
       </div>
-
-      <EnrollModal
-        isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
-        preSelectedCourse={preselect}
-        courses={courses}
-      />
     </section>
   );
 }
 
 function StatsStrip() {
   return (
+    // A hairline band, not a panel: the design separates it from the hero with
+    // rules top and bottom rather than a fill, so the eye reads it as a caption
+    // to the hero rather than as its own section.
     <section
-      className="py-16 px-6 border-y"
-      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
+      className="border-y px-6 py-7"
+      style={{ borderColor: borderSoft }}
     >
-      <div className="max-w-7xl mx-auto grid grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="mx-auto grid max-w-[1240px] gap-6 text-center [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
         {stripStats.map((s) => (
-          <div key={s.l} className="text-center group">
+          <div key={s.l}>
             <div
-              className="w-16 h-16 rounded-2xl mx-auto mb-4 flex items-center justify-center text-3xl transition-transform group-hover:scale-110"
-              style={{ backgroundColor: `${s.c}12` }}
+              className="bg-clip-text font-extrabold tracking-[-0.5px] text-transparent"
+              style={{ fontSize: "clamp(24px,3vw,32px)", backgroundImage: statGradient }}
             >
-              <s.icon size={26} aria-hidden="true" className="text-nm-teal-ink" />
-            </div>
-            <div className="font-display text-4xl font-bold mb-1" style={{ color: s.c }}>
               {s.n}
             </div>
-            <div className="text-sm font-medium" style={{ color: colors.muted }}>
+            <div className="mt-1 text-[13px] font-semibold" style={{ color: colors.muted }}>
               {s.l}
             </div>
           </div>
@@ -468,6 +364,15 @@ function StatsStrip() {
       </div>
     </section>
   );
+}
+
+/** "Roshan Maharjan" -> "RM". Falls back to one letter for single-word names. */
+function initialsOf(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 function Testimonials() {
@@ -495,27 +400,27 @@ function Testimonials() {
   const go = (dir: number) => setPage((p) => (p + dir + pageCount) % pageCount);
 
   return (
-    <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-end justify-between gap-4 mb-10">
+    <section className="px-6 py-[70px]" style={{ backgroundColor: "#f9fafb" }}>
+      <div className="mx-auto max-w-[1240px]">
+        <div className="mb-9 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div
-              className="text-xs font-bold tracking-[0.2em] uppercase mb-2"
-              style={{ color: colors.green }}
+              className="mb-2 text-[13px] font-bold uppercase tracking-[0.06em]"
+              style={{ color: colors.tealInk }}
             >
               Student Stories
             </div>
             <h2
-              className="font-display text-3xl lg:text-4xl font-bold"
-              style={{ color: colors.navy }}
+              className="font-display font-extrabold tracking-[-0.6px]"
+              style={{ fontSize: "clamp(24px,3.4vw,34px)", color: colors.navy }}
             >
-              What Our Students Say
+              What our students say
             </h2>
           </div>
           <Link
             href="/testimonials"
-            className="hidden sm:block text-sm font-semibold"
-            style={{ color: colors.teal }}
+            className="hidden text-[14.5px] font-bold sm:block"
+            style={{ color: colors.tealInk }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = colors.blue;
             }}
@@ -542,7 +447,7 @@ function Testimonials() {
                     style={{ width: `${100 / perView}%` }}
                   >
                     <div
-                      className="rounded-2xl p-6 flex flex-col h-full"
+                      className="flex h-full flex-col rounded-[20px] p-7"
                       style={{
                         backgroundColor: colors.card,
                         border: `1px solid ${highlight ? `${colors.teal}50` : colors.border}`,
@@ -573,16 +478,17 @@ function Testimonials() {
                         style={{ borderColor: colors.border }}
                       >
                         <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center text-xl flex-shrink-0"
-                          style={{ background: gradient }}
-                        >
-                          <UserRound size={24} aria-hidden="true" className="text-nm-teal" />
-                        </div>
+                            aria-hidden="true"
+                            className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                            style={{ background: gradient }}
+                          >
+                            {initialsOf(t.name)}
+                          </div>
                         <div>
-                          <div className="font-semibold text-sm" style={{ color: colors.navy }}>
+                          <div className="text-[14.5px] font-extrabold" style={{ color: colors.navy }}>
                             {t.name}
                           </div>
-                          <div className="text-xs" style={{ color: colors.muted }}>
+                          <div className="text-[13px]" style={{ color: colors.mutedSoft }}>
                             {t.role}
                           </div>
                         </div>
@@ -665,60 +571,36 @@ function Testimonials() {
 
 function Process() {
   return (
-    <section
-      className="py-20 px-6 border-t"
-      style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-    >
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-14">
+    <section className="px-6 py-[70px]">
+      <div className="mx-auto max-w-[1000px]">
+        <div className="mb-11 text-center">
           <div
-            className="text-xs font-bold tracking-[0.2em] uppercase mb-2"
-            style={{ color: colors.teal }}
+            className="mb-2 text-[13px] font-bold uppercase tracking-[0.06em]"
+            style={{ color: colors.tealInk }}
           >
             The Process
           </div>
           <h2
-            className="font-display text-3xl lg:text-4xl font-bold"
-            style={{ color: colors.navy }}
+            className="font-display font-extrabold tracking-[-0.6px]"
+            style={{ fontSize: "clamp(24px,3.4vw,34px)", color: colors.navy }}
           >
-            Your Journey from{" "}
-            <span className="text-transparent bg-clip-text" style={{ backgroundImage: gradient }}>
-              Zero to Hero
-            </span>
+            Your journey from zero to hero
           </h2>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8 relative">
-          <div
-            className="hidden lg:block absolute top-14 left-[calc(16.5%+1rem)] right-[calc(16.5%+1rem)] h-px"
-            style={{
-              background: `linear-gradient(to right, transparent, ${colors.teal}50, ${colors.blue}50, transparent)`,
-            }}
-          />
+        <div className="grid gap-7 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
           {processSteps.map((s, i) => (
-            <div key={s.title} className="flex flex-col items-center text-center group">
-              <div className="relative mb-6">
-                <div
-                  className="w-28 h-28 rounded-2xl flex items-center justify-center text-5xl transition-all group-hover:-translate-y-1"
-                  style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.border}`,
-                    boxShadow: "0 4px 20px rgba(13,45,82,0.08)",
-                  }}
-                >
-                  <s.icon size={26} aria-hidden="true" className="text-nm-teal-ink" />
-                </div>
-                <div
-                  className="absolute -top-3 -right-3 w-8 h-8 rounded-full text-white text-sm font-black flex items-center justify-center shadow-lg"
-                  style={{ background: gradient }}
-                >
-                  {i + 1}
-                </div>
+            <div key={s.title} className="text-center">
+              <div
+                className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-[14px] text-lg font-extrabold text-white"
+                style={{ background: gradient }}
+              >
+                {i + 1}
               </div>
-              <h3 className="font-display font-bold text-xl mb-3" style={{ color: colors.navy }}>
+              <h3 className="mb-2 text-[17px] font-extrabold" style={{ color: colors.navy }}>
                 {s.title}
               </h3>
-              <p className="text-sm leading-relaxed max-w-xs" style={{ color: colors.muted }}>
+              <p className="text-[13.5px] leading-[1.55]" style={{ color: colors.muted }}>
                 {s.desc}
               </p>
             </div>
@@ -733,69 +615,41 @@ function FinalCta({ courses }: { courses: CourseCard[] }) {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
-      <div className="max-w-5xl mx-auto">
+    // Full-bleed in the design rather than an inset rounded card: the band runs
+    // edge to edge so the page ends on a hard colour change into the footer.
+    <section className="px-6 py-[70px] text-white" style={{ background: ctaGradient }}>
+      <div className="mx-auto max-w-[760px] text-center">
         <div
-          className="relative rounded-3xl overflow-hidden p-12 lg:p-20 text-center"
-          style={{ background: heroGradient }}
+          className="mb-4 text-[12.5px] font-bold uppercase tracking-[0.05em]"
+          style={{ color: ctaEyebrow }}
         >
-          <div
-            className="absolute inset-0 opacity-[0.05]"
-            style={{
-              backgroundImage: "radial-gradient(rgba(0,189,184,1) 1px, transparent 1px)",
-              backgroundSize: "24px 24px",
-            }}
-          />
-          <div
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-40 rounded-full blur-[80px]"
-            style={{ backgroundColor: `${colors.teal}20` }}
-          />
-          <div className="relative">
-            <div
-              className="inline-flex items-center gap-2 border rounded-full px-5 py-2 text-sm font-medium mb-8"
-              style={{
-                backgroundColor: `${colors.teal}20`,
-                borderColor: `${colors.teal}40`,
-                color: colors.teal,
-              }}
-            >
-              {`${nextIntakeLabel()} batch — limited seats remaining`}
-            </div>
-            <h2
-              className="font-display font-bold mb-4 leading-tight text-white"
-              style={{ fontSize: "clamp(2rem,4vw,3.5rem)" }}
-            >
-              Start Your Tech Career
-              <br />
-              <span style={{ color: colors.teal }}>Today.</span>
-            </h2>
-            <p
-              className="text-lg mb-10 max-w-md mx-auto leading-relaxed"
-              style={{ color: "rgba(255,255,255,0.65)" }}
-            >
-              Book a free 30-minute counselling session and find the perfect course for your goals.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
-                type="button"
-                onClick={() => setModalOpen(true)}
-                className="font-bold px-12 py-4 rounded-xl text-white active:scale-95"
-                style={{ background: gradient, boxShadow: `0 6px 32px ${colors.teal}60` }}
-              >
-                Book Free Counselling
-              </button>
-              <Link
-                href="/courses"
-                className="font-semibold px-12 py-4 rounded-xl transition-all text-center"
-                style={{
-                  border: "1px solid rgba(255,255,255,0.20)",
-                  color: "rgba(255,255,255,0.85)",
-                }}
-              >
-                Browse All Courses
-              </Link>
-            </div>
-          </div>
+          {`${nextIntakeLabel()} batch — limited seats remaining`}
+        </div>
+        <h2
+          className="font-display mb-3.5 font-extrabold tracking-[-0.8px]"
+          style={{ fontSize: "clamp(26px,4vw,38px)" }}
+        >
+          Start your tech career today.
+        </h2>
+        <p className="mx-auto mb-[30px] text-[15.5px]" style={{ color: ctaBody }}>
+          Book a free 30-minute counselling session and find the perfect course for your goals.
+        </p>
+        <div className="flex flex-wrap justify-center gap-3">
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold transition-transform active:scale-95"
+            style={{ color: colors.navyDeep }}
+          >
+            Book Free Counselling
+          </button>
+          <Link
+            href="/courses"
+            className="rounded-xl px-7 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-white/10"
+            style={{ border: "1px solid rgba(255,255,255,0.3)" }}
+          >
+            Browse All Courses
+          </Link>
         </div>
       </div>
 
@@ -821,13 +675,16 @@ function nextIntakeLabel() {
 export default function HomePage({ courses }: { courses: CourseCard[] }) {
   return (
     <>
-      <Hero courses={courses} />
-      <ToolsMarquee />
-      <PopularCourses courses={courses} />
-      <StatsStrip />
-      <Testimonials />
-      <Process />
-      <FinalCta courses={courses} />
+      
+        <Hero courses={courses} />
+        {/* The design places the stat band immediately under the hero, where it
+            reads as a caption to it, and the tools marquee after. */}
+        <StatsStrip />
+        <ToolsMarquee />
+        <PopularCourses courses={courses} />
+        <Testimonials />
+        <Process />
+        <FinalCta courses={courses} />
     </>
   );
 }

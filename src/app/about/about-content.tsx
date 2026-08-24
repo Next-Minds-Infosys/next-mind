@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { colors, gradient, heroGradient } from "@/lib/theme";
+import { borderSoft, colors, ctaBody, ctaGradient, gradient, heroWash, statGradient } from "@/lib/theme";
 import { stats as instituteStats } from "@/lib/stats";
-import { Globe, Hammer, Handshake, Target, UserRound } from "lucide-react";
+import { Globe, Hammer, Handshake, Target } from "lucide-react";
 
 const team = [
   {
@@ -103,110 +103,109 @@ const aboutStats = [
   { n: instituteStats.hiringPartners, l: "Hiring Partners", c: "#f4a44a" },
 ];
 
+/** "Rajesh Shrestha" -> "RS". Stands in until real team photos are supplied. */
+function initialsOf(name: string) {
+  return name
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase() ?? "")
+    .join("");
+}
+
+function Eyebrow({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      className="mb-2 text-[13px] font-bold uppercase tracking-[0.06em]"
+      style={{ color: colors.tealInk }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function AboutPage() {
   return (
     <>
-      <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
-        <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="max-w-2xl">
-              <div
-                className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
-                style={{
-                  backgroundColor: `${colors.teal}20`,
-                  borderColor: `${colors.teal}40`,
-                  color: colors.teal,
-                }}
-              >
-                Our Story
-              </div>
-              <h1
-                className="font-display font-bold text-white mb-6 leading-tight"
-                style={{ fontSize: "clamp(2rem,4vw,3.5rem)" }}
-              >
-                We&apos;re Building Nepal&apos;s
-                <br />
-                <span style={{ color: colors.teal }}>Next Generation</span> of IT Talent
-              </h1>
-              <p className="text-lg leading-relaxed" style={{ color: "rgba(255,255,255,0.65)" }}>
-                Since 2018, Next Minds Infosys has been on a single mission: make world-class IT
-                education accessible to every ambitious Nepali — regardless of background, location,
-                or prior experience.
-              </p>
-            </div>
+      <div className="min-h-screen pt-16" style={{ backgroundColor: colors.bg }}>
+        {/* Hero - the design centres this on a pale wash rather than the dark
+            navy panel the page used before. */}
+        <section className="px-6 py-16" style={{ background: heroWash }}>
+          <div className="mx-auto max-w-[900px] text-center">
+            <Eyebrow>Our Story</Eyebrow>
+            <h1
+              className="font-display mb-4.5 font-extrabold leading-[1.1] tracking-[-0.9px]"
+              style={{ fontSize: "clamp(28px,4.6vw,44px)", color: colors.navy }}
+            >
+              We&apos;re building Nepal&apos;s next generation of IT talent
+            </h1>
+            <p
+              className="mx-auto max-w-[640px] text-base leading-[1.6]"
+              style={{ color: colors.body }}
+            >
+              Since 2018, Next Minds Infosys has been on a single mission: make world-class IT
+              education accessible to every ambitious Nepali — regardless of background, location,
+              or prior experience.
+            </p>
           </div>
         </section>
 
-        <section
-          className="py-14 px-6 border-b"
-          style={{ backgroundColor: colors.surface, borderColor: colors.border }}
-        >
-          <div className="max-w-7xl mx-auto">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {aboutStats.map((s) => (
+        <section className="border-y px-6 py-7" style={{ borderColor: borderSoft }}>
+          <div className="mx-auto grid max-w-[1000px] gap-6 text-center [grid-template-columns:repeat(auto-fit,minmax(150px,1fr))]">
+            {aboutStats.map((s) => (
+              <div key={s.l}>
                 <div
-                  key={s.l}
-                  className="rounded-2xl p-6 text-center"
-                  style={{ backgroundColor: colors.card, border: `1px solid ${colors.border}` }}
+                  className="bg-clip-text font-extrabold tracking-[-0.5px] text-transparent"
+                  style={{ fontSize: "clamp(24px,3vw,32px)", backgroundImage: statGradient }}
                 >
-                  <div className="font-display text-4xl font-bold mb-1" style={{ color: s.c }}>
-                    {s.n}
-                  </div>
-                  <div className="text-sm" style={{ color: colors.muted }}>
-                    {s.l}
-                  </div>
+                  {s.n}
                 </div>
-              ))}
-            </div>
+                <div className="mt-1 text-[13px] font-semibold" style={{ color: colors.muted }}>
+                  {s.l}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
 
-        <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-2 gap-14 items-center">
+        {/* Mission: copy on the left, the four values as a 2x2 on the right. */}
+        <section className="px-6 py-[70px]">
+          <div className="mx-auto grid max-w-[1100px] items-start gap-11 lg:grid-cols-[1fr_1fr]">
             <div>
-              <div
-                className="text-xs font-bold tracking-[0.2em] uppercase mb-3"
-                style={{ color: colors.teal }}
-              >
-                Our Mission
-              </div>
+              <Eyebrow>Our Mission</Eyebrow>
               <h2
-                className="font-display text-4xl font-bold mb-5 leading-tight"
-                style={{ color: colors.navy }}
+                className="font-display mb-4.5 font-extrabold leading-[1.15] tracking-[-0.6px]"
+                style={{ fontSize: "clamp(24px,3.2vw,32px)", color: colors.navy }}
               >
-                Practical Skills.
-                <br />
-                Real Jobs.
-                <br />
-                <span
-                  className="text-transparent bg-clip-text"
-                  style={{ backgroundImage: gradient }}
-                >
-                  Measurable Impact.
-                </span>
+                Practical skills. Real jobs. Measurable impact.
               </h2>
-              <p className="text-base leading-relaxed mb-5" style={{ color: colors.body }}>
+              <p className="mb-4 text-[15px] leading-[1.65]" style={{ color: colors.body }}>
                 Nepal has no shortage of bright minds — it has a shortage of practical IT education
                 that connects theory to real industry work. We built Next Minds to close that gap.
               </p>
-              <p className="text-base leading-relaxed" style={{ color: colors.body }}>
+              <p className="text-[15px] leading-[1.65]" style={{ color: colors.body }}>
                 Every course is taught by working professionals, grounded in real projects, and
                 backed by our placement team — because a certificate without a career path is just
                 paper.
               </p>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {values.map((v) => (
                 <div
                   key={v.title}
                   className="rounded-2xl p-5"
-                  style={{ backgroundColor: colors.surface, border: `1px solid ${colors.border}` }}
+                  style={{ backgroundColor: colors.surface }}
                 >
-                  <v.icon size={24} aria-hidden="true" className="mb-3 text-nm-teal-ink" />
-                  <h3 className="font-semibold text-sm mb-1" style={{ color: colors.navy }}>
+                  <div
+                    className="mb-3.5 flex h-[38px] w-[38px] items-center justify-center rounded-[10px]"
+                    style={{ background: gradient }}
+                  >
+                    <v.icon size={19} aria-hidden="true" className="text-white" />
+                  </div>
+                  <h3 className="mb-1.5 text-[15px] font-extrabold" style={{ color: colors.navy }}>
                     {v.title}
                   </h3>
-                  <p className="text-xs leading-relaxed" style={{ color: colors.muted }}>
+                  <p className="text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
                     {v.desc}
                   </p>
                 </div>
@@ -215,122 +214,79 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="py-20 px-6" style={{ backgroundColor: colors.surface }}>
-          <div className="max-w-3xl mx-auto">
-            <div className="text-center mb-12">
-              <div
-                className="text-xs font-bold tracking-[0.2em] uppercase mb-3"
-                style={{ color: colors.blue }}
+        {/* Timeline - a plain ruled list in the design, not a rail with dots. */}
+        <section className="px-6 py-[70px]" style={{ backgroundColor: colors.surface }}>
+          <div className="mx-auto max-w-[1000px]">
+            <div className="mb-11 text-center">
+              <Eyebrow>Timeline</Eyebrow>
+              <h2
+                className="font-display font-extrabold tracking-[-0.6px]"
+                style={{ fontSize: "clamp(24px,3.4vw,34px)", color: colors.navy }}
               >
-                Timeline
-              </div>
-              <h2 className="font-display text-4xl font-bold" style={{ color: colors.navy }}>
-                How We Got Here
+                How we got here
               </h2>
             </div>
-            {/* Three fixed columns - year | rail | card - so nothing overlaps.
-                The old markup right-aligned the year to x=72 and then drew the
-                rail at left-[72px] with the dot nudged to -left-[26.5px], which
-                put the dot on top of the last digit of the year. The card was
-                also a plain flex child with no flex-1, so every card sized to
-                its own text and the column edges came out ragged. */}
-            <div className="relative">
-              <div className="space-y-6">
-                {timeline.map((t, i) => (
-                  <div key={t.year} className="flex items-start">
-                    <div className="w-14 flex-shrink-0 pt-1 text-right">
-                      <span
-                        className="font-display text-sm font-bold"
-                        style={{ color: i % 2 === 0 ? colors.tealInk : colors.blueInk }}
-                      >
-                        {t.year}
-                      </span>
-                    </div>
-
-                    {/* Rail column. The connector is drawn per item and skipped
-                        on the last one, so the line stops at the final dot
-                        instead of running past it. `self-stretch` makes this
-                        column as tall as the card, which is what lets the
-                        offsets below reach the next dot. */}
-                    <div className="relative flex w-8 flex-shrink-0 justify-center self-stretch">
-                      {i < timeline.length - 1 && (
-                        <div
-                          className="absolute left-1/2 w-px -translate-x-1/2"
-                          // 14px = the dot's centre. -38px = the 24px space-y-6
-                          // gap plus the next dot's own 14px centre offset.
-                          style={{ top: 14, bottom: -38, backgroundColor: colors.border }}
-                        />
-                      )}
-                      <div
-                        className="relative z-10 mt-2 h-3 w-3 rounded-full border-2 border-white"
-                        style={{ backgroundColor: i % 2 === 0 ? colors.teal : colors.blue }}
-                      />
-                    </div>
-
+            <div className="flex flex-col">
+              {timeline.map((t) => (
+                <div
+                  key={t.year}
+                  className="grid gap-6 py-5 [grid-template-columns:64px_1fr] sm:[grid-template-columns:80px_1fr]"
+                  style={{ borderBottom: `1px solid ${colors.border}` }}
+                >
+                  <div className="text-xl font-extrabold" style={{ color: colors.tealInk }}>
+                    {t.year}
+                  </div>
+                  <div>
                     <div
-                      className="min-w-0 flex-1 rounded-2xl p-4"
-                      style={{
-                        backgroundColor: colors.card,
-                        border: `1px solid ${colors.border}`,
-                      }}
+                      className="mb-1 text-[15.5px] font-extrabold"
+                      style={{ color: colors.navy }}
                     >
-                      <div className="font-semibold mb-1 text-sm" style={{ color: colors.navy }}>
-                        {t.title}
-                      </div>
-                      <div className="text-xs leading-relaxed" style={{ color: colors.muted }}>
-                        {t.desc}
-                      </div>
+                      {t.title}
+                    </div>
+                    <div className="text-[13.5px] leading-[1.5]" style={{ color: colors.muted }}>
+                      {t.desc}
                     </div>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
 
-        <section className="py-20 px-6" style={{ backgroundColor: colors.bg }}>
-          <div className="max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <div
-                className="text-xs font-bold tracking-[0.2em] uppercase mb-3"
-                style={{ color: colors.green }}
+        <section className="px-6 py-[70px]">
+          <div className="mx-auto max-w-[1100px]">
+            <div className="mb-11 text-center">
+              <Eyebrow>The Team</Eyebrow>
+              <h2
+                className="font-display font-extrabold tracking-[-0.6px]"
+                style={{ fontSize: "clamp(24px,3.4vw,34px)", color: colors.navy }}
               >
-                The Team
-              </div>
-              <h2 className="font-display text-4xl font-bold" style={{ color: colors.navy }}>
-                People Behind Next Minds
+                People behind Next Minds
               </h2>
             </div>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid gap-6 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
               {team.map((m) => (
-                <div
-                  key={m.name}
-                  className="rounded-2xl p-6 transition-all hover:-translate-y-1"
-                  style={{
-                    backgroundColor: colors.card,
-                    border: `1px solid ${colors.border}`,
-                    boxShadow: "0 2px 8px rgba(13,45,82,0.05)",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.borderColor = `${colors.teal}40`;
-                    e.currentTarget.style.boxShadow = "0 12px 40px rgba(13,45,82,0.10)";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.borderColor = colors.border;
-                    e.currentTarget.style.boxShadow = "0 2px 8px rgba(13,45,82,0.05)";
-                  }}
-                >
-                  <div className="text-4xl mb-4"><UserRound size={30} aria-hidden="true" className="text-nm-teal-ink" /></div>
-                  <h3 className="font-display font-bold mb-0.5" style={{ color: colors.navy }}>
+                <div key={m.name} className="text-center">
+                  {/* The design puts a photo here. Until real headshots exist,
+                      initials on the brand gradient read as deliberate rather
+                      than as a broken image. */}
+                  <div
+                    aria-hidden="true"
+                    className="mx-auto mb-4 flex h-24 w-24 items-center justify-center rounded-full text-2xl font-extrabold text-white"
+                    style={{ background: gradient }}
+                  >
+                    {initialsOf(m.name)}
+                  </div>
+                  <h3 className="mb-1 text-[15.5px] font-extrabold" style={{ color: colors.navy }}>
                     {m.name}
                   </h3>
                   <div
-                    className="text-xs font-semibold mb-3 uppercase tracking-wide"
-                    style={{ color: colors.teal }}
+                    className="mb-2 text-[12.5px] font-bold"
+                    style={{ color: colors.tealInk }}
                   >
                     {m.role}
                   </div>
-                  <p className="text-sm leading-relaxed" style={{ color: colors.muted }}>
+                  <p className="text-[13px] leading-[1.5]" style={{ color: colors.muted }}>
                     {m.bio}
                   </p>
                 </div>
@@ -339,34 +295,29 @@ export default function AboutPage() {
           </div>
         </section>
 
-        <section className="py-20 px-6" style={{ backgroundColor: colors.surface }}>
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="font-display text-4xl font-bold mb-4" style={{ color: colors.navy }}>
+        <section className="px-6 py-[70px] text-white" style={{ background: ctaGradient }}>
+          <div className="mx-auto max-w-[700px] text-center">
+            <h2
+              className="font-display mb-3 font-extrabold tracking-[-0.6px]"
+              style={{ fontSize: "clamp(24px,3.6vw,32px)" }}
+            >
               Ready to start your journey?
             </h2>
-            <p className="text-lg mb-8" style={{ color: colors.muted }}>
+            <p className="mb-7 text-[15px]" style={{ color: ctaBody }}>
               Explore our courses or reach out — we&apos;re happy to help you find the right path.
             </p>
-            <div className="flex flex-wrap gap-4 justify-center">
+            <div className="flex flex-wrap justify-center gap-3">
               <Link
                 href="/courses"
-                className="font-bold px-8 py-4 rounded-xl text-white"
-                style={{ background: gradient }}
+                className="rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold"
+                style={{ color: colors.navyDeep }}
               >
                 Browse Courses
               </Link>
               <Link
                 href="/contact"
-                className="font-semibold px-8 py-4 rounded-xl transition-all"
-                style={{ border: `1.5px solid ${colors.border}`, color: colors.navy }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.borderColor = colors.teal;
-                  e.currentTarget.style.color = colors.teal;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.borderColor = colors.border;
-                  e.currentTarget.style.color = colors.navy;
-                }}
+                className="rounded-xl px-7 py-3.5 text-[15px] font-bold text-white transition-colors hover:bg-white/10"
+                style={{ border: "1px solid rgba(255,255,255,0.3)" }}
               >
                 Contact Us
               </Link>

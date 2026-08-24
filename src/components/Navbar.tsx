@@ -43,7 +43,7 @@ function NavLink({
   return (
     <Link
       href={href}
-      className={`relative rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+      className={`relative rounded-lg px-3.5 py-2 text-[14.5px] font-semibold transition-colors ${
         isActive ? "text-nm-teal-ink" : "text-nm-body hover:text-nm-teal-ink"
       }`}
       onMouseEnter={() => onHover(href)}
@@ -103,7 +103,7 @@ export default function Navbar() {
       }`}
     >
       <div
-        className={`mx-auto flex max-w-7xl items-center justify-between px-6 transition-all duration-300 ${
+        className={`mx-auto flex max-w-[1240px] items-center justify-between px-6 transition-all duration-300 ${
           scrolled ? "h-14" : "h-16"
         }`}
       >

@@ -85,7 +85,7 @@ export default function ContactPage() {
     <>
       <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
         <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-[1240px] mx-auto text-center">
             <div
               className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
               style={{
@@ -110,7 +110,7 @@ export default function ContactPage() {
         </section>
 
         <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto grid lg:grid-cols-[1fr_420px] gap-12">
+          <div className="max-w-[1240px] mx-auto grid lg:grid-cols-[1fr_420px] gap-12">
             <div>
               <h2 className="font-display text-2xl font-bold mb-6" style={{ color: colors.navy }}>
                 Send Us a Message

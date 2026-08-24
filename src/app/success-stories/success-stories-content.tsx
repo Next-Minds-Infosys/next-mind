@@ -17,7 +17,7 @@ export default function SuccessStoriesPage() {
     <>
       <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
         <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-[1240px] mx-auto text-center">
             <div
               className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
               style={{
@@ -47,7 +47,7 @@ export default function SuccessStoriesPage() {
           className="py-10 px-6 border-b"
           style={{ backgroundColor: colors.surface, borderColor: colors.border }}
         >
-          <div className="max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="max-w-[1240px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((s) => (
               <div
                 key={s.l}
@@ -66,7 +66,7 @@ export default function SuccessStoriesPage() {
         </section>
 
         <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1240px] mx-auto">
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {successStories.map((s) => (
                 <div

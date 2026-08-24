@@ -384,7 +384,7 @@ export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
           variants={staggerContainer}
           initial="hidden"
           animate={heroInView ? "show" : "hidden"}
-          className="relative mx-auto max-w-7xl text-center"
+          className="relative mx-auto max-w-[1240px] text-center"
         >
           <motion.div
             variants={fadeUp}
@@ -446,7 +446,7 @@ export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
 
       {/* ── Services ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -479,7 +479,7 @@ export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
 
       {/* ── Sectors ── */}
       <section className="bg-nm-surface px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -562,7 +562,7 @@ export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
 
       {/* ── Partner Benefits ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -639,7 +639,7 @@ export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
 
       {/* ── How We Work ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow

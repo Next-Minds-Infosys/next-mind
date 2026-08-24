@@ -18,7 +18,7 @@ export default function TestimonialsPage() {
     <>
       <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
         <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-[1240px] mx-auto text-center">
             <div
               className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
               style={{
@@ -53,7 +53,7 @@ export default function TestimonialsPage() {
         </section>
 
         <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto columns-1 sm:columns-2 lg:columns-3 gap-5">
+          <div className="max-w-[1240px] mx-auto columns-1 sm:columns-2 lg:columns-3 gap-5">
             {cards.map((t, i) => (
               <div
                 key={`${t.name}-${i}`}

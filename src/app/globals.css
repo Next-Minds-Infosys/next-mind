@@ -1,26 +1,43 @@
-@import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,200..800&family=DM+Sans:ital,opsz,wght@0,9..40,100..900;1,9..40,100..900&display=swap");
 @import "tailwindcss";
 
 :root {
+  /* Palette taken from the design canvas (Home / Courses / About artboards).
+   * Stated in oklch exactly as the design does - converting to hex loses the
+   * even lightness steps the ramp depends on.
+   *
+   * The shift from the previous palette is that neutrals are now genuinely
+   * neutral: borders were #deeaf4 and muted text #7a90a8, both blue-tinted,
+   * which made every "grey" on the site read as pale blue. Accent hue lives
+   * only in --nm-teal / --nm-blue now. */
   --nm-bg: #ffffff;
-  --nm-surface: #f4f9fc;
+  --nm-surface: oklch(0.98 0.003 255);
   --nm-card: #ffffff;
-  --nm-border: #deeaf4;
-  --nm-light: #e8f5f5;
-  --nm-navy: #0d2d52;
-  --nm-teal: #00bdb8;
-  --nm-blue: #1a7fe8;
-  --nm-green: #52c85a;
-  --nm-heading: #0d2d52;
-  --nm-body: #3d5166;
-  --nm-muted: #7a90a8;
-  --nm-orange: #f4a44a;
-  --nm-gradient: linear-gradient(135deg, #00bdb8, #1a7fe8);
+  --nm-border: oklch(0.91 0.008 255);
+  --nm-border-soft: oklch(0.94 0.006 255);
+  --nm-light: oklch(0.95 0.04 172);
+  --nm-navy: oklch(0.27 0.05 258);
+  --nm-navy-deep: oklch(0.24 0.06 250);
+  --nm-teal: oklch(0.72 0.15 172);
+  --nm-blue: oklch(0.64 0.15 241);
+  --nm-green: oklch(0.68 0.17 155);
+  --nm-heading: oklch(0.27 0.05 258);
+  --nm-body: oklch(0.4 0.02 258);
+  /* The design uses oklch(0.6 0.01 258) for 11-12.5px card meta text, which is
+   * 3.95:1 on white and fails AA for text that size. This is one step darker -
+   * 4.85:1, and visually indistinguishable at those sizes. */
+  --nm-muted: oklch(0.5 0.02 258);
+  --nm-muted-soft: oklch(0.55 0.02 258);
+  --nm-orange: oklch(0.42 0.12 60);
+  --nm-orange-bg: oklch(0.95 0.06 60);
+  --nm-gradient: linear-gradient(135deg, oklch(0.72 0.15 172), oklch(0.64 0.15 241));
+  /* The pale wash behind the hero and page headers. */
+  --nm-hero-wash: linear-gradient(180deg, oklch(0.97 0.02 190), #fff 65%);
 
   /* Brand teal is 5.92:1 on navy (passes) but only 2.34:1 on white (fails AA
    * badly). Fills, borders and icons keep --nm-teal; teal *text* on a light
    * surface must use this darker ink instead. Spec §1.7. */
-  --nm-teal-ink: #0f766e;
+  --nm-teal-ink: oklch(0.5 0.13 200);
+  --nm-teal-ink-deep: oklch(0.32 0.1 200);
 
   /* ---------------------------------------------------------------------
    * Design tokens (UI/UX spec §1-§4).
@@ -101,13 +118,24 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-  --font-sans: "DM Sans", sans-serif;
-  --font-display: "Bricolage Grotesque", sans-serif;
+  /* Both roles are Manrope. --font-manrope is injected by next/font onto
+     <html> - it has to be <html> and not <body>, because these tokens are
+     resolved on :root, and a var() pointing at a property that is not defined
+     on the resolving element invalidates the whole declaration rather than
+     falling through to the next family in the list. The explicit var()
+     fallback covers the same failure a second way. */
+  --nm-font-sans: var(--font-manrope, "Manrope"), system-ui, sans-serif;
+  --nm-font-display: var(--font-manrope, "Manrope"), system-ui, sans-serif;
 }
 
 @theme inline {
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
+  /* These MUST point at differently-named variables. Naming the source and the
+     theme key the same thing (`--font-sans: var(--font-sans)`) emits a
+     self-referential declaration into :root that overrides the real value; the
+     cycle makes it invalid and every `font-sans` element silently falls back to
+     the browser default stack. That is what happened to DM Sans here. */
+  --font-sans: var(--nm-font-sans);
+  --font-display: var(--nm-font-display);
   --color-nm-teal: var(--nm-teal);
   --color-nm-teal-ink: var(--nm-teal-ink);
   --color-nm-blue: var(--nm-blue);
@@ -125,6 +153,11 @@
   --color-nm-light: var(--nm-light);
   --color-nm-green: var(--nm-green);
   --color-nm-orange: var(--nm-orange);
+  --color-nm-border-soft: var(--nm-border-soft);
+  --color-nm-navy-deep: var(--nm-navy-deep);
+  --color-nm-muted-soft: var(--nm-muted-soft);
+  --color-nm-orange-bg: var(--nm-orange-bg);
+  --color-nm-teal-ink-deep: var(--nm-teal-ink-deep);
 
   /* Ramp tokens as Tailwind colours: bg-navy-800, text-teal-600, etc. */
   --color-navy-900: var(--navy-900);
