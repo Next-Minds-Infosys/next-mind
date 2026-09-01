@@ -4,37 +4,21 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  BarChart3,
   ChevronDown,
-  Clock,
-  Code2,
-  Database,
-  GraduationCap,
-  Megaphone,
-  Palette,
   Search,
   SearchX,
-  ShieldCheck,
   SlidersHorizontal,
-  Users,
-  Workflow,
   X,
 } from "lucide-react";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
+import { CourseCardTile } from "@/components/CourseCardTile";
+import { borderSoft, colors, ctaBody, ctaGradient, gradient, heroWash } from "@/lib/theme";
 import EnrollModal from "@/components/EnrollModal";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
 
-const categoryIcons: Record<string, typeof GraduationCap> = {
-  Development: Code2,
-  Marketing: Megaphone,
-  Security: ShieldCheck,
-  DevOps: Workflow,
-  Design: Palette,
-  Data: Database,
-};
-
-function categoryIcon(category: string) {
-  return categoryIcons[category] ?? GraduationCap;
+/** "2.5 months" -> 2.5. Anything unparseable sorts last rather than as zero. */
+function months(label: string) {
+  const n = parseFloat(label);
+  return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY;
 }
 
 const fadeUp = {
@@ -54,7 +38,7 @@ const staggerContainer = {
   show: { transition: { staggerChildren: 0.06, delayChildren: 0.05 } },
 };
 
-export default function CoursesListing({ courses }: { courses: PublicCourse[] }) {
+export default function CoursesListing({ courses }: { courses: CourseCard[] }) {
   const categories = useMemo(
     () => ["All", ...Array.from(new Set(courses.map((c) => c.category)))],
     [courses],
@@ -72,6 +56,7 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
   const [level, setLevel] = useState("All Levels");
   const [duration, setDuration] = useState("Any Duration");
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("popular");
   const [refineOpen, setRefineOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [preselect, setPreselect] = useState("");
@@ -93,6 +78,20 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
     [courses, category, level, duration, search],
   );
 
+  /**
+   * Sorting is applied after filtering so the "N courses found" count above the
+   * grid always matches what is rendered below it. "Most popular" leans on
+   * enrolment, which is the only popularity signal the card data carries.
+   */
+  const visible = useMemo(() => {
+    const out = [...filtered];
+    if (sort === "price-low") out.sort((a, b) => a.price - b.price);
+    else if (sort === "price-high") out.sort((a, b) => b.price - a.price);
+    else if (sort === "duration") out.sort((a, b) => months(a.duration) - months(b.duration));
+    else out.sort((a, b) => b.students - a.students);
+    return out;
+  }, [filtered, sort]);
+
   const refineCount = (level !== "All Levels" ? 1 : 0) + (duration !== "Any Duration" ? 1 : 0);
   const hasFilters = category !== "All" || refineCount > 0 || Boolean(search);
 
@@ -105,33 +104,39 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
 
   return (
     <div className="min-h-screen bg-white pt-16">
-      <section className="nm-hero-panel px-6 py-20">
+      <section className="px-6 py-16" style={{ background: heroWash }}>
         <motion.div
-          className="mx-auto max-w-7xl text-center"
+          className="mx-auto max-w-[1240px]"
           variants={staggerContainer}
           initial="hidden"
           animate="show"
         >
           <motion.div
             variants={fadeUp}
-            className="mb-4 inline-flex items-center gap-2 rounded-full border border-nm-teal/40 bg-nm-teal/10 px-4 py-1.5 text-xs font-bold uppercase tracking-widest text-nm-teal-ink"
+            className="mb-2.5 text-[13px] font-bold uppercase tracking-[0.06em]"
+            style={{ color: colors.tealInk }}
           >
             Course Catalog
           </motion.div>
           <motion.h1
             variants={fadeUp}
-            className="mb-4 font-display text-4xl font-bold text-white sm:text-5xl lg:text-6xl"
+            className="font-display mb-3 max-w-[720px] font-extrabold tracking-[-0.8px]"
+            style={{ fontSize: "clamp(28px,4.2vw,42px)", color: colors.navy }}
           >
-            Find your path to a <span className="nm-gradient-text">future-proof IT career</span>
+            Find your path to a future-proof IT career
           </motion.h1>
-          <motion.p variants={fadeUp} className="mx-auto max-w-xl text-lg text-white/65">
+          <motion.p
+            variants={fadeUp}
+            className="max-w-[560px] text-base"
+            style={{ color: colors.body }}
+          >
             {courses.length} industry-aligned tracks across {categories.length - 1} disciplines —
             online and on campus at New Baneshwor.
           </motion.p>
         </motion.div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-6 py-12">
+      <div className="mx-auto max-w-[1240px] px-6 py-12">
         <div className="mb-6 flex gap-2 overflow-x-auto pb-2 scrollbar-none">
           {categories.map((cat) => {
             const active = category === cat;
@@ -192,10 +197,37 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
             </button>
           )}
 
-          <span className="ml-auto text-sm text-nm-muted">
-            {filtered.length} course{filtered.length === 1 ? "" : "s"} found
-          </span>
-        </div>
+          </div>
+
+          <div
+            className="mb-6 flex flex-wrap items-center justify-between gap-3.5 pb-5"
+            style={{ borderBottom: `1px solid ${borderSoft}` }}
+          >
+            <div className="text-sm font-semibold" style={{ color: colors.muted }}>
+              {filtered.length} course{filtered.length === 1 ? "" : "s"} found
+            </div>
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="course-sort"
+                className="text-[13px] font-semibold"
+                style={{ color: colors.mutedSoft }}
+              >
+                Sort by
+              </label>
+              <select
+                id="course-sort"
+                value={sort}
+                onChange={(e) => setSort(e.target.value)}
+                className="cursor-pointer rounded-[9px] bg-white px-3 py-2.5 text-[13.5px] font-bold outline-none"
+                style={{ border: `1px solid ${colors.border}`, color: colors.navy }}
+              >
+                <option value="popular">Most popular</option>
+                <option value="price-low">Price: Low to high</option>
+                <option value="price-high">Price: High to low</option>
+                <option value="duration">Shortest duration</option>
+              </select>
+            </div>
+          </div>
 
         <AnimatePresence initial={false}>
           {refineOpen && (
@@ -247,110 +279,68 @@ export default function CoursesListing({ courses }: { courses: PublicCourse[] })
           </div>
         ) : (
           <motion.div
-            key={`${category}-${level}-${duration}-${search}`}
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3"
+            key={`${category}-${level}-${duration}-${search}-${sort}`}
+            className="grid gap-5 [grid-template-columns:repeat(auto-fit,minmax(280px,1fr))]"
             variants={staggerContainer}
             initial="hidden"
             animate="show"
           >
-            {filtered.map((course) => {
-              const Icon = categoryIcon(course.category);
-              return (
-                <motion.div key={course.id} variants={fadeUp}>
-                  <Card className="group flex h-full flex-col overflow-hidden rounded-2xl border border-nm-border bg-nm-card py-0 shadow-sm transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl">
-                    <CardContent className="flex flex-1 flex-col p-5">
-                      <div className="mb-4 flex items-start justify-between gap-3">
-                        <div
-                          className="flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-2xl border transition-transform duration-300 group-hover:scale-105 group-hover:rotate-3"
-                          style={{
-                            backgroundColor: `${course.color}15`,
-                            borderColor: `${course.color}40`,
-                          }}
-                        >
-                          <Icon className="h-6 w-6" style={{ color: course.color }} />
-                        </div>
-                        {course.badge && (
-                          <span className="nm-gradient whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-bold text-white">
-                            {course.badge}
-                          </span>
-                        )}
-                      </div>
-
-                      <span
-                        className="mb-3 inline-block w-fit rounded-full border px-2.5 py-1 text-xs font-bold"
-                        style={{
-                          color: course.color,
-                          borderColor: `${course.color}40`,
-                          backgroundColor: `${course.color}10`,
-                        }}
-                      >
-                        {course.category}
-                      </span>
-
-                      <h3 className="mb-2 font-display text-lg font-bold leading-snug text-nm-navy">
-                        {course.title}
-                      </h3>
-                      <p className="mb-4 flex-1 text-sm leading-relaxed text-nm-muted">
-                        {course.shortDesc}
-                      </p>
-
-                      <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-nm-muted">
-                        <span className="inline-flex items-center gap-1">
-                          <Clock className="h-3.5 w-3.5" />
-                          {course.duration}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <BarChart3 className="h-3.5 w-3.5" />
-                          {course.level}
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5" />
-                          {course.students}
-                        </span>
-                      </div>
-
-                      <div className="mb-1 flex flex-wrap gap-1.5">
-                        {course.tools.slice(0, 4).map((tool) => (
-                          <span
-                            key={tool}
-                            className="rounded-full border border-nm-border bg-nm-surface px-2.5 py-1 text-xs text-nm-muted"
-                          >
-                            {tool}
-                          </span>
-                        ))}
-                      </div>
-                    </CardContent>
-
-                    <CardFooter className="flex items-center justify-between border-t border-nm-border p-5 pt-4">
-                      <div className="text-sm font-bold text-nm-navy">
-                        NPR {course.price.toLocaleString()}
-                      </div>
-                      <div className="flex gap-2">
+              {visible.map((course) => (
+                <motion.div key={course.id} variants={fadeUp} className="h-full">
+                  <CourseCardTile
+                    course={course}
+                    action={
+                      <>
                         <Link
                           href={`/courses/${course.slug}`}
-                          className="rounded-full border border-nm-border px-3.5 py-1.5 text-xs font-semibold text-nm-navy transition-colors hover:border-nm-teal hover:text-nm-teal-ink"
+                          className="rounded-[9px] px-4 py-2.5 text-[13.5px] font-bold transition-colors hover:bg-nm-surface"
+                          style={{ border: `1px solid ${colors.border}`, color: colors.navy }}
                         >
                           Details
                         </Link>
                         <button
                           type="button"
                           onClick={() => {
-                            setPreselect(course.title);
+                            setPreselect(course.id);
                             setModalOpen(true);
                           }}
-                          className="nm-gradient rounded-full px-3.5 py-1.5 text-xs font-bold text-white transition-shadow group-hover:shadow-md"
+                          className="rounded-[9px] px-4 py-2.5 text-[13.5px] font-bold text-white transition-transform active:scale-95"
+                          style={{ background: gradient }}
                         >
-                          Enroll now
+                          Enroll
                         </button>
-                      </div>
-                    </CardFooter>
-                  </Card>
+                      </>
+                    }
+                  />
                 </motion.div>
-              );
-            })}
+              ))}
           </motion.div>
         )}
       </div>
+
+      {/* Closing band, matching the homepage: the catalog ends on the same
+          dark call to action rather than trailing off after the last card. */}
+      <section className="px-6 py-[70px] text-white" style={{ background: ctaGradient }}>
+        <div className="mx-auto max-w-[760px] text-center">
+          <h2
+            className="font-display mb-3.5 font-extrabold tracking-[-0.8px]"
+            style={{ fontSize: "clamp(26px,4vw,38px)" }}
+          >
+            Not sure which course fits?
+          </h2>
+          <p className="mb-[30px] text-[15.5px]" style={{ color: ctaBody }}>
+            Talk to a course advisor — free 30-minute counselling, no obligation.
+          </p>
+          <button
+            type="button"
+            onClick={() => setModalOpen(true)}
+            className="rounded-xl bg-white px-7 py-3.5 text-[15px] font-bold transition-transform active:scale-95"
+            style={{ color: colors.navyDeep }}
+          >
+            Book Free Counselling
+          </button>
+        </div>
+      </section>
 
       <EnrollModal
         isOpen={modalOpen}

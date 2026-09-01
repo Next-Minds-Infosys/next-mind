@@ -4,7 +4,7 @@ import SiteLayout from "@/components/SiteLayout";
 import { JsonLd } from "@/components/JsonLd";
 import { breadcrumbSchema, courseSchema, faqSchema } from "@/lib/schema-org";
 import CoursePageContent from "@/components/CoursePageContent";
-import { getPublicCourseBySlug, getPublicCourses } from "@/db/queries";
+import { getCourseCards, getPublicCourseBySlug } from "@/db/queries";
 import { publicMediaSrc } from "@/lib/media-image";
 
 // No generateStaticParams already makes this dynamic in practice, but this
@@ -80,7 +80,7 @@ export default async function CoursePage({ params }: { params: Promise<{ courseI
   const { courseId } = await params;
   const [course, courses] = await Promise.all([
     getPublicCourseBySlug(courseId),
-    getPublicCourses(),
+    getCourseCards(),
   ]);
 
   if (!course) {

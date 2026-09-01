@@ -21,7 +21,7 @@ import {
   Wallet,
   Users,
 } from "lucide-react";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard, PublicCourse } from "@/db/queries";
 import { contact, telHref } from "@/lib/contact";
 import { npr } from "@/lib/utils";
 import { colors, gradient, heroGradient } from "@/lib/theme";
@@ -31,7 +31,7 @@ import EnrollModal from "./EnrollModal";
 
 interface CoursePageContentProps {
   course: PublicCourse;
-  courses: PublicCourse[];
+  courses: CourseCard[];
 }
 
 /**
@@ -455,7 +455,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
     <>
       {/* ---------------------------------------------------------------- hero */}
       <section className="relative px-6 pt-28 pb-0" style={{ background: heroGradient }}>
-        <div className="mx-auto grid max-w-7xl gap-10 pb-14 lg:grid-cols-[1fr_360px]">
+        <div className="mx-auto grid max-w-[1240px] gap-10 pb-14 lg:grid-cols-[1fr_360px]">
           <div className="min-w-0">
             <nav className="mb-6 flex flex-wrap items-center gap-2 text-sm text-white/55">
               <Link href="/" className="transition-colors hover:text-white">Home</Link>
@@ -623,7 +623,7 @@ export default function CoursePageContent({ course, courses }: CoursePageContent
         className="sticky top-16 z-30 border-b bg-white/95 px-6 backdrop-blur"
         style={{ borderColor: colors.border }}
       >
-        <div className="mx-auto flex max-w-7xl gap-7 overflow-x-auto">
+        <div className="mx-auto flex max-w-[1240px] gap-7 overflow-x-auto">
           {tabs.map((t) => (
             <a
               key={t.id}

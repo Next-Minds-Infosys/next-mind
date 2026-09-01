@@ -29,7 +29,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
     <>
       <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
         <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-[1240px] mx-auto text-center">
             <div
               className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
               style={{
@@ -53,7 +53,7 @@ export default function BlogPage({ posts }: { posts: BlogPost[] }) {
         </section>
 
         <section className="py-12 px-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1240px] mx-auto">
             <div className="flex gap-2 flex-wrap mb-10">
               {categories.map((cat) => (
                 <button

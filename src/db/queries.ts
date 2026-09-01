@@ -90,13 +90,72 @@ const courseIncludes = [
   { model: Mentor, as: "mentor" as const, attributes: ["name", "role", "bio", "photo"] },
 ];
 
-export const getPublicCourses = cache(async (): Promise<PublicCourse[]> => {
+
+/**
+ * The subset every course *card* renders - grids, the nav, the footer, the
+ * enrol modal and the related-courses list.
+ *
+ * The previous `getPublicCourses()` returned the whole row - `contentMd`, `faqs`,
+ * `curriculum` and the SEO fields. SiteLayout handed that to Footer, which
+ * renders three fields, so ~190KB of course markdown was serialised into the
+ * RSC payload of *every* page on the site - /about and /contact included. The
+ * homepage was 300KB of HTML, 69% of it this payload.
+ */
+export interface CourseCard {
+  id: string;
+  slug: string;
+  title: string;
+  category: string;
+  description: string;
+  shortDesc: string;
+  tools: string[];
+  badge: CourseBadge | null;
+  color: string;
+  students: number;
+  duration: string;
+  level: string;
+  price: number;
+}
+
+const CARD_ATTRIBUTES = [
+  "id",
+  "slug",
+  "title",
+  "categoryId",
+  "description",
+  "shortDesc",
+  "tools",
+  "badge",
+  "color",
+  "students",
+  "duration",
+  "level",
+  "price",
+] as const;
+
+export const getCourseCards = cache(async (): Promise<CourseCard[]> => {
   const courses = await Course.findAll({
     where: { published: true },
-    include: courseIncludes,
+    attributes: [...CARD_ATTRIBUTES],
+    include: [{ model: Category, as: "category", attributes: ["name"] }],
     order: [["createdAt", "DESC"]],
   });
-  return courses.map(toPublicCourse);
+
+  return courses.map((c) => ({
+    id: c.id,
+    slug: c.slug,
+    title: c.title,
+    category: c.category?.name ?? "General",
+    description: c.description,
+    shortDesc: c.shortDesc || c.description,
+    tools: c.tools ?? [],
+    badge: c.badge,
+    color: c.color ?? "#00bdb8",
+    students: c.students,
+    duration: c.duration,
+    level: c.level,
+    price: c.price,
+  }));
 });
 
 export const getPublicCourseBySlug = cache(async (slug: string): Promise<PublicCourse | null> => {

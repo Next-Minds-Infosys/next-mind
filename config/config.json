@@ -26,8 +26,13 @@
     "dialectOptions": {
       "ssl": {
         "require": true,
-        "rejectUnauthorized": false
+        "rejectUnauthorized": true
       }
     }
+  },
+  "ci": {
+    "dialect": "postgres",
+    "use_env_variable": "DATABASE_URL",
+    "logging": false
   }
 }

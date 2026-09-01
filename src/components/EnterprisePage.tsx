@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { BlobBackground } from "@/components/ui/blob-background";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { SectionEyebrow } from "@/components/SectionEyebrow";
-import type { PublicCourse } from "@/db/queries";
+import type { CourseCard } from "@/db/queries";
 import EnrollModal from "./EnrollModal";
 
 const fadeUp = {
@@ -368,7 +368,7 @@ function EnterpriseContactForm() {
   );
 }
 
-export default function EnterprisePage({ courses }: { courses: PublicCourse[] }) {
+export default function EnterprisePage({ courses }: { courses: CourseCard[] }) {
   const [enrollOpen, setEnrollOpen] = useState(false);
   const heroRef = useRef(null);
   const heroInView = useInView(heroRef, { once: true });
@@ -384,7 +384,7 @@ export default function EnterprisePage({ courses }: { courses: PublicCourse[] })
           variants={staggerContainer}
           initial="hidden"
           animate={heroInView ? "show" : "hidden"}
-          className="relative mx-auto max-w-7xl text-center"
+          className="relative mx-auto max-w-[1240px] text-center"
         >
           <motion.div
             variants={fadeUp}
@@ -446,7 +446,7 @@ export default function EnterprisePage({ courses }: { courses: PublicCourse[] })
 
       {/* ── Services ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -479,7 +479,7 @@ export default function EnterprisePage({ courses }: { courses: PublicCourse[] })
 
       {/* ── Sectors ── */}
       <section className="bg-nm-surface px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -562,7 +562,7 @@ export default function EnterprisePage({ courses }: { courses: PublicCourse[] })
 
       {/* ── Partner Benefits ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow
@@ -639,7 +639,7 @@ export default function EnterprisePage({ courses }: { courses: PublicCourse[] })
 
       {/* ── How We Work ── */}
       <section className="bg-white px-4 py-24 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-[1240px]">
           <AnimatedSection>
             <motion.div variants={fadeUp}>
               <SectionEyebrow

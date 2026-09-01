@@ -30,7 +30,7 @@ export default function PartnersPage() {
     <>
       <div className="pt-16 min-h-screen" style={{ backgroundColor: colors.bg }}>
         <section className="py-20 px-6" style={{ background: heroGradient }}>
-          <div className="max-w-7xl mx-auto text-center">
+          <div className="max-w-[1240px] mx-auto text-center">
             <div
               className="inline-flex items-center gap-2 border rounded-full px-4 py-1.5 text-xs font-bold tracking-widest uppercase mb-6"
               style={{
@@ -60,7 +60,7 @@ export default function PartnersPage() {
           className="py-14 px-6 border-b"
           style={{ backgroundColor: colors.surface, borderColor: colors.border }}
         >
-          <div className="max-w-7xl mx-auto grid sm:grid-cols-3 gap-5">
+          <div className="max-w-[1240px] mx-auto grid sm:grid-cols-3 gap-5">
             {partnerTypes.map((p) => (
               <div
                 key={p.title}
@@ -80,7 +80,7 @@ export default function PartnersPage() {
         </section>
 
         <section className="py-20 px-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="max-w-[1240px] mx-auto">
             <div className="text-center mb-12">
               <h2 className="font-display text-3xl font-bold" style={{ color: colors.navy }}>
                 200+ Trusted Partners

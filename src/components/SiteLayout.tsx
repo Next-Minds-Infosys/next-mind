@@ -1,13 +1,13 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { CustomCodeInjector } from "@/components/CustomCodeInjector";
-import { getPublicCourses } from "@/db/queries";
+import { getCourseCards } from "@/db/queries";
 import { SiteSetting } from "@/db";
 import { SITE_SETTING_ID } from "@/db/models/site-setting";
 
 export default async function SiteLayout({ children }: { children: React.ReactNode }) {
   const [courses, siteSetting] = await Promise.all([
-    getPublicCourses(),
+    getCourseCards(),
     SiteSetting.findByPk(SITE_SETTING_ID),
   ]);
 

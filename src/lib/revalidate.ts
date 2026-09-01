@@ -14,7 +14,7 @@ import { revalidatePath } from "next/cache";
 
 /**
  * Course data reaches every public page, not just the course routes:
- * `SiteLayout` calls `getPublicCourses()` and `Footer` renders the list, so a
+ * `SiteLayout` calls `getCourseCards()` and `Footer` renders the list, so a
  * renamed or unpublished course would otherwise sit stale in the footer of
  * /about, /contact and the rest. "layout" scope purges the whole public tree,
  * which is the only correct option here.

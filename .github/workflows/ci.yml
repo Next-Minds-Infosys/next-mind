@@ -1,0 +1,80 @@
+name: CI
+
+# Runs on every PR and on pushes to the long-lived branches. The point is to
+# catch, before merge, the class of breakage that reached production by hand:
+# type errors, lint failures, a build that does not compile, and migrations that
+# are committed but do not actually apply to a clean database.
+on:
+  pull_request:
+  push:
+    branches: [main, dev]
+
+concurrency:
+  # A new push supersedes the run already in flight for the same ref.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        # The app falls back to a placeholder connection string during the build
+        # phase, so no real database is needed here - the migration job below is
+        # what proves the schema is sound.
+        run: pnpm build
+        env:
+          BETTER_AUTH_SECRET: ci-placeholder-secret-not-used-at-runtime
+          BETTER_AUTH_URL: http://localhost:3000
+          NEXT_PUBLIC_SITE_URL: https://www.nextmindsinfosys.com
+          NEXT_PUBLIC_GTM_ID: ""
+
+  migrations:
+    # NOT a from-scratch rebuild. src/db/schema.sql and src/db/migrations/
+    # currently overlap - schema.sql already contains columns that early
+    # migrations also add (e.g. Course.categoryId), so neither path builds the
+    # database alone and a clean-room replay fails on migration 1. Until that is
+    # reconciled, this job proves the narrower but still useful thing: every
+    # migration file parses, exports up/down, and is listed exactly once.
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate migration files
+        run: pnpm db:check-migrations
