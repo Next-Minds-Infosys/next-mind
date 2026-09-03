@@ -61,11 +61,61 @@ export async function createLesson(batchId: string, data: unknown): Promise<Acti
   return { success: true };
 }
 
+/**
+ * Edit an existing lesson, published or not.
+ *
+ * Scoped by `{ id, batchId }` rather than id alone: batchId is proven to belong
+ * to the caller by `ownedBatch`, so pairing the two means a lessonId copied
+ * from another batch matches nothing instead of being edited.
+ *
+ * Clearing the video is explicit - an empty videoKey blanks the whole video
+ * triple, so a lesson cannot keep a stale mime/size pointing at nothing.
+ */
+export async function updateLesson(
+  batchId: string,
+  lessonId: string,
+  data: unknown,
+): Promise<ActionResult> {
+  const ctx = await ownedBatch(batchId);
+  if (!ctx) return { error: "Forbidden" };
+  const parsed = parseInput(lessonSchema, data);
+  if (!parsed.success) return { error: parsed.error };
+  const d = parsed.data;
+  if (d.videoKey && !keyBelongsToBatch(d.videoKey, "lesson", batchId)) {
+    return { error: "That file does not belong to this batch." };
+  }
+
+  const [updated] = await Lesson.update(
+    {
+      title: d.title,
+      description: d.description || null,
+      orderIndex: d.orderIndex,
+      videoKey: d.videoKey || null,
+      videoMime: d.videoKey ? d.videoMime || null : null,
+      videoSizeBytes: d.videoKey ? (d.videoSizeBytes ?? null) : null,
+      published: d.published,
+    },
+    { where: { id: lessonId, batchId } },
+  );
+  if (updated === 0) return { error: "That lesson is not in this batch." };
+
+  revalidatePath(`/instructor/batches/${batchId}`);
+  // Students read the same rows, so their view has to be purged too - otherwise
+  // a corrected title or an unpublished lesson stays visible to them for up to
+  // the ISR window.
+  revalidatePath(`/student/batches/${batchId}`);
+  return { success: true };
+}
+
 export async function deleteLesson(batchId: string, lessonId: string): Promise<ActionResult> {
   const ctx = await ownedBatch(batchId);
   if (!ctx) return { error: "Forbidden" };
-  await Lesson.destroy({ where: { id: lessonId, batchId } });
+  // Material and LessonProgress both cascade from Lesson, so this also removes
+  // attached files and every student's completion record for it.
+  const removed = await Lesson.destroy({ where: { id: lessonId, batchId } });
+  if (removed === 0) return { error: "That lesson is not in this batch." };
   revalidatePath(`/instructor/batches/${batchId}`);
+  revalidatePath(`/student/batches/${batchId}`);
   return { success: true };
 }
 
