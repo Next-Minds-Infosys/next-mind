@@ -13,6 +13,17 @@ import {
   VideoOff,
 } from "lucide-react";
 import { uploadToS3, type UploadedFile, type UploadScope } from "./file-upload";
+import {
+  appendChunk,
+  beginSession,
+  deleteSession,
+  finishSession,
+  listSessions,
+  loadBlob,
+  pruneOlderThan,
+  storageAvailable,
+  type RecordingSession,
+} from "@/lib/recording-store";
 
 /**
  * Preferred first. Chrome can record H.264 in MP4 on recent versions, which is
@@ -101,8 +112,22 @@ export function ScreenRecorder({
   const [progress, setProgress] = useState<number | null>(null);
   const [error, setError] = useState("");
 
+  /** Set while an interrupted recording from a previous session is available. */
+  const [recovered, setRecovered] = useState<RecordingSession | null>(null);
+  const [retryNote, setRetryNote] = useState("");
+  /**
+   * Whether chunks are actually reaching IndexedDB. Seeded from feature
+   * detection rather than set inside an effect - React 19 flags a synchronous
+   * setState there as a cascading render, and the answer is already knowable at
+   * first render.
+   */
+  const [persisting, setPersisting] = useState(() => storageAvailable());
+
   const recorderRef = useRef<MediaRecorder | null>(null);
   const chunksRef = useRef<BlobPart[]>([]);
+  /** id of the row in IndexedDB that mirrors chunksRef as it fills. */
+  const sessionIdRef = useRef<string | null>(null);
+  const seqRef = useRef(0);
   const stopAllRef = useRef<() => void>(() => {});
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -118,6 +143,37 @@ export function ScreenRecorder({
       stopAllRef.current();
     };
   }, []);
+
+  // A recording left behind by a crashed or closed tab. Surfaced on mount so
+  // the work is offered back instead of quietly rotting in IndexedDB.
+  useEffect(() => {
+    if (!storageAvailable()) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        await pruneOlderThan();
+        const sessions = await listSessions();
+        const orphan = sessions.find((x) => x.resourceId === resourceId && x.bytes > 0);
+        if (!cancelled && orphan) setRecovered(orphan);
+      } catch {
+        // A broken store must never stop someone recording.
+        if (!cancelled) setPersisting(false);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [resourceId]);
+
+  // Recording and uploading both hold data that is not yet on S3, so leaving
+  // the page is worth a confirmation.
+  useEffect(() => {
+    const risky = recording || progress !== null;
+    if (!risky) return;
+    const warn = (e: BeforeUnloadEvent) => e.preventDefault();
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [recording, progress]);
 
   async function startRecording() {
     setError("");
@@ -282,13 +338,30 @@ export function ScreenRecorder({
     stopAllRef.current = stopAll;
 
     recorder.ondataavailable = (e) => {
-      if (e.data.size > 0) chunksRef.current.push(e.data);
+      if (e.data.size === 0) return;
+      chunksRef.current.push(e.data);
+
+      // Mirror the chunk to IndexedDB. Fire-and-forget on purpose: awaiting
+      // here would block the encoder callback, and the in-memory copy is still
+      // authoritative for this tab. Persistence is the crash insurance.
+      const id = sessionIdRef.current;
+      if (id) {
+        const seq = seqRef.current++;
+        void appendChunk(id, seq, e.data).then((ok) => {
+          // Quota exhaustion on a very long recording. Say so once rather than
+          // implying the recording is still protected.
+          if (!ok) setPersisting(false);
+        });
+      }
     };
     recorder.onstop = () => {
       stopAll();
       setRecording(false);
       const out = new Blob(chunksRef.current, { type: mimeType.split(";")[0] });
       setBlob(out);
+      // Marks a clean stop, so this session is no longer treated as an
+      // interrupted one if the tab dies before the upload finishes.
+      if (sessionIdRef.current) void finishSession(sessionIdRef.current);
       setPreviewUrl((old) => {
         if (old) URL.revokeObjectURL(old);
         return URL.createObjectURL(out);
@@ -303,8 +376,23 @@ export function ScreenRecorder({
 
     // Timeslice so data arrives progressively; a single final chunk risks
     // losing a long recording if the tab is closed.
+    // Timeslice so chunks arrive every second and can be persisted as they go.
+    // Without the IndexedDB mirror below this interval bought nothing: the data
+    // still only existed in this tab's memory.
     recorder.start(1000);
     recorderRef.current = recorder;
+
+    seqRef.current = 0;
+    sessionIdRef.current = null;
+    if (storageAvailable()) {
+      const id = `${resourceId}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+      beginSession({ id, resourceId, scope, mimeType: mimeType.split(";")[0] })
+        .then(() => {
+          sessionIdRef.current = id;
+          setPersisting(true);
+        })
+        .catch(() => setPersisting(false));
+    }
     setBlob(null);
     setSeconds(0);
     setRecording(true);
@@ -316,6 +404,11 @@ export function ScreenRecorder({
   }
 
   function discard() {
+    const id = sessionIdRef.current;
+    if (id) {
+      void deleteSession(id);
+      sessionIdRef.current = null;
+    }
     setBlob(null);
     setPreviewUrl((old) => {
       if (old) URL.revokeObjectURL(old);
@@ -328,18 +421,75 @@ export function ScreenRecorder({
   async function upload() {
     if (!blob) return;
     setError("");
+    setRetryNote("");
     setProgress(0);
     try {
       const ext = blob.type.includes("mp4") ? "mp4" : "webm";
       const name = `screen-recording-${new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-")}.${ext}`;
       const file = new File([blob], name, { type: blob.type });
-      const uploaded = await uploadToS3({ file, resourceId, scope, onProgress: setProgress });
+      const uploaded = await uploadToS3({
+        file,
+        resourceId,
+        scope,
+        onProgress: setProgress,
+        onRetry: (attempt, waitMs, reason) =>
+          setRetryNote(
+            `${reason} Retrying in ${Math.round(waitMs / 1000)}s (attempt ${attempt + 1} of 4)…`,
+          ),
+      });
+      setRetryNote("");
       onUploaded(uploaded);
       setProgress(100);
+
+      // Only now is the recording safe somewhere else. Clearing earlier would
+      // discard the one durable copy the moment the network wobbled.
+      const id = sessionIdRef.current ?? recovered?.id;
+      if (id) {
+        void deleteSession(id);
+        sessionIdRef.current = null;
+        setRecovered(null);
+      }
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Upload failed.");
+      setRetryNote("");
+      setError(
+        (e instanceof Error ? e.message : "Upload failed.") +
+          (persisting
+            ? " Your recording is saved on this device - reopen this page to try again."
+            : ""),
+      );
       setProgress(null);
     }
+  }
+
+  /** Pull an interrupted recording back into the editor. */
+  async function restoreRecovered() {
+    if (!recovered) return;
+    setError("");
+    try {
+      const out = await loadBlob(recovered.id, recovered.mimeType);
+      if (!out || out.size === 0) {
+        setError("That recording could not be read back.");
+        await deleteSession(recovered.id);
+        setRecovered(null);
+        return;
+      }
+      sessionIdRef.current = recovered.id;
+      setBlob(out);
+      setPreviewUrl((old) => {
+        if (old) URL.revokeObjectURL(old);
+        return URL.createObjectURL(out);
+      });
+      setSeconds(Math.round((( recovered.finishedAt ?? Date.now()) - recovered.startedAt) / 1000));
+      setRecovered(null);
+    } catch {
+      setError("That recording could not be restored.");
+    }
+  }
+
+  async function discardRecovered() {
+    if (!recovered) return;
+    await deleteSession(recovered.id);
+    setRecovered(null);
   }
 
   if (!supported) {
@@ -358,6 +508,56 @@ export function ScreenRecorder({
 
   return (
     <div className="rounded-xl border border-nm-border p-4">
+      {recovered && !recording && !blob && (
+        <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 p-4">
+          <p className="text-sm font-bold text-amber-900">
+            Unfinished recording found
+          </p>
+          <p className="mt-1 text-xs text-amber-800">
+            {mb(recovered.bytes)} recorded on{" "}
+            {new Date(recovered.startedAt).toLocaleString()}
+            {recovered.finishedAt
+              ? " — finished but never uploaded."
+              : " — this tab closed while recording."}
+          </p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              onClick={restoreRecovered}
+              className="rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white"
+            >
+              Restore it
+            </button>
+            <button
+              type="button"
+              onClick={discardRecovered}
+              className="rounded-lg border border-amber-300 px-3 py-1.5 text-xs font-semibold text-amber-900"
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
+      {retryNote && (
+        <p className="mb-3 rounded-lg bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-900">
+          {retryNote}
+        </p>
+      )}
+
+      {recording && !persisting && (
+        <p className="mb-3 rounded-lg bg-red-50 px-3 py-2 text-xs font-semibold text-red-700">
+          This device cannot save the recording as it goes — if the tab closes, it will be lost.
+          Keep this tab open until the upload finishes.
+        </p>
+      )}
+
+      {recording && persisting && (
+        <p className="mb-3 text-xs text-nm-muted">
+          Saving to this device as you record — a crash or a lost connection will not lose it.
+        </p>
+      )}
+
       {!recording && !blob && (
         <>
           <div className="flex flex-wrap items-center gap-3">

@@ -34,47 +34,86 @@ export async function uploadToS3({
   resourceId,
   scope,
   onProgress,
+  attempts = 4,
+  onRetry,
+  signal,
 }: {
   file: File;
   resourceId: string;
   scope: UploadScope;
   onProgress?: (percent: number) => void;
+  /** Total tries, not retries. 1 disables retrying. */
+  attempts?: number;
+  onRetry?: (attempt: number, waitMs: number, reason: string) => void;
+  signal?: AbortSignal;
 }): Promise<UploadedFile> {
   // The upload allowlist matches the bare type, so a MediaRecorder blob typed
   // `video/webm;codecs=vp9,opus` has to have its codec parameter dropped here.
   const contentType = (file.type || "application/octet-stream").split(";")[0].trim();
 
-  const res = await fetch("/api/uploads", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      resourceId,
-      scope,
-      filename: file.name,
-      contentType,
-      sizeBytes: file.size,
-    }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error ?? "Could not start the upload.");
+  let lastError: Error | null = null;
 
-  // XHR rather than fetch: fetch cannot report upload progress, and these are
-  // large files where a silent wait is a bad experience.
-  await new Promise<void>((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", data.url);
-    xhr.setRequestHeader("Content-Type", contentType);
-    xhr.upload.onprogress = (e) =>
-      e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100));
-    xhr.onload = () =>
-      xhr.status >= 200 && xhr.status < 300
-        ? resolve()
-        : reject(new Error(`Upload failed (${xhr.status})`));
-    xhr.onerror = () => reject(new Error("Upload failed — check your connection."));
-    xhr.send(file);
-  });
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      // Presigned afresh on every attempt, deliberately. The URL is only valid
+      // for 15 minutes; a 2GB lesson video on a slow connection can outlive
+      // that, and a retry against the expired URL would fail forever with 403.
+      const res = await fetch("/api/uploads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resourceId,
+          scope,
+          filename: file.name,
+          contentType,
+          sizeBytes: file.size,
+        }),
+        signal,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        // A rejected file (wrong type, too large, not permitted) will be
+        // rejected identically next time - retrying only delays the message.
+        throw Object.assign(new Error(data.error ?? "Could not start the upload."), {
+          permanent: true,
+        });
+      }
 
-  return { key: data.key, fileName: file.name, contentType, size: file.size };
+      // XHR rather than fetch: fetch cannot report upload progress, and these
+      // are large files where a silent wait is a bad experience.
+      await new Promise<void>((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.open("PUT", data.url);
+        xhr.setRequestHeader("Content-Type", contentType);
+        xhr.upload.onprogress = (e) =>
+          e.lengthComputable && onProgress?.(Math.round((e.loaded / e.total) * 100));
+        xhr.onload = () =>
+          xhr.status >= 200 && xhr.status < 300
+            ? resolve()
+            : reject(new Error(`Upload failed (${xhr.status})`));
+        xhr.onerror = () => reject(new Error("Connection lost during upload."));
+        xhr.ontimeout = () => reject(new Error("Upload timed out."));
+        xhr.onabort = () => reject(Object.assign(new Error("Upload cancelled."), { permanent: true }));
+        signal?.addEventListener("abort", () => xhr.abort(), { once: true });
+        xhr.send(file);
+      });
+
+      return { key: data.key, fileName: file.name, contentType, size: file.size };
+    } catch (e) {
+      const err = e instanceof Error ? e : new Error("Upload failed.");
+      lastError = err;
+      if ((err as { permanent?: boolean }).permanent || attempt === attempts) break;
+
+      // Exponential backoff with jitter, so a whole class of instructors
+      // reconnecting after the same outage does not retry in lockstep.
+      const wait = Math.min(30_000, 2 ** (attempt - 1) * 1000) + Math.random() * 500;
+      onRetry?.(attempt, wait, err.message);
+      onProgress?.(0);
+      await new Promise((r) => setTimeout(r, wait));
+    }
+  }
+
+  throw lastError ?? new Error("Upload failed.");
 }
 
 export function FileUpload({

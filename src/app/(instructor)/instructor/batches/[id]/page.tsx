@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { Assignment, BatchStudent, Course, Lesson, Material, Message, Submission, User } from "@/db";
+import { Assignment, BatchStudent, Course, Lesson, LessonProgress, Material, Message, Submission, User } from "@/db";
 import { requireRole, assertInstructorOwnsBatch } from "@/lib/access";
 import { Role } from "@/lib/types";
 import { AddAssignment, AddLesson, AddMaterial, Announce, GradeForm } from "./workspace";
+import { LessonRow } from "./lesson-row";
 import {
   Avatar,
   Chip,
@@ -34,7 +35,7 @@ export default async function InstructorBatchPage({
   // Redirects unless this batch is genuinely theirs.
   const batch = await assertInstructorOwnsBatch(id, session.user.id);
 
-  const [course, roster, lessons, materials, assignments, messages] = await Promise.all([
+  const [course, roster, lessons, materials, assignments, messages, progress] = await Promise.all([
     Course.findByPk(batch.courseId, { attributes: ["title"] }),
     BatchStudent.findAll({
       where: { batchId: id, status: "ACTIVE" },
@@ -58,7 +59,24 @@ export default async function InstructorBatchPage({
       order: [["createdAt", "DESC"]],
       include: [{ model: User, as: "author", attributes: ["name", "email"] }],
     }),
+    // Both cascade when a Lesson is deleted, so the confirmation can say what
+    // else goes with it instead of destroying student history silently.
+    LessonProgress.findAll({
+      include: [{ model: Lesson, as: "lesson", attributes: [], where: { batchId: id } }],
+      attributes: ["lessonId"],
+    }),
   ]);
+
+  // Counts for the delete confirmation. Material and LessonProgress both
+  // cascade from Lesson, so removing a lesson takes these with it.
+  const materialsByLesson = new Map<string, number>();
+  for (const m of materials) {
+    if (m.lessonId) materialsByLesson.set(m.lessonId, (materialsByLesson.get(m.lessonId) ?? 0) + 1);
+  }
+  const completionsByLesson = new Map<string, number>();
+  for (const pr of progress) {
+    completionsByLesson.set(pr.lessonId, (completionsByLesson.get(pr.lessonId) ?? 0) + 1);
+  }
 
   // Submissions handed in but not yet scored - the number to act on.
   const ungraded = assignments.reduce(
@@ -70,7 +88,7 @@ export default async function InstructorBatchPage({
     <div className="space-y-6">
       <AddLesson batchId={id} />
       <Panel>
-        <PanelTitle>Published lessons</PanelTitle>
+        <PanelTitle>Lessons</PanelTitle>
         <div className="p-6">
           {lessons.length === 0 ? (
             <EmptyState
@@ -81,27 +99,25 @@ export default async function InstructorBatchPage({
           ) : (
             <ul className="divide-y divide-nm-border">
               {lessons.map((l) => (
-                <li key={l.id} className="flex items-start gap-4 py-4 first:pt-0 last:pb-0">
-                  <span className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-lg bg-teal-50 text-teal-700">
-                    <PlayCircle size={17} aria-hidden="true" />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-nm-navy">{l.title}</p>
-                    {l.description && (
-                      <p className="mt-0.5 text-sm text-nm-muted">{l.description}</p>
-                    )}
-                    <p className="mt-1 text-xs text-nm-muted">
-                      {l.videoKey ? "Video attached" : "No video"} · {relativeTime(l.createdAt)}
-                    </p>
-                  </div>
-                  <span
-                    className={`flex-shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                      l.published ? "bg-teal-50 text-teal-700" : "bg-nm-surface text-nm-muted"
-                    }`}
-                  >
-                    {l.published ? "Published" : "Draft"}
-                  </span>
-                </li>
+                <LessonRow
+                  key={l.id}
+                  batchId={id}
+                  lesson={{
+                    id: l.id,
+                    title: l.title,
+                    description: l.description,
+                    orderIndex: l.orderIndex,
+                    videoKey: l.videoKey,
+                    videoMime: l.videoMime,
+                    videoSizeBytes: l.videoSizeBytes,
+                    published: l.published,
+                    // Dates are not serialisable across the server/client
+                    // boundary; the row parses it back.
+                    createdAt: l.createdAt.toISOString(),
+                    materialCount: materialsByLesson.get(l.id) ?? 0,
+                    completionCount: completionsByLesson.get(l.id) ?? 0,
+                  }}
+                />
               ))}
             </ul>
           )}
